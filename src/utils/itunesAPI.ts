@@ -15,7 +15,7 @@ function delay(ms: number) {
 }
 
 export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
-  const maxRetries = 1;
+  const maxRetries = 5;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -26,7 +26,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
 
       console.log(term);
       
-      const url = `https://itunes.apple.com/search?term=${term}&media=audiobook&limit=${limit}&explicit=${explicitParam}`;
+      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=audiobook&limit=${limit}&explicit=${explicitParam}`;
 
       const response = await fetch(url);
 
@@ -38,7 +38,8 @@ export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
 
       const data = await response.json();
       const results = data.results.filter((item: any) =>
-        item.previewUrl
+        item.previewUrl &&
+        (!options?.genre || item.primaryGenreName === options.genre)
       );
 
       if (results.length > 0) {
