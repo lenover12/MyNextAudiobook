@@ -1,4 +1,5 @@
-import { getSearchTerm } from '../utils/getSearchTerm';
+import { getSearchTerm } from './getSearchTerm';
+import { pruneString } from './pruneString';
 
 interface FetchOptions {
   term?: string;
@@ -15,11 +16,17 @@ function delay(ms: number) {
 }
 
 export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
-  const maxRetries = 5;
+  const maxRetries = options?.genre ? 7 : 5;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const term = await getSearchTerm(options);
+      const PRUNE_RETRY_THRESHOLD = 3;
+
+      let term = await getSearchTerm(options);
+      if (attempt >= PRUNE_RETRY_THRESHOLD) {
+        term = pruneString(term);
+      }
+      
       const offset = Math.floor(Math.random() * 200);
       const limit = Math.min(25, 200 - offset);
       const explicitParam = options?.allowExplicit ? 'yes' : 'no';
@@ -31,7 +38,10 @@ export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
       const response = await fetch(url);
 
       if (!response.ok){
-        if (response.status === 403) break;
+        if (response.status === 403) {
+          console.log("403: max retries")
+          break;
+        }
         await delay(500);
         continue;
       }
