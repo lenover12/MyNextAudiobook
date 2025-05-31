@@ -1,12 +1,20 @@
 // import Heading from "./components/Heading";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { fetchRandom } from "./utils/itunesAPI";
 
 function App() {
   const [book, setBook] = useState<any>(null);
 
+  const isFetching = useRef(false);
+  
   useEffect(() => {
-    fetchRandom().then(setBook);
+    if (isFetching.current) return;
+    isFetching.current = true;
+    fetchRandom()
+    .then(setBook)
+    .finally(() => {
+      isFetching.current = false;
+    });
   }, []);
 
   return (
