@@ -10,7 +10,10 @@ function App() {
   useEffect(() => {
     if (isFetching.current) return;
     isFetching.current = true;
-    fetchRandom()
+    fetchRandom({
+      genre: "Sci-Fi & Fantasy",
+      allowExplicit: false,
+     })
     .then(setBook)
     .finally(() => {
       isFetching.current = false;
@@ -21,7 +24,7 @@ function App() {
     <div className="app">
       {book ? (
         <div>
-          <img src={book.artworkUrl100.replace('100x100bb', '600x600bb')} alt={book.collectionName} />
+          <img src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')} alt={book.collectionName} />
           <h2>{book.collectionName}</h2>
           <audio controls src={book.previewUrl}></audio>
         </div>
