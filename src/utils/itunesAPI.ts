@@ -38,8 +38,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
 
       const data = await response.json();
       const results = data.results.filter((item: any) =>
-        item.previewUrl &&
-      (options?.allowExplicit || item.collectionExplicitness === 'notExplicit')
+        item.previewUrl
       );
 
       if (results.length > 0) {
