@@ -6,11 +6,14 @@ import { getRandomLoadingImage } from './utils/loadingImages';
 function App() {
   const [book, setBook] = useState<any>(null);
   const [loadingImg, setLoadingImg] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const isFetching = useRef(false);
   
   useEffect(() => {
     setLoadingImg(getRandomLoadingImage());
+    setIsLoaded(false);
+
     if (isFetching.current) return;
     isFetching.current = true;
     fetchRandom({
@@ -25,30 +28,34 @@ function App() {
 
   return (
     <div className="app">
-      {book ? (
         <div className="book-container">
           <div className="book-image-wrapper">
-            <img
-              className="book-image"
-              src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')} alt={book.collectionName}
-            />
+            {loadingImg && (
+              <img
+                className={`book-image ${!isLoaded ? 'visible' : 'hidden'}`}
+                src={loadingImg}
+                alt="Loading preview"
+              />
+            )}
+            {book && (
+              <img
+                className={`book-image ${isLoaded ? 'visible' : 'hidden'}`}
+                src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')}
+                alt={book.collectionName}
+                onLoad={() => setIsLoaded(true)}
+              />
+            )}
           </div>
-          <div className="book-title">
-            <h2>{book.collectionName}</h2>
-          </div>
-          <audio controls src={book.previewUrl}></audio>
-        </div>
-      ) : (
-        <div className="loading-image-wrapper">
-          {loadingImg && (
-            <img
-              className="book-image"
-              src={loadingImg}
-              alt="Loading preview"
-            />
+
+          {book && (
+            <>
+            <div className="book-title">
+              <h2>{book.collectionName}</h2>
+            </div>
+            <audio controls src={book.previewUrl}></audio>
+            </>
           )}
-        </div>
-      )}
+          </div>
     </div>
   )
 }
