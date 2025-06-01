@@ -1,13 +1,16 @@
 // import Heading from "./components/Heading";
 import { useEffect, useState, useRef } from "react";
 import { fetchRandom } from "./utils/itunesAPI";
+import { getRandomLoadingImage } from './utils/loadingImages';
 
 function App() {
   const [book, setBook] = useState<any>(null);
+  const [loadingImg, setLoadingImg] = useState<string | null>(null);
 
   const isFetching = useRef(false);
   
   useEffect(() => {
+    setLoadingImg(getRandomLoadingImage());
     if (isFetching.current) return;
     isFetching.current = true;
     fetchRandom({
@@ -36,7 +39,15 @@ function App() {
           <audio controls src={book.previewUrl}></audio>
         </div>
       ) : (
-        <p className="loading">loading...</p>
+        <div className="loading-image-wrapper">
+          {loadingImg && (
+            <img
+              className="book-image"
+              src={loadingImg}
+              alt="Loading preview"
+            />
+          )}
+        </div>
       )}
     </div>
   )
