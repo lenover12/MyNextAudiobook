@@ -23,13 +23,20 @@ function App() {
   return (
     <div className="app">
       {book ? (
-        <div>
-          <img src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')} alt={book.collectionName} />
-          <h2>{book.collectionName}</h2>
+        <div className="book-container">
+          <div className="book-image-wrapper">
+            <img
+              className="book-image"
+              src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')} alt={book.collectionName}
+            />
+          </div>
+          <div className="book-title">
+            <h2>{book.collectionName}</h2>
+          </div>
           <audio controls src={book.previewUrl}></audio>
         </div>
       ) : (
-        <p>loading...</p>
+        <p className="loading">loading...</p>
       )}
     </div>
   )
