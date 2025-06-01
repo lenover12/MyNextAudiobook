@@ -32,7 +32,7 @@ function App() {
           <div className="book-image-wrapper">
             {loadingImg && (
               <img
-                className={`book-image ${!isLoaded ? 'visible' : 'hidden'}`}
+                className={`book-image loading-image ${!isLoaded ? 'visible' : 'hidden'}`}
                 src={loadingImg}
                 alt="Loading preview"
               />
