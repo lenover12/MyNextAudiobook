@@ -5,6 +5,7 @@ import { getRandomLoadingImage } from './utils/loadingImages';
 
 function App() {
   const [book, setBook] = useState<any>(null);
+  const [fadeInLoadingImg, setFadeInLoadingImg] = useState(false);
   const [loadingImg, setLoadingImg] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -13,6 +14,12 @@ function App() {
   useEffect(() => {
     setLoadingImg(getRandomLoadingImage());
     setIsLoaded(false);
+    setFadeInLoadingImg(false);
+
+    const timeout = setTimeout(() => {
+      setFadeInLoadingImg(true);
+    }, 30);
+
 
     if (isFetching.current) return;
     isFetching.current = true;
@@ -20,10 +27,12 @@ function App() {
       genre: "Sci-Fi & Fantasy",
       allowExplicit: false,
      })
-    .then(setBook)
-    .finally(() => {
-      isFetching.current = false;
-    });
+      .then(setBook)
+      .finally(() => {
+        isFetching.current = false;
+     });
+
+     return () => clearTimeout(timeout);
   }, []);
 
   return (
@@ -32,14 +41,14 @@ function App() {
           <div className="book-image-wrapper">
             {loadingImg && (
               <img
-                className={`book-image loading-image ${!isLoaded ? 'visible' : 'hidden'}`}
+                className={`loading-image ${fadeInLoadingImg && !isLoaded ? 'visible' : ''}`}
                 src={loadingImg}
                 alt="Loading preview"
               />
             )}
             {book && (
               <img
-                className={`book-image ${isLoaded ? 'visible' : 'hidden'}`}
+                className={`book-image ${isLoaded ? 'visible' : ''}`}
                 src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')}
                 alt={book.collectionName}
                 onLoad={() => setIsLoaded(true)}
