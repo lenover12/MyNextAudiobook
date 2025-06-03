@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { fetchRandom } from "./utils/itunesAPI";
 import { getRandomLoadingImage } from './utils/loadingImages';
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
+import { usePulseCanvas } from "./hooks/usePulseCanvas";
 import { useFitText } from "./hooks/useFitText";
 
 function BookTitle({ title, maxHeight }: { title: string; maxHeight: number }) {
@@ -30,6 +31,10 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bookTitleRef = useRef<HTMLDivElement>(null);
   const [maxTitleHeight, setMaxTitleHeight] = useState(0);
+
+  //canvas pulse effect
+  const pulseCanvasRef = useRef<HTMLCanvasElement>(null);
+  usePulseCanvas(pulseCanvasRef, isLoaded);
 
   //canvas image
   let canvasImage: string | null = null;
@@ -103,6 +108,13 @@ function App() {
             ref={canvasRef}
             className={`canvas-background visible`}
             width={10} height={6} style={{ width: "100%", height: "auto" }}
+          />
+
+          <canvas
+            ref={pulseCanvasRef}
+            className="canvas-pulse"
+            width={600}
+            height={600}
           />
 
           {book && (
