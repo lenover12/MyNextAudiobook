@@ -3,21 +3,37 @@ import { useEffect, useState, useRef } from "react";
 import { fetchRandom } from "./utils/itunesAPI";
 import { getRandomLoadingImage } from './utils/loadingImages';
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
+import { useFitText } from "./hooks/useFitText";
+
+function BookTitle({ title, maxHeight }: { title: string; maxHeight: number }) {
+  const { ref, fontSize } = useFitText(maxHeight);
+
+  return (
+    <h2
+      ref={ref}
+      className="urbanist-bold"
+      style={{ fontSize: `${fontSize}rem`, margin: 0 }}
+    >
+      {title}
+    </h2>
+  );
+}
 
 function App() {
   const [book, setBook] = useState<any>(null);
   const [fadeInLoadingImg, setFadeInLoadingImg] = useState(false);
   const [loadingImg, setLoadingImg] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-
   const isFetching = useRef(false);
 
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bookTitleRef = useRef<HTMLDivElement>(null);
+  const [maxTitleHeight, setMaxTitleHeight] = useState(0);
 
+  //canvas image
   let canvasImage: string | null = null;
   let trigger = false;
-
   if (isLoaded && book?.artworkUrl600) {
     canvasImage = book.artworkUrl600;
     trigger = true;
@@ -38,6 +54,7 @@ function App() {
 
     if (isFetching.current) return;
     isFetching.current = true;
+
     fetchRandom({
       genre: "Sci-Fi & Fantasy",
       allowExplicit: false,
@@ -47,6 +64,18 @@ function App() {
         isFetching.current = false;
      });
   }, []);
+
+  //book title height
+  useEffect(() => {
+    if (!bookTitleRef.current) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setMaxTitleHeight(entry.contentRect.height);
+    });
+
+    observer.observe(bookTitleRef.current);
+    return () => observer.disconnect();
+  }, [book]);
 
   return (
     <div className="app">
@@ -78,8 +107,8 @@ function App() {
 
           {book && (
             <>
-            <div className="book-title">
-              <h2>{book.collectionName}</h2>
+            <div className="book-title" ref={bookTitleRef}>
+              <BookTitle title={book.collectionName} maxHeight={maxTitleHeight} />
             </div>
             <audio controls src={book.previewUrl}></audio>
             </>
