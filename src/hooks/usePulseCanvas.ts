@@ -7,11 +7,12 @@ export function usePulseCanvas(
 ) {
   const requestRef = useRef<number | null>(null);
   const pulseIntervalRef = useRef<number | null>(null);
+  const pulsesRef = useRef<{ size: number; opacity: number }[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const bookEl = bookWrapperRef.current;
-    if (!canvas || !bookEl || !trigger) return;
+    if (!canvas || !bookEl) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -23,14 +24,14 @@ export function usePulseCanvas(
       return bookEl.getBoundingClientRect();
     };
 
-    const pulses: { size: number; opacity: number }[] = [];
+    const pulses = pulsesRef.current;
     let lastTime = performance.now();
 
     const strokeWidth = 4;
     const addPulse = () => {
       const rect = getTargetRect();
       const size = Math.max(rect.width, rect.height);
-      pulses.push({ size: size + strokeWidth * 2, opacity: 1 });
+      pulsesRef.current.push({ size: size + strokeWidth * 2, opacity: 1 });
     };
 
     const drawRoundedRect = (
@@ -85,10 +86,6 @@ export function usePulseCanvas(
       requestRef.current = requestAnimationFrame(animate);
     };
 
-    if (trigger && pulseIntervalRef.current === null) {
-      pulseIntervalRef.current = window.setInterval(addPulse, 800);
-      addPulse();
-    }    
     requestRef.current = requestAnimationFrame(animate);
 
     const handleResize = () => {
@@ -103,8 +100,37 @@ export function usePulseCanvas(
         clearInterval(pulseIntervalRef.current);
         pulseIntervalRef.current = null;
       }
-      cancelAnimationFrame(requestRef.current!);
+      if (requestRef.current !== null) {
+        cancelAnimationFrame(requestRef.current);
+      }
       window.removeEventListener("resize", handleResize);
     };
-  }, [canvasRef, trigger, bookWrapperRef]);
+  }, [canvasRef, bookWrapperRef]);
+
+  useEffect(() => {
+    if (trigger && pulseIntervalRef.current === null) {
+      //first pulse is instant
+      const canvas = canvasRef.current;
+      const bookEl = bookWrapperRef.current;
+      if (canvas && bookEl) {
+        const rect = bookEl.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        pulsesRef.current.push({ size: size + 4 * 2, opacity: 1 });
+      }
+      
+      //subsequent pulses
+      pulseIntervalRef.current = window.setInterval(() => {
+        const canvas = canvasRef.current;
+        const bookEl = bookWrapperRef.current;
+        if (!canvas || !bookEl) return;
+  
+        const rect = bookEl.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        pulsesRef.current.push({ size: size + 4 * 2, opacity: 1 });
+      }, 800);
+    } else if (!trigger && pulseIntervalRef.current !== null) {
+      clearInterval(pulseIntervalRef.current);
+      pulseIntervalRef.current = null;
+    }
+  }, [trigger, canvasRef, bookWrapperRef]);
 }
