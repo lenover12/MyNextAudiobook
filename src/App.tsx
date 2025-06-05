@@ -38,6 +38,21 @@ function App() {
   const [pulseEnabled, setPulseEnabled] = useState(false);
   usePulseCanvas(pulseCanvasRef, pulseEnabled, bookImageWrapperRef);
 
+  //audio
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const togglePlayPause = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      audio.play();
+      setPulseEnabled(true);
+    } else {
+      audio.pause();
+      setPulseEnabled(false);
+    }
+  };
 
   //canvas image
   let canvasImage: string | null = null;
@@ -103,7 +118,7 @@ function App() {
                 src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')}
                 alt={book.collectionName}
                 onLoad={() => setIsLoaded(true)}
-                onClick={() => setPulseEnabled(prev => !prev)}
+                onClick={togglePlayPause}
               />
             )}
           </div>
@@ -126,7 +141,7 @@ function App() {
             <div className="book-title" ref={bookTitleRef}>
               <BookTitle title={book.collectionName} maxHeight={maxTitleHeight} />
             </div>
-            <audio controls src={book.previewUrl}></audio>
+            <audio ref={audioRef} src={book.previewUrl}></audio>
             </>
           )}
           </div>
