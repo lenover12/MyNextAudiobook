@@ -35,7 +35,9 @@ function App() {
   //canvas pulse effect
   const pulseCanvasRef = useRef<HTMLCanvasElement>(null);
   const bookImageWrapperRef = useRef<HTMLDivElement>(null);
-  usePulseCanvas(pulseCanvasRef, isLoaded, bookImageWrapperRef);
+  const [pulseEnabled, setPulseEnabled] = useState(false);
+  usePulseCanvas(pulseCanvasRef, pulseEnabled, bookImageWrapperRef);
+
 
   //canvas image
   let canvasImage: string | null = null;
@@ -101,6 +103,7 @@ function App() {
                 src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')}
                 alt={book.collectionName}
                 onLoad={() => setIsLoaded(true)}
+                onClick={() => setPulseEnabled(prev => !prev)}
               />
             )}
           </div>

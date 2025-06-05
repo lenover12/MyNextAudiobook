@@ -6,6 +6,7 @@ export function usePulseCanvas(
   bookWrapperRef: React.RefObject<HTMLDivElement | null>
 ) {
   const requestRef = useRef<number | null>(null);
+  const pulseIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -84,8 +85,10 @@ export function usePulseCanvas(
       requestRef.current = requestAnimationFrame(animate);
     };
 
-    const pulseInterval = setInterval(addPulse, 800);
-    addPulse();
+    if (trigger && pulseIntervalRef.current === null) {
+      pulseIntervalRef.current = window.setInterval(addPulse, 800);
+      addPulse();
+    }    
     requestRef.current = requestAnimationFrame(animate);
 
     const handleResize = () => {
@@ -96,7 +99,10 @@ export function usePulseCanvas(
     window.addEventListener("resize", handleResize);
 
     return () => {
-      clearInterval(pulseInterval);
+      if (pulseIntervalRef.current !== null) {
+        clearInterval(pulseIntervalRef.current);
+        pulseIntervalRef.current = null;
+      }
       cancelAnimationFrame(requestRef.current!);
       window.removeEventListener("resize", handleResize);
     };
