@@ -34,7 +34,8 @@ function App() {
 
   //canvas pulse effect
   const pulseCanvasRef = useRef<HTMLCanvasElement>(null);
-  usePulseCanvas(pulseCanvasRef, isLoaded);
+  const bookImageWrapperRef = useRef<HTMLDivElement>(null);
+  usePulseCanvas(pulseCanvasRef, isLoaded, bookImageWrapperRef);
 
   //canvas image
   let canvasImage: string | null = null;
@@ -85,7 +86,7 @@ function App() {
   return (
     <div className="app">
         <div className="book-container">
-          <div className="book-image-wrapper">
+          <div className="book-image-wrapper" ref={bookImageWrapperRef}>                      
             {loadingImg && (
               <img
                 className={`loading-image ${fadeInLoadingImg && !isLoaded ? 'visible' : ''}`}
