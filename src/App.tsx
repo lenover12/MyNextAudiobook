@@ -3,7 +3,8 @@ import { useEffect, useState, useRef } from "react";
 import { fetchRandom } from "./utils/itunesAPI";
 import { getRandomLoadingImage } from './utils/loadingImages';
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
-import { usePulseCanvas } from "./hooks/usePulseCanvas";
+import { useColourFromImage } from "./hooks/useColourFromImage";
+import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
 import { useFitText } from "./hooks/useFitText";
 
 function BookTitle({ title, maxHeight }: { title: string; maxHeight: number }) {
@@ -32,11 +33,17 @@ function App() {
   const bookTitleRef = useRef<HTMLDivElement>(null);
   const [maxTitleHeight, setMaxTitleHeight] = useState(0);
 
+  //image color
+  const imageColour = useColourFromImage(book?.artworkUrl600 ?? null);
+
   //canvas pulse effect
   const pulseCanvasRef = useRef<HTMLCanvasElement>(null);
   const bookImageWrapperRef = useRef<HTMLDivElement>(null);
-  const [pulseEnabled, setPulseEnabled] = useState(false);
-  usePulseCanvas(pulseCanvasRef, pulseEnabled, bookImageWrapperRef);
+  const [tsPulseEnabled, setTsPulseEnabled] = useState(false);
+  const { pulseOnce } = useTsPulseCanvas(pulseCanvasRef, tsPulseEnabled, bookImageWrapperRef, imageColour);
+
+  //css pulse effect
+  const [cssPulseVisible, setCssPulseVisible] = useState(false);
 
   //audio
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -47,10 +54,13 @@ function App() {
 
     if (audio.paused) {
       audio.play();
-      setPulseEnabled(true);
+      setTsPulseEnabled(true);
+      // setCssPulseVisible(true);
+      pulseOnce();
     } else {
       audio.pause();
-      setPulseEnabled(false);
+      setTsPulseEnabled(false);
+      // setCssPulseVisible(false);
     }
   };
 
@@ -69,6 +79,12 @@ function App() {
   }
 
   useAmbientCanvas(canvasRef, canvasImage, trigger);
+
+  useEffect(() => {
+    if (imageColour) {
+      document.documentElement.style.setProperty('--pulse-colour', `rgb(${imageColour})`);
+    }
+  }, [imageColour]);
   
   useEffect(() => {
     setLoadingImg(getRandomLoadingImage());
@@ -102,49 +118,50 @@ function App() {
 
   return (
     <div className="app">
-        <div className="book-container">
-          <div className="book-image-wrapper" ref={bookImageWrapperRef}>                      
-            {loadingImg && (
-              <img
-                className={`loading-image ${fadeInLoadingImg && !isLoaded ? 'visible' : ''}`}
-                src={loadingImg}
-                alt="Loading preview"
-                onLoad={() => setFadeInLoadingImg(true)}
-              />
-            )}
-            {book && (
-              <img
-                className={`book-image ${isLoaded ? 'visible' : ''}`}
-                src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')}
-                alt={book.collectionName}
-                onLoad={() => setIsLoaded(true)}
-                onClick={togglePlayPause}
-              />
-            )}
-          </div>
-
-          <canvas
-            ref={canvasRef}
-            className={`canvas-background visible`}
-            width={10} height={6} style={{ width: "100%", height: "auto" }}
-          />
-
-          <canvas
-            ref={pulseCanvasRef}
-            className="canvas-pulse"
-            width={600}
-            height={600}
-          />
-
-          {book && (
-            <>
-            <div className="book-title" ref={bookTitleRef}>
-              <BookTitle title={book.collectionName} maxHeight={maxTitleHeight} />
-            </div>
-            <audio ref={audioRef} src={book.previewUrl}></audio>
-            </>
+      <div className="book-container">
+        <div className="book-image-wrapper" ref={bookImageWrapperRef}>                      
+          {loadingImg && (
+            <img
+              className={`loading-image ${fadeInLoadingImg && !isLoaded ? 'visible' : ''}`}
+              src={loadingImg}
+              alt="Loading preview"
+              onLoad={() => setFadeInLoadingImg(true)}
+            />
           )}
+          {book && (
+            <img
+              className={`book-image ${isLoaded ? 'visible' : ''}`}
+              src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')}
+              alt={book.collectionName}
+              onLoad={() => setIsLoaded(true)}
+              onClick={togglePlayPause}
+            />
+          )}
+          <div className={`css-pulse ${cssPulseVisible ? "visible" : ""}`} />
+        </div>
+
+        <canvas
+          ref={canvasRef}
+          className={`canvas-background visible`}
+          width={10} height={6} style={{ width: "100%", height: "auto" }}
+        />
+
+        <canvas
+          ref={pulseCanvasRef}
+          className="canvas-pulse"
+          width={600}
+          height={600}
+        />
+
+        {book && (
+          <>
+          <div className="book-title" ref={bookTitleRef}>
+            <BookTitle title={book.collectionName} maxHeight={maxTitleHeight} />
           </div>
+          <audio ref={audioRef} src={book.previewUrl}></audio>
+          </>
+        )}
+      </div>
     </div>
   )
 }
