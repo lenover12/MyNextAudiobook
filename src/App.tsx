@@ -47,22 +47,47 @@ function App() {
 
   //audio
   const audioRef = useRef<HTMLAudioElement>(null);
+  const wasPausedRef = useRef(false);
+  const FADE_OUT_DURATION = 600;
 
   const togglePlayPause = () => {
     const audio = audioRef.current;
     if (!audio) return;
-
+  
+    const pulseEl = bookImageWrapperRef.current?.querySelector(".css-pulse") as HTMLElement | null;
+  
     if (audio.paused) {
-      audio.play();
-      setTsPulseEnabled(true);
-      // setCssPulseVisible(true);
+      wasPausedRef.current = false;
+
       pulseOnce();
+      
+      audio.play().then(() => {
+        // setTsPulseEnabled(true);
+        setCssPulseVisible(true);
+        pulseEl?.classList.remove("fade-out-glow");
+      }).catch(console.warn);
     } else {
+      wasPausedRef.current = true;
+
+      // setTsPulseEnabled(false);
+
       audio.pause();
-      setTsPulseEnabled(false);
-      // setCssPulseVisible(false);
-    }
+    
+      pulseEl?.classList.remove("fade-out-glow");
+      // pulseEl?.classList.add("css-pulse");
+      if (pulseEl) void pulseEl.offsetWidth;
+    
+      pulseEl?.classList.add("fade-out-glow");
+    
+      setTimeout(() => {
+        if (wasPausedRef.current) {
+          setCssPulseVisible(false);
+          pulseEl?.classList.remove("fade-out-glow");
+        }
+      }, FADE_OUT_DURATION);
+    }    
   };
+  
 
   //canvas image
   let canvasImage: string | null = null;
