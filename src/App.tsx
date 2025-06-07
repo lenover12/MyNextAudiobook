@@ -1,4 +1,3 @@
-// import Heading from "./components/Heading";
 import { useEffect, useState, useRef } from "react";
 import { fetchRandom } from "./utils/itunesAPI";
 import { getRandomLoadingImage } from './utils/loadingImages';
@@ -74,7 +73,6 @@ function App() {
       audio.pause();
     
       pulseEl?.classList.remove("fade-out-glow");
-      // pulseEl?.classList.add("css-pulse");
       if (pulseEl) void pulseEl.offsetWidth;
     
       pulseEl?.classList.add("fade-out-glow");
