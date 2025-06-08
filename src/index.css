@@ -71,7 +71,7 @@ body {
 
 .book-title {
   margin-top: var(--book-title-y-start);
-  height: calc((var(--book-size) / 6));
+  height: calc((var(--book-size) / 4));
   max-height: calc(100vh - var(--book-title-y-start));
   width: 100%;
   max-width: var(--book-size);

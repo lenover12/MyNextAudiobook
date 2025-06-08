@@ -5,8 +5,17 @@ import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
 import { useColourFromImage } from "./hooks/useColourFromImage";
 import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
 import { useFitText } from "./hooks/useFitText";
+import { getTitleElements } from "./utils/getTitleElements";
 
-function BookTitle({ title, maxHeight }: { title: string; maxHeight: number }) {
+import type { ReactNode } from "react";
+
+function BookTitle({
+  title,
+  maxHeight
+}: {
+  title: ReactNode;
+  maxHeight: number;
+}) {
   const { ref, fontSize } = useFitText(maxHeight);
 
   return (
@@ -85,7 +94,7 @@ function App() {
       }, FADE_OUT_DURATION);
     }    
   };
-  
+
 
   //canvas image
   let canvasImage: string | null = null;
@@ -179,7 +188,10 @@ function App() {
         {book && (
           <>
           <div className="book-title" ref={bookTitleRef}>
-            <BookTitle title={book.collectionName} maxHeight={maxTitleHeight} />
+            <BookTitle
+              title={getTitleElements(book.collectionName ?? '', 4, true)}
+              maxHeight={maxTitleHeight}
+            />
           </div>
           <audio ref={audioRef} src={book.previewUrl}></audio>
           </>
