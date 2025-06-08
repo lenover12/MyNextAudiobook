@@ -5,17 +5,29 @@ import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
 import { useColourFromImage } from "./hooks/useColourFromImage";
 import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
 import { useFitText } from "./hooks/useFitText";
+import { getTitleElements } from "./utils/getTitleElements";
 
-function BookTitle({ title, maxHeight }: { title: string; maxHeight: number }) {
-  const { ref, fontSize } = useFitText(maxHeight);
+import type { ReactNode } from "react";
+
+function BookTitle({
+  title,
+  maxHeight
+}: {
+  title: ReactNode;
+  maxHeight: number;
+}) {
+  const { ref, fontSize, isReady }  = useFitText(maxHeight);
 
   return (
     <h2
       ref={ref}
-      className="urbanist-bold"
-      style={{ fontSize: `${fontSize}rem`, margin: 0 }}
+      className={`urbanist-bold book-title-element ${isReady ? "visible" : ""}`}
+      style={{ fontSize: `${fontSize}rem`, margin: 0,
+      opacity: isReady ? 1 : 0,
+      transition: "opacity 0.5s ease",
+    }}
     >
-      {title}
+    {title}
     </h2>
   );
 }
@@ -85,7 +97,7 @@ function App() {
       }, FADE_OUT_DURATION);
     }    
   };
-  
+
 
   //canvas image
   let canvasImage: string | null = null;
@@ -179,7 +191,10 @@ function App() {
         {book && (
           <>
           <div className="book-title" ref={bookTitleRef}>
-            <BookTitle title={book.collectionName} maxHeight={maxTitleHeight} />
+            <BookTitle
+              title={getTitleElements(book.collectionName ?? '', 4, true)}
+              maxHeight={maxTitleHeight}
+            />
           </div>
           <audio ref={audioRef} src={book.previewUrl}></audio>
           </>
