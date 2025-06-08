@@ -73,6 +73,7 @@ body {
   margin-top: var(--book-title-y-start);
   height: calc((var(--book-size) / 4));
   max-height: calc(100vh - var(--book-title-y-start));
+  min-height: 4rem;
   width: 100%;
   max-width: var(--book-size);
   padding: 0 1rem;

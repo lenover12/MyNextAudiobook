@@ -16,15 +16,18 @@ function BookTitle({
   title: ReactNode;
   maxHeight: number;
 }) {
-  const { ref, fontSize } = useFitText(maxHeight);
+  const { ref, fontSize, isReady }  = useFitText(maxHeight);
 
   return (
     <h2
       ref={ref}
-      className="urbanist-bold"
-      style={{ fontSize: `${fontSize}rem`, margin: 0 }}
+      className={`urbanist-bold book-title-element ${isReady ? "visible" : ""}`}
+      style={{ fontSize: `${fontSize}rem`, margin: 0,
+      opacity: isReady ? 1 : 0,
+      transition: "opacity 0.5s ease",
+    }}
     >
-      {title}
+    {title}
     </h2>
   );
 }
