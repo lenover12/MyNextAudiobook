@@ -16,7 +16,7 @@ body {
   color: white;
   font-family: sans-serif;
   height: 100dvh;
-  /* overflow: hidden; */
+  overflow: hidden;
   position: relative;
 }
 
@@ -35,17 +35,17 @@ body {
     --book-size: 60vmin;
   }
 
-  body {
+  /* body {
     min-height: 200dvh;
-    /* overflow: hidden; */
-  }
+    overflow: hidden;
+  } */
 }
 
 @media (orientation: portrait) and (hover: none) and (pointer: coarse) {
-  body {
+  /* body {
     min-height: 200dvh;
-    /* overflow: hidden; */
-  }
+    overflow: hidden;
+  } */
 }
 
 .book-container {
