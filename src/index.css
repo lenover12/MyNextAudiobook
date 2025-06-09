@@ -8,16 +8,29 @@
   --book-image-y-start: calc(40dvh - (var(--book-size) / 2));
   --book-title-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem);
   --book-border-radius: 10px;
+
+  /* light dark theme default*/
+  --background: #111;
+  --text-color: white;
 }
+
+/* light dark theme light*/
+/* @media (prefers-color-scheme: light) {
+  :root {
+    --background: #fff;
+    --text-color: #000;
+  }
+} */
 
 body {
   margin: 0;
-  background: #111;
-  color: white;
+  background: var(--background);
+  color: var(--text-color);
   font-family: sans-serif;
   height: 100dvh;
   overflow: hidden;
   position: relative;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .app {
