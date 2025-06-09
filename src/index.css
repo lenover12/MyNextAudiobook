@@ -4,8 +4,9 @@
 
 
 :root {
-  --book-size: 70vmin;
-  --book-title-y-start: calc(40vh + (var(--book-size) / 2) + 1rem);
+  --book-size: 65vmin;
+  --book-image-y-start: calc(40dvh - (var(--book-size) / 2));
+  --book-title-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem);
   --book-border-radius: 10px;
 }
 
@@ -14,15 +15,37 @@ body {
   background: #111;
   color: white;
   font-family: sans-serif;
-  height: 100vh;
+  height: 100dvh;
   /* overflow: hidden; */
   position: relative;
 }
 
 .app {
   width: 100%;
-  height: 100%;
-  position: relative;
+  height: 100svh;
+  position: fixed;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+  touch-action: pan-y, pan-x;
+}
+
+
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  :root {
+    --book-size: 60vmin;
+  }
+
+  body {
+    min-height: 200dvh;
+    /* overflow: hidden; */
+  }
+}
+
+@media (orientation: portrait) and (hover: none) and (pointer: coarse) {
+  body {
+    min-height: 200dvh;
+    /* overflow: hidden; */
+  }
 }
 
 .book-container {
@@ -37,7 +60,7 @@ body {
 
 .book-image-wrapper {
   position: absolute;
-  top: 40vh;
+  top: 40dvh;
   left: 50%;
   width: var(--book-size);
   height: var(--book-size);
@@ -72,7 +95,7 @@ body {
 .book-title {
   margin-top: var(--book-title-y-start);
   height: calc((var(--book-size) / 4));
-  max-height: calc(100vh - var(--book-title-y-start));
+  max-height: calc(100dvh - var(--book-title-y-start));
   min-height: 4rem;
   width: 100%;
   max-width: var(--book-size);
@@ -123,10 +146,12 @@ h2.urbanist-bold {
 
 .canvas-background {
   position: absolute;
-  top: 0;
+  top: calc(var(--book-image-y-start) - 5dvh);
   left: 0;
   width: 100%;
-  height: 100%;
+  max-width: 100dvw;
+  height: 80dvh;
+  max-height: 80dvh;
   z-index: -2;
   opacity: 0;
   transition: opacity 0.5s ease;
@@ -138,12 +163,16 @@ h2.urbanist-bold {
   opacity: 1;
 }
 
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  /* Mobile or tablet in landscape */
+}
+
 .canvas-pulse {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   z-index: -1;
   pointer-events: none;
 }
