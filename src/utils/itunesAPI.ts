@@ -2,7 +2,7 @@ import { getSearchTerm } from './getSearchTerm';
 import { pruneString } from './pruneString';
 import type { AudiobookEntry, FallbackBook, FallbackBooksByGenre } from '../types/itunesTypes';
 
-interface FetchOptions {
+export interface FetchOptions {
   term?: string;
   genre?: string;
   authorHint?: string;
