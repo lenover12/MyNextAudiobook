@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import { fetchRandom } from "./utils/itunesAPI";
 import { getRandomLoadingImage } from './utils/loadingImages';
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
 import { useColourFromImage } from "./hooks/useColourFromImage";
 import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
 import { useFitText } from "./hooks/useFitText";
 import { getTitleElements } from "./utils/getTitleElements";
+import { usePreloadBooks } from "./hooks/usePreloadBooks";
 
 import type { ReactNode } from "react";
 
@@ -33,11 +33,18 @@ function BookTitle({
 }
 
 function App() {
-  const [book, setBook] = useState<any>(null);
+  const {
+    currentBook: book,
+    isFetching,
+    next,
+  } = usePreloadBooks({
+    genre: "Sci-Fi & Fantasy",
+    allowExplicit: false,
+    allowFallback: true,
+  });
   const [fadeInLoadingImg, setFadeInLoadingImg] = useState(false);
   const [loadingImg, setLoadingImg] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const isFetching = useRef(false);
 
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -125,19 +132,7 @@ function App() {
     setLoadingImg(getRandomLoadingImage());
     setIsLoaded(false);
     setFadeInLoadingImg(false);
-
-    if (isFetching.current) return;
-    isFetching.current = true;
-
-    fetchRandom({
-      genre: "Sci-Fi & Fantasy",
-      allowExplicit: false,
-     })
-      .then(setBook)
-      .finally(() => {
-        isFetching.current = false;
-     });
-  }, []);
+  }, [book]);
 
   //book title height
   useEffect(() => {
@@ -166,7 +161,7 @@ function App() {
           {book && (
             <img
               className={`book-image ${isLoaded ? 'visible' : ''}`}
-              src={book.artworkUrl600 || book.artworkUrl100?.replace('100x100bb', '600x600bb')}
+              src={book.artworkUrl600}
               alt={book.collectionName}
               onLoad={() => setIsLoaded(true)}
               onClick={togglePlayPause}

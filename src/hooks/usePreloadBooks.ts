@@ -1,38 +1,54 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { fetchRandom } from "../utils/itunesAPI";
 import type { AudiobookEntry } from "../types/itunesTypes";
 import type { FetchOptions } from "../utils/itunesAPI";
 
-const PRELOAD_AHEAD = 5;
+const PRELOAD_AHEAD = 1;
 
 export function usePreloadBooks(options: FetchOptions = {}) {
   const [books, setBooks] = useState<AudiobookEntry[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+
+  const isPreloadingRef = useRef(false);
 
   const preload = useCallback(async (count: number) => {
-    const newBooks: AudiobookEntry[] = [];
+    if (isPreloadingRef.current) return;
+    isPreloadingRef.current = true;
+    setIsFetching(true);
 
-    while (newBooks.length < count) {
-      const book = await fetchRandom(options);
-      if (book && !newBooks.some(b => b.collectionId === book.collectionId)) {
-        newBooks.push(book);
+    try{
+      const newBooks: AudiobookEntry[] = [];
+
+      const existingBooks = [...books];
+
+      while (newBooks.length < count) {
+        const book = await fetchRandom(options);
+        if (
+          book &&
+          !newBooks.some(b => b.collectionId === book.collectionId) &&
+          !existingBooks.some(b => b.collectionId === book.collectionId)
+        ) {
+          newBooks.push(book);
+        }
       }
-    }
 
-    setBooks(prev => [...prev, ...newBooks]);
-    setIsLoading(false);
-  }, [options]);
+      setBooks(prev => [...prev, ...newBooks]);
+    } finally {
+      isPreloadingRef.current = false;
+      setIsFetching(false);
+    }
+  }, [options, books]);
 
   useEffect(() => {
     preload(PRELOAD_AHEAD + 1);
   }, [preload]);
 
   useEffect(() => {
-    if (books.length - currentIndex <= PRELOAD_AHEAD && !isLoading) {
+    if (books.length - currentIndex <= PRELOAD_AHEAD && !isPreloadingRef.current) {
       preload(PRELOAD_AHEAD);
     }
-  }, [books, currentIndex, preload, isLoading]);
+  }, [books, currentIndex, preload]);
 
   const next = useCallback(() => {
     if (currentIndex < books.length - 1) {
@@ -52,7 +68,7 @@ export function usePreloadBooks(options: FetchOptions = {}) {
     books,
     currentBook,
     currentIndex,
-    isLoading,
+    isFetching,
     next,
     previous,
   };
