@@ -68,9 +68,10 @@ export function usePreloadBooks(options: FetchOptions = {}) {
     }
   }, [options]);
 
-  //fetch one book on mount
+  //fetch a book if there's no book at the current index
   useEffect(() => {
-    if (booksRef.current.length === 0) {
+    const bookAtCurrentIndex = booksRef.current[indexRef.current];
+    if (!bookAtCurrentIndex) {
       preload(1);
     }
   }, [preload]);
