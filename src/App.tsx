@@ -6,6 +6,7 @@ import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
 import { useFitText } from "./hooks/useFitText";
 import { getTitleElements } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
+import { useScrollNavigation } from "./hooks/useScrollNavigation";
 
 import type { ReactNode } from "react";
 
@@ -35,8 +36,10 @@ function BookTitle({
 function App() {
   const {
     currentBook: book,
+    currentIndex,
     isFetching,
     next,
+    previous,
   } = usePreloadBooks({
     genre: "Sci-Fi & Fantasy",
     allowExplicit: false,
@@ -67,6 +70,17 @@ function App() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const isPausedRef = useRef(false);
   const FADE_OUT_DURATION = 600;
+
+  useScrollNavigation({
+    onNext: () => {
+      const audio = audioRef.current;
+      isPausedRef.current = audio ? audio.paused : true;
+      next();
+    },
+    onPrevious: previous,
+    canGoNext: !!book,
+    canGoPrevious: currentIndex > 0,
+  });
 
   const togglePlayPause = () => {
     const audio = audioRef.current;
