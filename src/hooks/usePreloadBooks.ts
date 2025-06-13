@@ -11,18 +11,31 @@ export function usePreloadBooks(options: FetchOptions = {}) {
   const [isFetching, setIsFetching] = useState(false);
 
   const isPreloadingRef = useRef(false);
+  const booksRef = useRef<AudiobookEntry[]>([]);
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    booksRef.current = books;
+  }, [books]);
+
+  useEffect(() => {
+    indexRef.current = currentIndex;
+  }, [currentIndex]);
 
   const preload = useCallback(async (count: number) => {
-    if (isPreloadingRef.current) return;
+    const existingBooks = booksRef.current;
+    const forwardCount = existingBooks.length - indexRef.current - 1;
+    const needed = PRELOAD_AHEAD - forwardCount;
+
+    if (needed <= 0 || isPreloadingRef.current) return;
+
     isPreloadingRef.current = true;
     setIsFetching(true);
 
     try{
       const newBooks: AudiobookEntry[] = [];
 
-      const existingBooks = [...books];
-
-      while (newBooks.length < count) {
+      while (newBooks.length < Math.min(count, needed)) {
         const book = await fetchRandom(options);
         if (
           book &&
@@ -30,23 +43,35 @@ export function usePreloadBooks(options: FetchOptions = {}) {
           !existingBooks.some(b => b.collectionId === book.collectionId)
         ) {
           newBooks.push(book);
+          console.log("Fetched:", book.collectionName);
         }
       }
 
-      setBooks(prev => [...prev, ...newBooks]);
+      setBooks(prev => {
+        const updated = [...prev, ...newBooks];
+        booksRef.current = updated;
+        return updated;
+    });
     } finally {
       isPreloadingRef.current = false;
       setIsFetching(false);
     }
-  }, [options, books]);
+  }, [options]);
 
   useEffect(() => {
-    preload(PRELOAD_AHEAD + 1);
+    const forwardCount = booksRef.current.length - indexRef.current - 1;
+    const needed = PRELOAD_AHEAD - forwardCount;
+    if (needed > 0) {
+      preload(needed + 1);
+    }
   }, [preload]);
 
   useEffect(() => {
-    if (books.length - currentIndex <= PRELOAD_AHEAD && !isPreloadingRef.current) {
-      preload(PRELOAD_AHEAD);
+    const forwardCount = books.length - currentIndex - 1;
+    const needed = PRELOAD_AHEAD - forwardCount;
+
+    if (needed > 0 && !isPreloadingRef.current) {
+      preload(needed);
     }
   }, [books, currentIndex, preload]);
 
