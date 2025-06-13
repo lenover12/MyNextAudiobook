@@ -65,7 +65,7 @@ function App() {
 
   //audio
   const audioRef = useRef<HTMLAudioElement>(null);
-  const wasPausedRef = useRef(false);
+  const isPausedRef = useRef(false);
   const FADE_OUT_DURATION = 600;
 
   const togglePlayPause = () => {
@@ -75,7 +75,7 @@ function App() {
     const pulseEl = bookImageWrapperRef.current?.querySelector(".css-pulse") as HTMLElement | null;
   
     if (audio.paused) {
-      wasPausedRef.current = false;
+      isPausedRef.current = false;
 
       pulseOnce();
       
@@ -85,7 +85,7 @@ function App() {
         pulseEl?.classList.remove("fade-out-glow");
       }).catch(console.warn);
     } else {
-      wasPausedRef.current = true;
+      isPausedRef.current = true;
 
       // setTsPulseEnabled(false);
 
@@ -97,7 +97,7 @@ function App() {
       pulseEl?.classList.add("fade-out-glow");
     
       setTimeout(() => {
-        if (wasPausedRef.current) {
+        if (isPausedRef.current) {
           setCssPulseVisible(false);
           pulseEl?.classList.remove("fade-out-glow");
         }
@@ -105,6 +105,23 @@ function App() {
     }    
   };
 
+  //autoplay new audio on change if already playing
+  useEffect(() => {
+  const audio = audioRef.current;
+
+    if (audio && !isPausedRef.current) {
+      const playNext = async () => {
+        try {
+          await audio.play();
+          setCssPulseVisible(true);
+        } catch (err) {
+          console.warn("Audio play failed:", err);
+        }
+      };
+
+      playNext();
+    }
+  }, [book]);
 
   //canvas image
   let canvasImage: string | null = null;
@@ -194,6 +211,17 @@ function App() {
           <audio ref={audioRef} src={book.previewUrl}></audio>
           </>
         )}
+
+        <button
+          className="next-button"
+          onClick={() => {
+            const audio = audioRef.current;
+            isPausedRef.current = audio ? audio.paused : true;
+            next();
+          }}
+        >
+          Next
+        </button>
       </div>
     </div>
   )
