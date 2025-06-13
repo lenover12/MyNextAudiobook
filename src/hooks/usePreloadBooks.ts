@@ -5,6 +5,15 @@ import type { FetchOptions } from "../utils/itunesAPI";
 
 const PRELOAD_AHEAD = 1;
 
+function preloadMedia(book: AudiobookEntry) {
+  const img = new Image();
+  img.src = book.artworkUrl600;
+
+  const audio = new Audio();
+  audio.preload = "auto";
+  audio.src = book.previewUrl;
+}
+
 export function usePreloadBooks(options: FetchOptions = {}) {
   const [books, setBooks] = useState<AudiobookEntry[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -43,6 +52,7 @@ export function usePreloadBooks(options: FetchOptions = {}) {
           !existingBooks.some(b => b.collectionId === book.collectionId)
         ) {
           newBooks.push(book);
+          preloadMedia(book);
           console.log("Fetched:", book.collectionName);
         }
       }
@@ -57,6 +67,13 @@ export function usePreloadBooks(options: FetchOptions = {}) {
       setIsFetching(false);
     }
   }, [options]);
+
+  //fetch one book on mount
+  useEffect(() => {
+    if (booksRef.current.length === 0) {
+      preload(1);
+    }
+  }, [preload]);
 
   useEffect(() => {
     const forwardCount = booksRef.current.length - indexRef.current - 1;
