@@ -35,6 +35,7 @@ function BookTitle({
 
 function App() {
   const {
+    books,
     currentBook: book,
     currentIndex,
     isFetching,
@@ -45,6 +46,18 @@ function App() {
     allowExplicit: false,
     allowFallback: true,
   });
+
+  //book placement for scrolling
+  const getBookByOffset = (offset: number) => {
+    const idx = currentIndex + offset;
+    return books[idx] ?? null;
+  };
+  const bookTriplet = [
+    { book: getBookByOffset(-1), className: "book-previous", offset: "-100vh" },
+    { book: getBookByOffset(0), className: "book-current", offset: "0vh" },
+    { book: getBookByOffset(1), className: "book-next", offset: "+100vh" },
+  ];
+
   const [fadeInLoadingImg, setFadeInLoadingImg] = useState(false);
   const [loadingImg, setLoadingImg] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -71,13 +84,20 @@ function App() {
   const isPausedRef = useRef(false);
   const FADE_OUT_DURATION = 600;
 
+  //scroll
+  const [scrolled, setScrolled] = useState(false);
+
   useScrollNavigation({
     onNext: () => {
       const audio = audioRef.current;
       isPausedRef.current = audio ? audio.paused : true;
       next();
+      setScrolled(true);
     },
-    onPrevious: previous,
+    onPrevious: () => {
+      previous();
+      setScrolled(false);
+    },
     canGoNext: !!book,
     canGoPrevious: currentIndex > 0,
   });
@@ -180,26 +200,30 @@ function App() {
   return (
     <div className="app">
       <div className="book-container">
-        <div className="book-image-wrapper" ref={bookImageWrapperRef}>                      
-          {loadingImg && (
-            <img
-              className={`loading-image ${fadeInLoadingImg && !isLoaded ? 'visible' : ''}`}
-              src={loadingImg}
-              alt="Loading preview"
-              onLoad={() => setFadeInLoadingImg(true)}
-            />
-          )}
-          {book && (
-            <img
-              className={`book-image ${isLoaded ? 'visible' : ''}`}
-              src={book.artworkUrl600}
-              alt={book.collectionName}
-              onLoad={() => setIsLoaded(true)}
-              onClick={togglePlayPause}
-            />
-          )}
-          <div className={`css-pulse ${cssPulseVisible ? "visible" : ""}`} />
-        </div>
+        
+        {bookTriplet.map(({ book, className, offset }, i) => {
+          const key = book?.collectionId ?? `placeholder-${i}`
+            return(
+              <div
+                key={key}
+                className={`book-image-wrapper ${className}`}
+                style={{
+                  transform: `translate(-50%, calc(-50% + ${offset}))`,
+                  transition: 'transform 0.5s ease',
+                }}
+              >
+                {book && (
+                  <img
+                    className={`book-image`}
+                    src={book.artworkUrl600}
+                    alt={book.collectionName}
+                    onLoad={() => setIsLoaded(true)}
+                    onClick={togglePlayPause}
+                  />
+                )}
+              </div>
+            );
+          })}
 
         <canvas
           ref={canvasRef}
@@ -232,6 +256,7 @@ function App() {
             const audio = audioRef.current;
             isPausedRef.current = audio ? audio.paused : true;
             next();
+            setScrolled(!scrolled);
           }}
         >
           Next
