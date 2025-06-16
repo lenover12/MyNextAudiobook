@@ -337,18 +337,6 @@ function App() {
           <audio ref={audioRef} src={book.previewUrl}></audio>
           </>
         )}
-
-        <button
-          className="next-button"
-          onClick={() => {
-            const audio = audioRef.current;
-            isPausedRef.current = audio ? audio.paused : true;
-            next();
-            setScrolled(!scrolled);
-          }}
-        >
-          Next
-        </button>
       </div>
     </div>
   )
