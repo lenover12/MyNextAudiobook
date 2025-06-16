@@ -58,9 +58,11 @@ function App() {
     { book: getBookByOffset(1), className: "book-next", offset: "+100vh" },
   ];
 
-  const [fadeInLoadingImg, setFadeInLoadingImg] = useState(false);
-  const [loadingImg, setLoadingImg] = useState<string | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [loadingStates, setLoadingStates] = useState<Record<string, {
+    isLoaded: boolean;
+    fadeIn: boolean;
+    loadingImg: string | null;
+  }>>({});
 
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -139,6 +141,18 @@ function App() {
     }    
   };
 
+  //loading image state per book
+  function initLoadingState(bookId: string) {
+    setLoadingStates(prev => ({
+      ...prev,
+      [bookId]: {
+        isLoaded: false,
+        fadeIn: false,
+        loadingImg: getRandomLoadingImage(),
+      },
+    }));
+  }
+
   //autoplay new audio on change if already playing
   useEffect(() => {
   const audio = audioRef.current;
@@ -158,20 +172,17 @@ function App() {
   }, [book]);
 
   //canvas image
-  let canvasImage: string | null = null;
-  let trigger = false;
-  if (isLoaded && book?.artworkUrl600) {
-    canvasImage = book.artworkUrl600;
-    trigger = true;
-  } else if (fadeInLoadingImg && loadingImg) {
-    canvasImage = loadingImg;
-    trigger = true;
-  } else {
-    canvasImage = null;
-    trigger = true;
-  }
+  const currentId = book?.collectionId?.toString();
+  const currentState = currentId ? loadingStates[currentId] : undefined;
 
-  useAmbientCanvas(canvasRef, canvasImage, trigger);
+  const canvasImage =
+    currentState?.isLoaded && book?.artworkUrl600
+      ? book.artworkUrl600
+      : currentState?.fadeIn && currentState.loadingImg
+        ? currentState.loadingImg
+        : '';
+
+  useAmbientCanvas(canvasRef, canvasImage, !!canvasImage);
 
   useEffect(() => {
     if (imageColour) {
@@ -180,10 +191,19 @@ function App() {
   }, [imageColour]);
   
   useEffect(() => {
-    setLoadingImg(getRandomLoadingImage());
-    setIsLoaded(false);
-    setFadeInLoadingImg(false);
-  }, [book]);
+    const id = book?.collectionId?.toString();
+    if (!id || loadingStates[id]) return;
+
+    const loadingImg = getRandomLoadingImage();
+    setLoadingStates(prev => ({
+      ...prev,
+      [id]: {
+        isLoaded: false,
+        fadeIn: false,
+        loadingImg,
+      },
+    }));
+  }, [book, loadingStates]);
 
   //book title height
   useEffect(() => {
@@ -202,28 +222,67 @@ function App() {
       <div className="book-container">
         
         {bookTriplet.map(({ book, className, offset }, i) => {
-          const key = book?.collectionId ?? `placeholder-${i}`
-            return(
-              <div
-                key={key}
-                className={`book-image-wrapper ${className}`}
-                style={{
-                  transform: `translate(-50%, calc(-50% + ${offset}))`,
-                  transition: 'transform 0.5s ease',
-                }}
-              >
-                {book && (
-                  <img
-                    className={`book-image`}
-                    src={book.artworkUrl600}
-                    alt={book.collectionName}
-                    onLoad={() => setIsLoaded(true)}
-                    onClick={togglePlayPause}
-                  />
-                )}
-              </div>
-            );
-          })}
+          const key = book?.collectionId ?? `placeholder-${i}`;
+          const isCurrent = className === "book-current";
+          const bookId = book?.collectionId?.toString();
+
+          useEffect(() => {
+            if (bookId && !loadingStates[bookId]) initLoadingState(bookId);
+          }, [bookId]);
+
+          const loadingState = bookId ? loadingStates[bookId] : null;
+
+          return (
+            <div
+              key={key}
+              ref={isCurrent ? bookImageWrapperRef : undefined}
+              className={`book-image-wrapper ${className}`}
+              style={{
+                transform: `translate(-50%, calc(-50% + ${offset}))`,
+                transition: 'transform 0.5s ease',
+              }}
+            >
+              {loadingState?.loadingImg && (
+                <img
+                  className={`loading-image ${loadingState.fadeIn && !loadingState.isLoaded ? 'visible' : ''}`}
+                  src={loadingState.loadingImg}
+                  alt="Loading preview"
+                  onLoad={() => {
+                    if (bookId) {
+                      setLoadingStates(prev => ({
+                        ...prev,
+                        [bookId]: {
+                          ...prev[bookId],
+                          fadeIn: true,
+                        },
+                      }));
+                    }
+                  }}
+                />
+              )}
+              {book && (
+                <img
+                  className={`book-image ${loadingState?.isLoaded ? 'visible' : ''}`}
+                  src={book.artworkUrl600}
+                  alt={book.collectionName}
+                  onLoad={() => {
+                    if (bookId) {
+                      setLoadingStates(prev => ({
+                        ...prev,
+                        [bookId]: {
+                          ...prev[bookId],
+                          isLoaded: true,
+                        },
+                      }));
+                    }
+                  }}
+                  onClick={togglePlayPause}
+                />
+              )}
+              <div className={`css-pulse ${cssPulseVisible ? "visible" : ""}`} />
+            </div>
+          );
+        })}
 
         <canvas
           ref={canvasRef}
