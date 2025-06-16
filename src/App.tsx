@@ -12,23 +12,27 @@ import type { ReactNode } from "react";
 
 function BookTitle({
   title,
+  titleText,
   maxHeight
 }: {
   title: ReactNode;
+  titleText: string;
   maxHeight: number;
 }) {
-  const { ref, fontSize, isReady }  = useFitText(maxHeight);
+  const { ref, fontSize, isReady }  = useFitText(maxHeight, titleText);
 
   return (
     <h2
       ref={ref}
       className={`urbanist-bold book-title-element ${isReady ? "visible" : ""}`}
-      style={{ fontSize: `${fontSize}rem`, margin: 0,
-      opacity: isReady ? 1 : 0,
-      transition: "opacity 0.5s ease",
+      style={{ 
+        fontSize: `${fontSize}rem`,
+        margin: 0,
+        opacity: isReady ? 1 : 0,
+        transition: "opacity 0.5s ease",
     }}
     >
-    {title}
+      {title}
     </h2>
   );
 }
@@ -302,6 +306,7 @@ function App() {
           <div className="book-title" ref={bookTitleRef}>
             <BookTitle
               title={getTitleElements(book.collectionName ?? '', 4, true)}
+              titleText={book.collectionName ?? ''}
               maxHeight={maxTitleHeight}
             />
           </div>
