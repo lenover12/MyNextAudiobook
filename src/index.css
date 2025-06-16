@@ -173,6 +173,8 @@ h2.urbanist-bold {
   transition: opacity 0.5s ease;
   filter: blur(50px);
   pointer-events: none;
+  transition: background-color 0.4s ease;
+  background-color: var(--pulse-colour);
 }
 
 .canvas-background.visible {
