@@ -13,11 +13,13 @@ import type { ReactNode } from "react";
 function BookTitle({
   title,
   titleText,
-  maxHeight
+  maxHeight,
+  visible
 }: {
   title: ReactNode;
   titleText: string;
   maxHeight: number;
+  visible: boolean;
 }) {
   const { ref, fontSize, isReady }  = useFitText(maxHeight, titleText);
 
@@ -28,9 +30,11 @@ function BookTitle({
       style={{ 
         fontSize: `${fontSize}rem`,
         margin: 0,
-        opacity: isReady ? 1 : 0,
-        transition: "opacity 0.5s ease",
-    }}
+        opacity: visible ? 1 : 0,
+        transition: visible
+          ? "opacity 0.6s ease"
+          : "opacity 0.1s ease-out",
+      }}
     >
       {title}
     </h2>
@@ -92,6 +96,10 @@ function App() {
 
   //scroll
   const [scrolled, setScrolled] = useState(false);
+
+  //title fade
+  const [titleVisible, setTitleVisible] = useState(true);
+  const [titleText, setTitleText] = useState(book?.collectionName ?? '');
 
   useScrollNavigation({
     onNext: () => {
@@ -221,6 +229,21 @@ function App() {
     return () => observer.disconnect();
   }, [book]);
 
+  //book title fade effect
+  useEffect(() => {
+    const newTitle = book?.collectionName ?? '';
+    if (newTitle === titleText) return;
+
+    setTitleVisible(false);
+
+    const timeout = setTimeout(() => {
+      setTitleText(newTitle);
+      setTitleVisible(true);
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [book?.collectionName]);
+
   return (
     <div className="app">
       <div className="book-container">
@@ -305,9 +328,10 @@ function App() {
           <>
           <div className="book-title" ref={bookTitleRef}>
             <BookTitle
-              title={getTitleElements(book.collectionName ?? '', 4, true)}
-              titleText={book.collectionName ?? ''}
+              title={getTitleElements(titleText, 4, true)}
+              titleText={titleText}
               maxHeight={maxTitleHeight}
+              visible={titleVisible}
             />
           </div>
           <audio ref={audioRef} src={book.previewUrl}></audio>
