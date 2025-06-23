@@ -110,34 +110,31 @@ function App() {
     return () => document.removeEventListener("dragstart", handler);
   }, []);
 
+  const [lastBookId, setLastBookId] = useState<string | null>(null);
+
+  const onScrollNext = () => {
+    if (book?.collectionId) setLastBookId(book.collectionId.toString());
+    isPausedRef.current = audioRef.current?.paused ?? true;
+    next();
+  };
+  
+  const onScrollPrevious = () => {
+    if (book?.collectionId) setLastBookId(book.collectionId.toString());
+    previous();
+  };
+
   if (!/Mobi|Android/i.test(navigator.userAgent)) {
     useScrollNavigation({
-      onNext: () => {
-        const audio = audioRef.current;
-        isPausedRef.current = audio ? audio.paused : true;
-        next();
-        setScrolled(true);
-      },
-      onPrevious: () => {
-        previous();
-        setScrolled(false);
-      },
+      onNext: onScrollNext,
+      onPrevious: onScrollPrevious,
       canGoNext: !!book,
       canGoPrevious: currentIndex > 0,
     });
   }
 
   const { y } = useSwipeNavigation({
-    onNext: () => {
-      const audio = audioRef.current;
-      isPausedRef.current = audio ? audio.paused : true;
-      next();
-      setScrolled(true);
-    },
-    onPrevious: () => {
-      previous();
-      setScrolled(false);
-    },
+    onNext: onScrollNext,
+    onPrevious: onScrollPrevious,
     canGoNext: !!book,
     canGoPrevious: currentIndex > 0,
   });
@@ -294,6 +291,12 @@ function App() {
             config: { tension: 120, friction: 20 },
           });
 
+          const wasJustCurrent =
+            cssPulseVisible &&
+            lastBookId &&
+            bookId === lastBookId &&
+            !isCurrent;
+
           const shouldHide =
             (className === "book-previous" && isSwipingDown) ||
             (className === "book-next" && isSwipingUp);
@@ -355,7 +358,7 @@ function App() {
                   onClick={togglePlayPause}
                 />
               )}
-              <animated.div className={`css-pulse ${cssPulseVisible ? "visible" : ""}`} style={pulseSpring} />
+              <animated.div className={`css-pulse ${cssPulseVisible ? "visible" : ""} ${wasJustCurrent ? "fade-out-glow" : ""}`} style={pulseSpring} />
             </div>
           );
         })}
