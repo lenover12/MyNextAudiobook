@@ -15,8 +15,8 @@ export function useAmbientCanvas(
     requestAnimationFrame(() => {
 
       const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      canvas.width = rect.width / 2;
+      canvas.height = rect.height / 2;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
