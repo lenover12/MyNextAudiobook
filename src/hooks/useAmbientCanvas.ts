@@ -12,17 +12,11 @@ export function useAmbientCanvas(
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const isMobileOrTablet = /Mobi|Android|iPhone|iPad|iPod|Tablet|Mobile/i.test(navigator.userAgent);
-
     requestAnimationFrame(() => {
-      if (isMobileOrTablet) {
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-      } else {
-        canvas.width = 10;
-        canvas.height = 6;
-      }
+
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
