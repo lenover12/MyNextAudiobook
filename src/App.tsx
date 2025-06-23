@@ -123,7 +123,9 @@ function App() {
     previous();
   };
 
-  if (!/Mobi|Android/i.test(navigator.userAgent)) {
+  const isTouchDevice = /Mobi|Android|iPhone|iPad|iPod|Tablet|Touch/i.test(navigator.userAgent);
+
+  if (!isTouchDevice) {
     useScrollNavigation({
       onNext: onScrollNext,
       onPrevious: onScrollPrevious,
@@ -368,7 +370,7 @@ function App() {
         <canvas
           ref={canvasRef}
           className={`canvas-background visible`}
-          width={10} height={6} style={{ width: "100%", height: "auto" }}
+          style={{ width: "100%", height: "auto" }}
         />
 
         <canvas
