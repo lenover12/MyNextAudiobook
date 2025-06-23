@@ -9,7 +9,7 @@ import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
 
-import { animated } from '@react-spring/web';
+import { animated, useSpring } from '@react-spring/web';
 import type { ReactNode } from "react";
 
 function BookTitle({
@@ -288,6 +288,12 @@ function App() {
           const isSwipingUp = dragY < 0;
           const isSwipingDown = dragY > 0;
 
+          const shouldShowPulse = cssPulseVisible && isCurrent;
+          const pulseSpring = useSpring({
+            opacity: shouldShowPulse ? 1 : 0,
+            config: { tension: 120, friction: 20 },
+          });
+
           const shouldHide =
             (className === "book-previous" && isSwipingDown) ||
             (className === "book-next" && isSwipingUp);
@@ -349,7 +355,7 @@ function App() {
                   onClick={togglePlayPause}
                 />
               )}
-              <div className={`css-pulse ${cssPulseVisible ? "visible" : ""}`} />
+              <animated.div className={`css-pulse ${cssPulseVisible ? "visible" : ""}`} style={pulseSpring} />
             </div>
           );
         })}
