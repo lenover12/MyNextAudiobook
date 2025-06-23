@@ -13,7 +13,6 @@ export function useScrollNavigation({
   canGoNext,
   canGoPrevious,
 }: UseScrollNavigationOptions) {
-  const touchStartY = useRef<number | null>(null);
   const scrollLock = useRef(false);
 
   const handleScroll = useCallback(
@@ -47,28 +46,12 @@ export function useScrollNavigation({
       }
     };
 
-    const touchStartHandler = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0].clientY;
-    };
-
-    const touchEndHandler = (e: TouchEvent) => {
-      if (touchStartY.current === null) return;
-      const touchEndY = e.changedTouches[0].clientY;
-      const deltaY = touchStartY.current - touchEndY;
-      handleScroll(deltaY);
-      touchStartY.current = null;
-    };
-
     window.addEventListener("wheel", wheelHandler, { passive: true });
     window.addEventListener("keydown", keyHandler);
-    window.addEventListener("touchstart", touchStartHandler, { passive: true });
-        window.addEventListener("touchend", touchEndHandler);
 
     return () => {
       window.removeEventListener("wheel", wheelHandler);
       window.removeEventListener("keydown", keyHandler);
-      window.removeEventListener("touchstart", touchStartHandler);
-      window.removeEventListener("touchend", touchEndHandler);
     };
   }, [handleScroll]);
-} 
+}

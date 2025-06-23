@@ -61,7 +61,17 @@ body {
   } */
 }
 
-.book-container {
+.book-swipe-layer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+}
+
+.book-static-layer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -96,6 +106,8 @@ body {
   z-index: 2;
   border-radius: var(--book-border-radius);
   pointer-events: auto;
+  user-select: none;
+  -webkit-user-drag: none;
   cursor: pointer;
 }
 
@@ -115,6 +127,8 @@ body {
   opacity: 0;
   transition: opacity 0.5s ease;
   pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
   z-index: 1;
 }
 
@@ -132,6 +146,11 @@ body {
   padding: 0 1rem;
   box-sizing: border-box;
   pointer-events: none;
+}
+
+.book-title,
+.book-title * {
+  user-select: none;
 }
 
 .book-title h2 {
@@ -164,10 +183,8 @@ h2.urbanist-bold {
   position: absolute;
   top: calc(var(--book-image-y-start) - 5dvh);
   left: 0;
-  width: 100%;
   max-width: 100dvw;
-  height: 80dvh;
-  max-height: 80dvh;
+  max-height: 70dvh;
   z-index: -2;
   opacity: 0;
   transition: opacity 0.5s ease;

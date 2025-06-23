@@ -7,7 +7,9 @@ import { useFitText } from "./hooks/useFitText";
 import { getTitleElements } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
+import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
 
+import { animated } from '@react-spring/web';
 import type { ReactNode } from "react";
 
 function BookTitle({
@@ -101,7 +103,31 @@ function App() {
   const [titleVisible, setTitleVisible] = useState(true);
   const [titleText, setTitleText] = useState(book?.collectionName ?? '');
 
-  useScrollNavigation({
+  //supliment -webkit-user-drag: none; browser compatability
+  useEffect(() => {
+    const handler = (e: DragEvent) => e.preventDefault();
+    document.addEventListener("dragstart", handler);
+    return () => document.removeEventListener("dragstart", handler);
+  }, []);
+
+  if (!/Mobi|Android/i.test(navigator.userAgent)) {
+    useScrollNavigation({
+      onNext: () => {
+        const audio = audioRef.current;
+        isPausedRef.current = audio ? audio.paused : true;
+        next();
+        setScrolled(true);
+      },
+      onPrevious: () => {
+        previous();
+        setScrolled(false);
+      },
+      canGoNext: !!book,
+      canGoPrevious: currentIndex > 0,
+    });
+  }
+
+  const { y } = useSwipeNavigation({
     onNext: () => {
       const audio = audioRef.current;
       isPausedRef.current = audio ? audio.paused : true;
@@ -246,12 +272,25 @@ function App() {
 
   return (
     <div className="app">
-      <div className="book-container">
-        
+      <animated.div
+        className="book-swipe-layer"
+        style={{
+          transform: y.to((val) => `translateY(${val}px)`),
+          touchAction: 'pan-y',
+          willChange: 'transform',
+        }}
+      >
         {bookTriplet.map(({ book, className, offset }, i) => {
           const key = book?.collectionId ?? `placeholder-${i}`;
           const isCurrent = className === "book-current";
           const bookId = book?.collectionId?.toString();
+          const dragY = y.get();
+          const isSwipingUp = dragY < 0;
+          const isSwipingDown = dragY > 0;
+
+          const shouldHide =
+            (className === "book-previous" && isSwipingDown) ||
+            (className === "book-next" && isSwipingUp);
 
           useEffect(() => {
             if (bookId && !loadingStates[bookId]) initLoadingState(bookId);
@@ -267,6 +306,8 @@ function App() {
               style={{
                 transform: `translate(-50%, calc(-50% + ${offset}))`,
                 transition: 'transform 0.5s ease',
+                opacity: shouldHide ? 0 : 1,
+                pointerEvents: shouldHide ? 'none' : 'auto',
               }}
             >
               {loadingState?.loadingImg && (
@@ -274,6 +315,7 @@ function App() {
                   className={`loading-image ${loadingState.fadeIn && !loadingState.isLoaded ? 'visible' : ''}`}
                   src={loadingState.loadingImg}
                   alt="Loading preview"
+                  draggable={false}
                   onLoad={() => {
                     if (bookId) {
                       setLoadingStates(prev => ({
@@ -292,6 +334,7 @@ function App() {
                   className={`book-image ${loadingState?.isLoaded ? 'visible' : ''}`}
                   src={book.artworkUrl600}
                   alt={book.collectionName}
+                  draggable={false}
                   onLoad={() => {
                     if (bookId) {
                       setLoadingStates(prev => ({
@@ -311,6 +354,8 @@ function App() {
           );
         })}
 
+      </animated.div>
+      <div className="book-static-layer">
         <canvas
           ref={canvasRef}
           className={`canvas-background visible`}
