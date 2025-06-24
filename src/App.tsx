@@ -254,8 +254,8 @@ function App() {
     return () => observer.disconnect();
   }, [book]);
 
-  //book title fade effect
-  useEffect(() => {
+  //book title inner book-change fade effect for scroll
+    useEffect(() => {
     const newTitle = book?.collectionName ?? '';
     if (newTitle === titleText) return;
 
@@ -268,6 +268,11 @@ function App() {
 
     return () => clearTimeout(timeout);
   }, [book?.collectionName]);
+  //book title outer drag-based fade effect for swipe
+  const titleOpacity = y.to((val) => {
+    const abs = Math.abs(val);
+    return abs < 60 ? 1 : abs > 120 ? 0 : 1 - (abs - 60) / 60;
+  });
 
   return (
     <div className="app">
@@ -382,14 +387,14 @@ function App() {
 
         {book && (
           <>
-          <div className="book-title" ref={bookTitleRef}>
-            <BookTitle
-              title={getTitleElements(titleText, 4, true)}
-              titleText={titleText}
-              maxHeight={maxTitleHeight}
-              visible={titleVisible}
-            />
-          </div>
+            <animated.div className="book-title" ref={bookTitleRef} style={{ opacity: titleOpacity }}>
+              <BookTitle
+                title={getTitleElements(titleText, 4, true)}
+                titleText={titleText}
+                maxHeight={maxTitleHeight}
+                visible={titleVisible}
+              />
+            </animated.div>
           <audio ref={audioRef} src={book.previewUrl}></audio>
           </>
         )}
