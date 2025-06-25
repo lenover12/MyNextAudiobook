@@ -61,7 +61,17 @@ body {
   } */
 }
 
-.book-container {
+.book-swipe-layer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  width: 100%;
+  pointer-events: none;
+}
+
+.book-static-layer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,7 +87,6 @@ body {
   left: 50%;
   width: var(--book-size);
   height: var(--book-size);
-  transform: translate(-50%, -50%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -97,12 +106,34 @@ body {
   z-index: 2;
   border-radius: var(--book-border-radius);
   pointer-events: auto;
+  user-select: none;
+  -webkit-user-drag: none;
   cursor: pointer;
 }
 
 .book-image.visible {
   opacity: 1;
   z-index: 2;
+}
+
+.loading-image {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--book-border-radius);
+  object-fit: contain;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  z-index: 1;
+}
+
+.loading-image.visible {
+  opacity: 1;
 }
 
 .book-title {
@@ -115,6 +146,11 @@ body {
   padding: 0 1rem;
   box-sizing: border-box;
   pointer-events: none;
+}
+
+.book-title,
+.book-title * {
+  user-select: none;
 }
 
 .book-title h2 {
@@ -139,37 +175,23 @@ h2.urbanist-bold {
   font-weight: 700;
 }
 
-.loading-image {
-  width: 100%;
-  height: 100%;
-  border-radius: var(--book-border-radius);
-  object-fit: contain;
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.loading-image.visible {
-  opacity: 1;
+.next-button {
+  pointer-events: all;
 }
 
 .canvas-background {
   position: absolute;
   top: calc(var(--book-image-y-start) - 5dvh);
   left: 0;
-  width: 100%;
   max-width: 100dvw;
-  height: 80dvh;
-  max-height: 80dvh;
+  max-height: 70dvh;
   z-index: -2;
   opacity: 0;
   transition: opacity 0.5s ease;
   filter: blur(50px);
   pointer-events: none;
+  transition: background-color 0.4s ease;
+  background-color: var(--pulse-colour);
 }
 
 .canvas-background.visible {
@@ -200,10 +222,12 @@ h2.urbanist-bold {
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 0;
-  will-change: box-shadow;
+  will-change: box-shadow, opacity;
   background: transparent;
   box-shadow: 0 0 0 0 var(--pulse-colour, rgba(255, 255, 255, 0.2));
   opacity: 0;
+  animation: glowPulse 3s infinite ease-out;
+  transition: box-shadow 0.6s ease-out;
 }
 
 .css-pulse.visible {

@@ -1,7 +1,8 @@
 import { getSearchTerm } from './getSearchTerm';
 import { pruneString } from './pruneString';
+import type { AudiobookEntry, FallbackBook, FallbackBooksByGenre } from '../types/itunesTypes';
 
-interface FetchOptions {
+export interface FetchOptions {
   term?: string;
   genre?: string;
   authorHint?: string;
@@ -9,23 +10,25 @@ interface FetchOptions {
   // country?: string;
   // lang?: string;
   allowExplicit?: boolean;
+  allowFallback?: boolean;
 }
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-interface FallbackBook {
-  collectionId: number;
-  collectionName: string;
-  artistName: string;
-  previewUrl: string;
-  artworkUrl600: string;
-  primaryGenreName: string;
-}
-
-interface FallbackBooksByGenre {
-  [genre: string]: FallbackBook[];
+function extractBookFields(item: any): AudiobookEntry {
+  return {
+    collectionId: item.collectionId,
+    collectionName: item.collectionName,
+    artistName: item.artistName,
+    previewUrl: item.previewUrl,
+    artworkUrl600: item.artworkUrl600 || item.artworkUrl100?.replace("100x100bb", "600x600bb"),
+    primaryGenreName: item.primaryGenreName,
+    releaseDate: item.releaseDate,
+    description: item.description,
+    _fallback: !!item._fallback,
+  };
 }
 
 let cachedFallbackBooks: FallbackBooksByGenre | null = null;
@@ -55,9 +58,13 @@ async function getFallbackBook(genre?: string): Promise<FallbackBook & { _fallba
   };
 }
 
-export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
-  const maxRetries = options?.genre ? 7 : 5;
-  // const maxRetries = options?.genre ? 1 : 1;
+export async function fetchRandom(options?: FetchOptions): Promise<AudiobookEntry | null> {
+  let maxRetries: number;
+  if (options?.allowFallback) {
+    maxRetries = options?.genre ? 7 : 5;
+  } else {
+    maxRetries = Infinity;
+  }
   const PRUNE_RETRY_THRESHOLD = 3;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -81,9 +88,10 @@ export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
       if (!response.ok){
         if (response.status === 403) {
           console.log("403: max retries")
-          break;
+          await delay(5000 * Math.pow(1.5, attempt));
+        } else {
+          await delay(500 * Math.pow(1.5, attempt));
         }
-        await delay(500);
         continue;
       }
 
@@ -92,7 +100,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
         item.previewUrl &&
         (!options?.genre || item.primaryGenreName === options.genre)
       )
-      .map((item: any) => ({
+      .map((item: any) => extractBookFields({
         ...item,
         artworkUrl600: item.artworkUrl100?.replace("100x100bb", "600x600bb")
       }));
@@ -102,8 +110,14 @@ export async function fetchRandom(options?: FetchOptions): Promise<any | null> {
       }
     } catch (e) {
       console.error(`Error on attempt ${attempt}:`, e);
-      await delay(500);
+      await delay(500 * Math.pow(1.5, attempt));
     }
   }
-  return await getFallbackBook(options?.genre);
+  console.log("FALLBACK")
+
+  if (options?.allowFallback) {
+    return extractBookFields(await getFallbackBook(options.genre));
+  }
+
+  return null;
 }
