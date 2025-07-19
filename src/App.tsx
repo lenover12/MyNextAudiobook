@@ -80,7 +80,7 @@ function App() {
   const [maxTitleHeight, setMaxTitleHeight] = useState(0);
 
   //image color
-  const imageColour = useColourFromImage(book?.artworkUrl600 ?? null);
+  const imageColour = useColourFromImage(book?.itunesImageUrl ?? null);
 
   //canvas pulse effect
   const pulseCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -101,7 +101,7 @@ function App() {
 
   //title fade
   const [titleVisible, setTitleVisible] = useState(true);
-  const [titleText, setTitleText] = useState(book?.collectionName ?? '');
+  const [titleText, setTitleText] = useState(book?.title ?? '');
 
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
@@ -113,13 +113,13 @@ function App() {
   const [lastBookId, setLastBookId] = useState<string | null>(null);
 
   const onScrollNext = () => {
-    if (book?.collectionId) setLastBookId(book.collectionId.toString());
+    if (book?.itunesId) setLastBookId(book.itunesId.toString());
     isPausedRef.current = audioRef.current?.paused ?? true;
     next();
   };
   
   const onScrollPrevious = () => {
-    if (book?.collectionId) setLastBookId(book.collectionId.toString());
+    if (book?.itunesId) setLastBookId(book.itunesId.toString());
     previous();
   };
 
@@ -209,12 +209,12 @@ function App() {
   }, [book]);
 
   //canvas image
-  const currentId = book?.collectionId?.toString();
+  const currentId = book?.itunesId?.toString();
   const currentState = currentId ? loadingStates[currentId] : undefined;
 
   const canvasImage =
-    currentState?.isLoaded && book?.artworkUrl600
-      ? book.artworkUrl600
+    currentState?.isLoaded && book?.itunesImageUrl
+      ? book.itunesImageUrl
       : currentState?.fadeIn && currentState.loadingImg
         ? currentState.loadingImg
         : '';
@@ -228,7 +228,7 @@ function App() {
   }, [imageColour]);
   
   useEffect(() => {
-    const id = book?.collectionId?.toString();
+    const id = book?.itunesId?.toString();
     if (!id || loadingStates[id]) return;
 
     const loadingImg = getRandomLoadingImage();
@@ -256,7 +256,7 @@ function App() {
 
   //book title inner book-change fade effect for scroll
     useEffect(() => {
-    const newTitle = book?.collectionName ?? '';
+    const newTitle = book?.title ?? '';
     if (newTitle === titleText) return;
 
     setTitleVisible(false);
@@ -267,7 +267,7 @@ function App() {
     }, 600);
 
     return () => clearTimeout(timeout);
-  }, [book?.collectionName]);
+  }, [book?.title]);
   //book title outer drag-based fade effect for swipe
   const titleOpacity = y.to((val) => {
     const abs = Math.abs(val);
@@ -285,9 +285,9 @@ function App() {
         }}
       >
         {bookTriplet.map(({ book, className, offset }, i) => {
-          const key = book?.collectionId ?? `placeholder-${i}`;
+          const key = book?.itunesId ?? `placeholder-${i}`;
           const isCurrent = className === "book-current";
-          const bookId = book?.collectionId?.toString();
+          const bookId = book?.itunesId?.toString();
           const dragY = y.get();
           const isSwipingUp = dragY < 0;
           const isSwipingDown = dragY > 0;
@@ -345,11 +345,11 @@ function App() {
                   }}
                 />
               )}
-              {book && (
+              {book && book.itunesImageUrl && (
                 <img
                   className={`book-image ${loadingState?.isLoaded ? 'visible' : ''}`}
-                  src={book.artworkUrl600}
-                  alt={book.collectionName}
+                  src={book.itunesImageUrl}
+                  alt={book.title}
                   draggable={false}
                   onLoad={() => {
                     if (bookId) {
@@ -395,7 +395,9 @@ function App() {
                 visible={titleVisible}
               />
             </animated.div>
-          <audio ref={audioRef} src={book.previewUrl}></audio>
+          {book.audioPreviewUrl && (
+            <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
+          )}
           </>
         )}
       </div>
