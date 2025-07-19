@@ -41,6 +41,13 @@ export function mapAudimetaToDTO(item: any): AudiobookDTO {
   const authors = item.authors?.map((a: any) => a.name) ?? [];
   const narrators = item.narrators?.map((n: any) => n.name) ?? [];
 
+  const genres = item.genres?.map((g: any) => g.name).filter(Boolean) ?? null;
+
+  const seriesList = item.series?.map((s: any) => ({
+    name: s.name ?? 'Unknown',
+    position: s.position ?? null,
+  })) ?? null;
+
   return {
     asin: item.asin ?? null,
     isbn: item.isbn ?? null,
@@ -63,8 +70,8 @@ export function mapAudimetaToDTO(item: any): AudiobookDTO {
     description: item.description ?? null,
     summary: item.summary ?? null,
     genre: item.genres?.[0]?.name ?? null,
-    series: item.series?.[0]?.name ?? null,
-    seriesPosition: item.series?.[0]?.position ?? null,
+    genres,
+    seriesList,
     releaseDate: item.releaseDate ?? null,
     rating: item.rating ?? null,
 

@@ -48,8 +48,8 @@ function mapItunesToDTO(item: any): AudiobookDTO {
     description: item.description ?? null,
     summary: null,
     genre: item.primaryGenreName ?? null,
-    series: null,
-    seriesPosition: null,
+    genres: null,
+    seriesList: null,
     releaseDate: item.releaseDate ?? null,
     rating: null,
 
