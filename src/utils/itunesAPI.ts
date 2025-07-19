@@ -42,7 +42,7 @@ function mapItunesToDTO(item: any): AudiobookDTO {
     audiblePageUrl: null,
     itunesPageUrl: item.collectionViewUrl ?? null,
     audioPreviewUrl: item.previewUrl ?? null,
-    itunesImageUrl: (item.artworkUrl600 || item.artworkUrl100?.replace("100x100bb", "600x600bb")) ?? null,
+    itunesImageUrl: (item.artworkUrl600 || item.artworkUrl100?.replace("100x100bb", "600x600bb")) ?? '../assets/loading_img/action.jpg', //change to default_img/no_image.jpg
     audibleImageUrl: null,
 
     description: item.description ?? null,
