@@ -1,6 +1,6 @@
 import { getSearchTerm } from './getSearchTerm';
 import { pruneString } from './pruneString';
-import type { AudiobookEntry, FallbackBook, FallbackBooksByGenre } from '../types/itunesTypes';
+import type { AudiobookDTO } from '../dto/audiobookDTO';
 
 export interface FetchOptions {
   term?: string;
@@ -13,30 +13,63 @@ export interface FetchOptions {
   allowFallback?: boolean;
 }
 
+export interface FallbackBooksByGenre {
+  [genre: string]: AudiobookDTO[];
+}
+
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function extractBookFields(item: any): AudiobookEntry {
+function mapItunesToDTO(item: any): AudiobookDTO {
+  const authors: string[] = item.artistName ? [item.artistName] : [];
+  const narrators: string[] = [];
+  
   return {
-    collectionId: item.collectionId,
-    collectionName: item.collectionName,
-    artistName: item.artistName,
-    previewUrl: item.previewUrl,
-    artworkUrl600: item.artworkUrl600 || item.artworkUrl100?.replace("100x100bb", "600x600bb"),
-    primaryGenreName: item.primaryGenreName,
-    releaseDate: item.releaseDate,
-    description: item.description,
+
+    asin: null,
+    isbn: null,
+    itunesId: item.collectionId ?? null,
+
+    title: item.collectionName,
+    subtitle: null,
+    censored_title: item.collectionCensoredName ?? null,
+
+    authors,
+    narrators,
+    publisher: null,
+
+    audiblePageUrl: null,
+    itunesPageUrl: item.collectionViewUrl ?? null,
+    audioPreviewUrl: item.previewUrl ?? null,
+    itunesImageUrl: (item.artworkUrl600 || item.artworkUrl100?.replace("100x100bb", "600x600bb")) ?? null,
+    audibleImageUrl: null,
+
+    description: item.description ?? null,
+    summary: null,
+    genre: item.primaryGenreName ?? null,
+    series: null,
+    seriesPosition: null,
+    releaseDate: item.releaseDate ?? null,
+    rating: null,
+
+    lengthMinutes: null,
+    durationMinutes: null,
+    bookFormat: null,
+    language: null,
+    explicit: item.collectionExplicitness ?? null,
+    region: null,
+    regions: null,
     _fallback: !!item._fallback,
   };
 }
 
 let cachedFallbackBooks: FallbackBooksByGenre | null = null;
 
-async function getFallbackBook(genre?: string): Promise<FallbackBook & { _fallback: true }> {
+async function getFallbackBook(genre?: string): Promise<AudiobookDTO & { _fallback: true }> {
   if (!cachedFallbackBooks) {
-    const { default: books } = await import('../assets/fallbackBooks.json');
-    cachedFallbackBooks = books;
+    const { default: rawBooks } = await import('../assets/fallbackBooks.json');
+    cachedFallbackBooks = JSON.parse(JSON.stringify(rawBooks)) as FallbackBooksByGenre;
   }
 
   let genreKey = genre && cachedFallbackBooks[genre] ? genre : null;
@@ -58,7 +91,7 @@ async function getFallbackBook(genre?: string): Promise<FallbackBook & { _fallba
   };
 }
 
-export async function fetchRandom(options?: FetchOptions): Promise<AudiobookEntry | null> {
+export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
   let maxRetries: number;
   if (options?.allowFallback) {
     maxRetries = options?.genre ? 7 : 5;
@@ -100,10 +133,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookEntr
         item.previewUrl &&
         (!options?.genre || item.primaryGenreName === options.genre)
       )
-      .map((item: any) => extractBookFields({
-        ...item,
-        artworkUrl600: item.artworkUrl100?.replace("100x100bb", "600x600bb")
-      }));
+      .map((item: any) => mapItunesToDTO(item));
 
       if (results.length > 0) {
         return results[Math.floor(Math.random() * results.length)];
@@ -116,7 +146,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookEntr
   console.log("FALLBACK")
 
   if (options?.allowFallback) {
-    return extractBookFields(await getFallbackBook(options.genre));
+    return await getFallbackBook(options.genre);
   }
 
   return null;
