@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { fetchRandom } from "../utils/itunesAPI";
+import { fetchRandom } from "../utils/audiobookAPI";
 import type { AudiobookDTO } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 

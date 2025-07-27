@@ -151,3 +151,13 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
 
   return null;
 }
+
+export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
+  const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=audiobook&limit=25&explicit=yes`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.results
+    .filter((item: any) => item.previewUrl)
+    .map(mapItunesToDTO);
+}

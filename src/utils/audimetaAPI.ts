@@ -5,7 +5,7 @@ import type { AudiobookDTO } from '../dto/audiobookDTO';
 
 const BASE_URL = 'https://audimeta.de/search';
 
-export async function fetchAudimetaRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
+export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
   const offset = Math.floor(Math.random() * 200);
   const limit = 25;
 
@@ -85,4 +85,18 @@ export function mapAudimetaToDTO(item: any): AudiobookDTO {
 
     _fallback: false,
   };
+}
+
+export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
+  const url = `https://audimeta.de/search?keywords=${encodeURIComponent(query)}&region=us&limit=25&page=0&products_sort_by=Relevance&cache=true`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json
+      .filter((item: any) => item.isListenable && item.imageUrl)
+      .map(mapAudimetaToDTO);
+  } catch {
+    return [];
+  }
 }
