@@ -4,6 +4,7 @@ import type { AudiobookDTO } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 
 const PRELOAD_AHEAD = 1;
+const MUST_HAVE_AUDIBLE = true;
 
 function preloadMedia(book: AudiobookDTO) {
   console.log(book);
@@ -55,7 +56,8 @@ export function usePreloadBooks(options: FetchOptions = {}) {
           book &&
           book.itunesId !== null &&
           !newBooks.some(b => b.itunesId === book.itunesId) &&
-          !existingBooks.some(b => b.itunesId === book.itunesId)
+          !existingBooks.some(b => b.itunesId === book.itunesId) &&
+          ((MUST_HAVE_AUDIBLE && book.audiblePageUrl != null) || !MUST_HAVE_AUDIBLE)
         ) {
           newBooks.push(book);
           preloadMedia(book);
