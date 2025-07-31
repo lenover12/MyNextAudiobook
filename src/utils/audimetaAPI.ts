@@ -1,4 +1,3 @@
-// src/utils/audimetaAPI.ts
 import { getSearchTerm } from './getSearchTerm';
 import type { FetchOptions } from './itunesAPI';
 import type { AudiobookDTO } from '../dto/audiobookDTO';
@@ -7,7 +6,7 @@ const BASE_URL = 'https://audimeta.de/search';
 
 export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
   const offset = Math.floor(Math.random() * 200);
-  const limit = 25;
+  const limit = 50;
 
   const term = await getSearchTerm(options);
 
@@ -15,7 +14,8 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
     keywords: term,
     region: 'us',
     limit: limit.toString(),
-    page: Math.floor(offset / limit).toString(),
+    // page: Math.floor(offset / limit).toString(),
+    page: '0',
     products_sort_by: 'Relevance',
     cache: 'true',
   });
@@ -88,7 +88,7 @@ export function mapAudimetaToDTO(item: any): AudiobookDTO {
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
-  const url = `https://audimeta.de/search?keywords=${encodeURIComponent(query)}&region=us&limit=25&page=0&products_sort_by=Relevance&cache=true`;
+  const url = `https://audimeta.de/search?keywords=${encodeURIComponent(query)}&region=us&limit=50&page=0&products_sort_by=Relevance&cache=true`;
   try {
     const res = await fetch(url);
     if (!res.ok) return [];
