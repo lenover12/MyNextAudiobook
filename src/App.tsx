@@ -387,6 +387,24 @@ function App() {
 
         {book && (
           <>
+            {book.audiblePageUrl && (
+              <animated.div
+                className="redirect-badge-container"
+                style={{ opacity: titleOpacity }}
+              >
+                <a
+                  href={book.audiblePageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/src/assets/badge/audible.png"
+                    alt="Find on Audible"
+                    className="redirect-badge"
+                  />
+                </a>
+              </animated.div>
+            )}
             <animated.div className="book-title" ref={bookTitleRef} style={{ opacity: titleOpacity }}>
               <BookTitle
                 title={getTitleElements(titleText, 4, true)}
@@ -395,9 +413,9 @@ function App() {
                 visible={titleVisible}
               />
             </animated.div>
-          {book.audioPreviewUrl && (
-            <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
-          )}
+            {book.audioPreviewUrl && (
+              <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
+            )}
           </>
         )}
       </div>
