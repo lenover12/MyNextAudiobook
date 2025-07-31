@@ -1,26 +1,32 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { fetchRandom } from "../utils/itunesAPI";
-import type { AudiobookEntry } from "../types/itunesTypes";
+import { fetchRandom } from "../utils/audiobookAPI";
+import type { AudiobookDTO } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 
 const PRELOAD_AHEAD = 1;
+const MUST_HAVE_AUDIBLE = true;
 
-function preloadMedia(book: AudiobookEntry) {
-  const img = new Image();
-  img.src = book.artworkUrl600;
+function preloadMedia(book: AudiobookDTO) {
+  console.log(book);
+  if (book.itunesImageUrl) {
+    const img = new Image();
+    img.src = book.itunesImageUrl;
+  }
 
-  const audio = new Audio();
-  audio.preload = "auto";
-  audio.src = book.previewUrl;
+  if (book.audioPreviewUrl) {
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.src = book.audioPreviewUrl;
+  }
 }
 
 export function usePreloadBooks(options: FetchOptions = {}) {
-  const [books, setBooks] = useState<AudiobookEntry[]>([]);
+  const [books, setBooks] = useState<AudiobookDTO[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
   const isPreloadingRef = useRef(false);
-  const booksRef = useRef<AudiobookEntry[]>([]);
+  const booksRef = useRef<AudiobookDTO[]>([]);
   const indexRef = useRef(0);
 
   useEffect(() => {
@@ -42,18 +48,20 @@ export function usePreloadBooks(options: FetchOptions = {}) {
     setIsFetching(true);
 
     try{
-      const newBooks: AudiobookEntry[] = [];
+      const newBooks: AudiobookDTO[] = [];
 
       while (newBooks.length < Math.min(count, needed)) {
         const book = await fetchRandom(options);
         if (
           book &&
-          !newBooks.some(b => b.collectionId === book.collectionId) &&
-          !existingBooks.some(b => b.collectionId === book.collectionId)
+          book.itunesId !== null &&
+          !newBooks.some(b => b.itunesId === book.itunesId) &&
+          !existingBooks.some(b => b.itunesId === book.itunesId) &&
+          ((MUST_HAVE_AUDIBLE && book.audiblePageUrl != null) || !MUST_HAVE_AUDIBLE)
         ) {
           newBooks.push(book);
           preloadMedia(book);
-          console.log("Fetched:", book.collectionName);
+          console.log("Fetched:", book.title);
         }
       }
 
@@ -61,7 +69,7 @@ export function usePreloadBooks(options: FetchOptions = {}) {
         const updated = [...prev, ...newBooks];
         booksRef.current = updated;
         return updated;
-    });
+      });
     } finally {
       isPreloadingRef.current = false;
       setIsFetching(false);
