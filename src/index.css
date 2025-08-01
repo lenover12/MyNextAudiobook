@@ -5,9 +5,10 @@
 
 :root {
   --book-size: 65vmin;
-  --redirect-badge-size: calc(var(--book-size) / 10);
+  --redirect-badge-size: calc(var(--book-size) / 9);
   --book-image-y-start: calc(40dvh - (var(--book-size) / 2));
-  --redirect-badge-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem);
+  /* --redirect-badge-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem); */
+  --redirect-badge-y-start: calc(40dvh + (var(--book-size) / 2) + calc(var(--redirect-badge-size) / 2));
   --book-title-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem + (var(--redirect-badge-size)));
   --book-border-radius: 10px;
 
@@ -165,15 +166,20 @@ body {
 
 .book-title {
   /* margin-top: var(--book-title-y-start); */
-  margin-top: 0.5rem;
+  margin-top: calc(0rem - var(--redirect-badge-size));
+  transition: margin-top 0.3s ease;
   height: calc((var(--book-size) / 4));
-  max-height: calc(100dvh - var(--book-title-y-start));
+  max-height: calc(100dvh - calc(var(--book-title-y-start)) - var(--redirect-badge-size));
   min-height: 4rem;
   width: 100%;
   max-width: var(--book-size);
   padding: 0 1rem;
   box-sizing: border-box;
   pointer-events: none;
+}
+
+.book-title.shifted {
+  margin-top: calc(var(--redirect-badge-size) / 3);
 }
 
 .book-title,

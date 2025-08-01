@@ -104,6 +104,9 @@ function App() {
   const [titleVisible, setTitleVisible] = useState(true);
   const [titleText, setTitleText] = useState(book?.title ?? '');
 
+  //title shifting
+  const [titleShifted, setTitleShifted] = useState(false);
+
   //badge fade
   const [badgeVisible, setBadgeVisible] = useState(true);
 
@@ -282,13 +285,26 @@ function App() {
   });
 
   useEffect(() => {
-    setBadgeVisible(false);
+    if (book?.audiblePageUrl) {
+      setTitleShifted(false);
+      setBadgeVisible(false);
 
-    const timeout = setTimeout(() => {
-      setBadgeVisible(true);
-    }, 1600);
+      const titleShiftTimeout = setTimeout(() => {
+        setTitleShifted(true);
+      }, 1500);
 
-    return () => clearTimeout(timeout);
+      const badgeTimeout = setTimeout(() => {
+        setBadgeVisible(true);
+      }, 1600);
+
+      return () => {
+        clearTimeout(titleShiftTimeout);
+        clearTimeout(badgeTimeout);
+      };
+    } else {
+      setTitleShifted(false);
+      setBadgeVisible(false);
+    }
   }, [book?.audiblePageUrl]);
 
 
@@ -435,7 +451,11 @@ function App() {
                 </animated.div>
               </div>
             )}
-            <animated.div className="book-title" ref={bookTitleRef} style={{ opacity: titleOpacity }}>
+            <animated.div
+              className={`book-title ${titleShifted ? "shifted" : ""}`}
+              ref={bookTitleRef}
+              style={{ opacity: titleOpacity }}
+            >
               <BookTitle
                 title={getTitleElements(titleText, 4, true)}
                 titleText={titleText}
