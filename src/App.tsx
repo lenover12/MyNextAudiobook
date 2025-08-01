@@ -104,6 +104,9 @@ function App() {
   const [titleVisible, setTitleVisible] = useState(true);
   const [titleText, setTitleText] = useState(book?.title ?? '');
 
+  //badge fade
+  const [badgeVisible, setBadgeVisible] = useState(true);
+
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
     const handler = (e: DragEvent) => e.preventDefault();
@@ -259,7 +262,7 @@ function App() {
   }, [book]);
 
   //book title inner book-change fade effect for scroll
-    useEffect(() => {
+  useEffect(() => {
     const newTitle = book?.title ?? '';
     if (newTitle === titleText) return;
 
@@ -277,6 +280,17 @@ function App() {
     const abs = Math.abs(val);
     return abs < 60 ? 1 : abs > 120 ? 0 : 1 - (abs - 60) / 60;
   });
+
+  useEffect(() => {
+    setBadgeVisible(false);
+
+    const timeout = setTimeout(() => {
+      setBadgeVisible(true);
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [book?.audiblePageUrl]);
+
 
   return (
     <div className="app">
@@ -394,7 +408,12 @@ function App() {
             {book.audiblePageUrl && audibleLink && (
               <animated.div
                 className="redirect-badge-container"
-                style={{ opacity: titleOpacity }}
+                style={{
+                  opacity: titleOpacity.to((base) => badgeVisible ? base : 0),
+                  transition: badgeVisible
+                    ? 'opacity 0.6s ease'
+                    : 'opacity 0.05s ease-out',
+                }}
               >
                 <a
                   href={audibleLink}
