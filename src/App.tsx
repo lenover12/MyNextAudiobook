@@ -421,17 +421,18 @@ function App() {
 
         {book && (
           <>
-            {book.audiblePageUrl && audibleLink && (
-              <div
-                className="redirect-badge-container"
-                style={{
-                  transition: badgeVisible
-                    ? 'opacity 0.6s ease'
-                    : 'opacity 0.1s ease-out',
-                  opacity: badgeVisible ? 1 : 0,
-                  willChange: 'opacity',
-                }}
-              >
+            <div
+              className="redirect-badge-container"
+              style={{
+                transition: badgeVisible
+                ? 'opacity 0.6s ease'
+                : 'opacity 0.1s ease-out',
+                opacity: badgeVisible ? 1 : 0,
+                visibility: badgeVisible ? 'visible' : 'hidden',
+                willChange: 'opacity',
+              }}
+            >
+              {book.audiblePageUrl && audibleLink && (
                 <animated.div
                   style={{
                     opacity: titleOpacity,
@@ -449,8 +450,8 @@ function App() {
                     />
                   </a>
                 </animated.div>
-              </div>
-            )}
+              )}
+            </div>
             <animated.div
               className={`book-title ${titleShifted ? "shifted" : ""}`}
               ref={bookTitleRef}
