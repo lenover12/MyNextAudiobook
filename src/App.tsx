@@ -286,7 +286,7 @@ function App() {
 
     const timeout = setTimeout(() => {
       setBadgeVisible(true);
-    }, 600);
+    }, 1600);
 
     return () => clearTimeout(timeout);
   }, [book?.audiblePageUrl]);
@@ -406,26 +406,34 @@ function App() {
         {book && (
           <>
             {book.audiblePageUrl && audibleLink && (
-              <animated.div
+              <div
                 className="redirect-badge-container"
                 style={{
-                  opacity: titleOpacity.to((base) => badgeVisible ? base : 0),
                   transition: badgeVisible
                     ? 'opacity 0.6s ease'
-                    : 'opacity 0.05s ease-out',
+                    : 'opacity 0.1s ease-out',
+                  opacity: badgeVisible ? 1 : 0,
+                  willChange: 'opacity',
                 }}
               >
-                <a
-                  href={audibleLink}
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  <img
-                    src="/src/assets/badge/audible.png"
-                    alt="Find on Audible"
-                    className="redirect-badge"
-                  />
-                </a>
-              </animated.div>
+                <animated.div
+                  style={{
+                    opacity: titleOpacity,
+                  }}
+                >
+                  <a
+                    href={audibleLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src="/src/assets/badge/audible.png"
+                      alt="Find on Audible"
+                      className="redirect-badge"
+                    />
+                  </a>
+                </animated.div>
+              </div>
             )}
             <animated.div className="book-title" ref={bookTitleRef} style={{ opacity: titleOpacity }}>
               <BookTitle
