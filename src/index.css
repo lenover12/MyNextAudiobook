@@ -145,6 +145,13 @@ body {
   z-index: 2;
 }
 
+.redirect-badge-container,
+.redirect-badge-container * {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .redirect-badge-container a {
   pointer-events: all;
   display: block;
