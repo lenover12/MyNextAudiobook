@@ -8,6 +8,7 @@ import { getTitleElements } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
+import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 
 import { animated, useSpring } from '@react-spring/web';
 import type { ReactNode } from "react";
@@ -140,6 +141,9 @@ function App() {
     canGoNext: !!book,
     canGoPrevious: currentIndex > 0,
   });
+
+  //affiliate links
+  const audibleLink = useGeoAffiliateLink(book?.asin ?? "");
 
   const togglePlayPause = () => {
     const audio = audioRef.current;
@@ -387,16 +391,15 @@ function App() {
 
         {book && (
           <>
-            {book.audiblePageUrl && (
+            {book.audiblePageUrl && audibleLink && (
               <animated.div
                 className="redirect-badge-container"
                 style={{ opacity: titleOpacity }}
               >
                 <a
-                  href={book.audiblePageUrl}
+                  href={audibleLink}
                   target="_blank"
-                  rel="noopener noreferrer"
-                >
+                  rel="noopener noreferrer">
                   <img
                     src="/src/assets/badge/audible.png"
                     alt="Find on Audible"
