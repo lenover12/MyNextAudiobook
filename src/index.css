@@ -5,7 +5,7 @@
 
 :root {
   --book-size: 65vmin;
-  --redirect-badge-size: 2.5rem;
+  --redirect-badge-size: calc(var(--book-size) / 10);
   --book-image-y-start: calc(40dvh - (var(--book-size) / 2));
   --redirect-badge-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem);
   --book-title-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem + (var(--redirect-badge-size)));
