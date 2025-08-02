@@ -8,6 +8,7 @@ import { getTitleElements } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
+import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 
 import { animated, useSpring } from '@react-spring/web';
 import type { ReactNode } from "react";
@@ -103,6 +104,12 @@ function App() {
   const [titleVisible, setTitleVisible] = useState(true);
   const [titleText, setTitleText] = useState(book?.title ?? '');
 
+  //title shifting
+  const [titleShifted, setTitleShifted] = useState(false);
+
+  //badge fade
+  const [badgeVisible, setBadgeVisible] = useState(true);
+
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
     const handler = (e: DragEvent) => e.preventDefault();
@@ -140,6 +147,9 @@ function App() {
     canGoNext: !!book,
     canGoPrevious: currentIndex > 0,
   });
+
+  //affiliate links
+  const audibleLink = useGeoAffiliateLink(book?.asin ?? "");
 
   const togglePlayPause = () => {
     const audio = audioRef.current;
@@ -255,7 +265,7 @@ function App() {
   }, [book]);
 
   //book title inner book-change fade effect for scroll
-    useEffect(() => {
+  useEffect(() => {
     const newTitle = book?.title ?? '';
     if (newTitle === titleText) return;
 
@@ -273,6 +283,30 @@ function App() {
     const abs = Math.abs(val);
     return abs < 60 ? 1 : abs > 120 ? 0 : 1 - (abs - 60) / 60;
   });
+
+  useEffect(() => {
+    if (book?.audiblePageUrl) {
+      setTitleShifted(false);
+      setBadgeVisible(false);
+
+      const titleShiftTimeout = setTimeout(() => {
+        setTitleShifted(true);
+      }, 1500);
+
+      const badgeTimeout = setTimeout(() => {
+        setBadgeVisible(true);
+      }, 1600);
+
+      return () => {
+        clearTimeout(titleShiftTimeout);
+        clearTimeout(badgeTimeout);
+      };
+    } else {
+      setTitleShifted(false);
+      setBadgeVisible(false);
+    }
+  }, [book?.audiblePageUrl]);
+
 
   return (
     <div className="app">
@@ -387,7 +421,42 @@ function App() {
 
         {book && (
           <>
-            <animated.div className="book-title" ref={bookTitleRef} style={{ opacity: titleOpacity }}>
+            <div
+              className="redirect-badge-container"
+              style={{
+                transition: badgeVisible
+                ? 'opacity 0.6s ease'
+                : 'opacity 0.1s ease-out',
+                opacity: badgeVisible ? 1 : 0,
+                visibility: badgeVisible ? 'visible' : 'hidden',
+                willChange: 'opacity',
+              }}
+            >
+              {book.audiblePageUrl && audibleLink && (
+                <animated.div
+                  style={{
+                    opacity: titleOpacity,
+                  }}
+                >
+                  <a
+                    href={audibleLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src="/src/assets/badge/audible.png"
+                      alt="Find on Audible"
+                      className="redirect-badge"
+                    />
+                  </a>
+                </animated.div>
+              )}
+            </div>
+            <animated.div
+              className={`book-title ${titleShifted ? "shifted" : ""}`}
+              ref={bookTitleRef}
+              style={{ opacity: titleOpacity }}
+            >
               <BookTitle
                 title={getTitleElements(titleText, 4, true)}
                 titleText={titleText}
@@ -395,9 +464,9 @@ function App() {
                 visible={titleVisible}
               />
             </animated.div>
-          {book.audioPreviewUrl && (
-            <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
-          )}
+            {book.audioPreviewUrl && (
+              <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
+            )}
           </>
         )}
       </div>

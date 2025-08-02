@@ -5,8 +5,11 @@
 
 :root {
   --book-size: 65vmin;
+  --redirect-badge-size: calc(var(--book-size) / 9);
   --book-image-y-start: calc(40dvh - (var(--book-size) / 2));
-  --book-title-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem);
+  /* --redirect-badge-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem); */
+  --redirect-badge-y-start: calc(40dvh + (var(--book-size) / 2) + calc(var(--redirect-badge-size) / 2));
+  --book-title-y-start: calc(40dvh + (var(--book-size) / 2) + 1rem + (var(--redirect-badge-size)));
   --book-border-radius: 10px;
 
   /* light dark theme default*/
@@ -136,16 +139,47 @@ body {
   opacity: 1;
 }
 
+.redirect-badge-container {
+  margin-top: var(--redirect-badge-y-start);
+  height: var(--redirect-badge-size);
+  max-height: var(--redirect-badge-size);
+  z-index: 2;
+}
+
+.redirect-badge-container,
+.redirect-badge-container * {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.redirect-badge-container a {
+  pointer-events: all;
+  display: block;
+}
+
+.redirect-badge {
+  height: var(--redirect-badge-size);
+  max-height: var(--redirect-badge-size);
+}
+
+
 .book-title {
-  margin-top: var(--book-title-y-start);
+  /* margin-top: var(--book-title-y-start); */
+  margin-top: calc(0rem - var(--redirect-badge-size));
+  transition: margin-top 0.3s ease;
   height: calc((var(--book-size) / 4));
-  max-height: calc(100dvh - var(--book-title-y-start));
+  max-height: calc(100dvh - calc(var(--book-title-y-start)) - var(--redirect-badge-size));
   min-height: 4rem;
   width: 100%;
   max-width: var(--book-size);
   padding: 0 1rem;
   box-sizing: border-box;
   pointer-events: none;
+}
+
+.book-title.shifted {
+  margin-top: calc(var(--redirect-badge-size) / 3);
 }
 
 .book-title,
