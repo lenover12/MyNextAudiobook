@@ -262,6 +262,8 @@ function App() {
     }
   }, [book?.audiblePageUrl]);
 
+  //Temporary Options
+  const useQRCode = true;
 
   return (
     <div className="app">
@@ -346,7 +348,9 @@ function App() {
                   </a>
                 </animated.div>
               )}
-              <QRCodeCard url={audibleLink} />
+              {useQRCode && (
+                <QRCodeCard url={audibleLink} />
+              )}
             </div>
             <animated.div
               className={`book-title ${titleShifted ? "shifted" : ""}`}
