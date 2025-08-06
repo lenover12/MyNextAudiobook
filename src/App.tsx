@@ -3,46 +3,14 @@ import { getRandomLoadingImage } from './utils/loadingImages';
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
 import { useColourFromImage } from "./hooks/useColourFromImage";
 import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
-import { useFitText } from "./hooks/useFitText";
 import { getTitleElements } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
 import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
+import { BookTitle } from "./components/BookTitle";
 
 import { animated, useSpring } from '@react-spring/web';
-import type { ReactNode } from "react";
-
-function BookTitle({
-  title,
-  titleText,
-  maxHeight,
-  visible
-}: {
-  title: ReactNode;
-  titleText: string;
-  maxHeight: number;
-  visible: boolean;
-}) {
-  const { ref, fontSize, isReady }  = useFitText(maxHeight, titleText);
-
-  return (
-    <h2
-      ref={ref}
-      className={`urbanist-bold book-title-element ${isReady ? "visible" : ""}`}
-      style={{ 
-        fontSize: `${fontSize}rem`,
-        margin: 0,
-        opacity: visible ? 1 : 0,
-        transition: visible
-          ? "opacity 0.6s ease"
-          : "opacity 0.1s ease-out",
-      }}
-    >
-      {title}
-    </h2>
-  );
-}
 
 function App() {
   const {
