@@ -36,6 +36,8 @@ export async function fetchRandom(options?: FetchOptions, source: Source = 'itun
 
   const bestMatch = secondaryResults.find(b => compareBooksFuzzy(primaryBook, b));
 
+  if (!bestMatch || typeof bestMatch !== 'object') return primaryBook;
+
   return bestMatch
     ? (source === 'itunes' ? mergeAudiobookDTOs(primaryBook, bestMatch) : mergeAudiobookDTOs(bestMatch, primaryBook))
     : primaryBook;
