@@ -9,6 +9,7 @@ import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
 import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
+import { BookImageWrapper } from "./components/BookImageWrapper";
 
 import { animated, useSpring } from '@react-spring/web';
 
@@ -272,74 +273,30 @@ function App() {
         }}
       >
         {bookTriplet.map(({ book, className, offset }, i) => {
-          const key = book?.itunesId ?? `placeholder-${i}`;
           const isCurrent = className === "book-current";
-          const bookId = book?.itunesId?.toString();
-          const dragY = y.get();
-          const isSwipingUp = dragY < 0;
-          const isSwipingDown = dragY > 0;
-
-          const shouldShowPulse = cssPulseVisible && isCurrent;
-          const pulseSpring = useSpring({
-            opacity: shouldShowPulse ? 1 : 0,
-            config: { tension: 120, friction: 20 },
-          });
-
-          const wasJustCurrent =
-            cssPulseVisible &&
-            lastBookId &&
-            bookId === lastBookId &&
-            !isCurrent;
-
-          const shouldHide =
-            (className === "book-previous" && isSwipingDown) ||
-            (className === "book-next" && isSwipingUp);
-
-          useEffect(() => {
-            if (bookId && !loadingStates[bookId]) initLoadingState(bookId);
-          }, [bookId]);
-
+          const bookId = book?.itunesId?.toString() ?? null;
           const loadingState = bookId ? loadingStates[bookId] : null;
 
           return (
-            <div
-              key={key}
-              ref={isCurrent ? bookImageWrapperRef : undefined}
-              className={`book-image-wrapper ${className}`}
-              style={{
-                transform: `translate(-50%, calc(-50% + ${offset}))`,
-                transition: 'transform 0.5s ease',
-                opacity: shouldHide ? 0 : 1,
-                pointerEvents: shouldHide ? 'none' : 'auto',
-              }}
-            >
-              {loadingState?.loadingImg && (
-                <img
-                  className={`loading-image ${loadingState.fadeIn && !loadingState.isLoaded ? 'visible' : ''}`}
-                  src={loadingState.loadingImg}
-                  alt="Loading preview"
-                  draggable={false}
-                  onLoad={() => {
-                    if (bookId) markFadeIn(bookId);
-                  }}
-                />
-              )}
-              {book && book.itunesImageUrl && (
-                <img
-                  className={`book-image ${loadingState?.isLoaded ? 'visible' : ''}`}
-                  src={book.itunesImageUrl}
-                  alt={book.title}
-                  draggable={false}
-                  onLoad={() => {
-                    if (bookId) markLoaded(bookId);
-                  }}
-                  onClick={togglePlayPause}
-                />
-              )}
-              <animated.div className={`css-pulse ${cssPulseVisible ? "visible" : ""} ${wasJustCurrent ? "fade-out-glow" : ""}`} style={pulseSpring} />
-            </div>
+            <BookImageWrapper
+              key={bookId ?? `placeholder-${i}`}
+              book={book}
+              className={className}
+              offset={offset}
+              y={y}
+              isCurrent={isCurrent}
+              lastBookId={lastBookId}
+              cssPulseVisible={cssPulseVisible}
+              loadingState={loadingState}
+              initLoadingState={initLoadingState}
+              markFadeIn={markFadeIn}
+              markLoaded={markLoaded}
+              togglePlayPause={togglePlayPause}
+              bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
+            />
           );
         })}
+
 
       </animated.div>
       <div className="book-static-layer">
