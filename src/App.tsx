@@ -10,6 +10,7 @@ import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
 import { BookImageWrapper } from "./components/BookImageWrapper";
+import { QRCodeCard } from "./components/QRCode";
 
 import { animated, useSpring } from '@react-spring/web';
 
@@ -345,6 +346,7 @@ function App() {
                   </a>
                 </animated.div>
               )}
+              <QRCodeCard url={audibleLink} />
             </div>
             <animated.div
               className={`book-title ${titleShifted ? "shifted" : ""}`}
