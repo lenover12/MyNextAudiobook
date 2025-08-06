@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { getRandomLoadingImage } from './utils/loadingImages';
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
 import { useColourFromImage } from "./hooks/useColourFromImage";
 import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
@@ -9,6 +8,7 @@ import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
 import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 import { BookTitle } from "./components/BookTitle";
+import { useLoadingStates } from "./hooks/useLoadingStates";
 
 import { animated, useSpring } from '@react-spring/web';
 
@@ -37,11 +37,7 @@ function App() {
     { book: getBookByOffset(1), className: "book-next", offset: "+100vh" },
   ];
 
-  const [loadingStates, setLoadingStates] = useState<Record<string, {
-    isLoaded: boolean;
-    fadeIn: boolean;
-    loadingImg: string | null;
-  }>>({});
+  const { loadingStates, initLoadingState, markFadeIn, markLoaded } = useLoadingStates();
 
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -157,16 +153,12 @@ function App() {
   };
 
   //loading image state per book
-  function initLoadingState(bookId: string) {
-    setLoadingStates(prev => ({
-      ...prev,
-      [bookId]: {
-        isLoaded: false,
-        fadeIn: false,
-        loadingImg: getRandomLoadingImage(),
-      },
-    }));
-  }
+  useEffect(() => {
+    const id = book?.itunesId?.toString();
+    if (id && !loadingStates[id]) {
+      initLoadingState(id);
+    }
+  }, [book, loadingStates, initLoadingState]);
 
   //autoplay new audio on change if already playing
   useEffect(() => {
@@ -207,18 +199,11 @@ function App() {
   
   useEffect(() => {
     const id = book?.itunesId?.toString();
-    if (!id || loadingStates[id]) return;
+    if (id && !loadingStates[id]) {
+      initLoadingState(id);
+    }
+  }, [book, loadingStates, initLoadingState]);
 
-    const loadingImg = getRandomLoadingImage();
-    setLoadingStates(prev => ({
-      ...prev,
-      [id]: {
-        isLoaded: false,
-        fadeIn: false,
-        loadingImg,
-      },
-    }));
-  }, [book, loadingStates]);
 
   //book title height
   useEffect(() => {
@@ -335,15 +320,7 @@ function App() {
                   alt="Loading preview"
                   draggable={false}
                   onLoad={() => {
-                    if (bookId) {
-                      setLoadingStates(prev => ({
-                        ...prev,
-                        [bookId]: {
-                          ...prev[bookId],
-                          fadeIn: true,
-                        },
-                      }));
-                    }
+                    if (bookId) markFadeIn(bookId);
                   }}
                 />
               )}
@@ -354,15 +331,7 @@ function App() {
                   alt={book.title}
                   draggable={false}
                   onLoad={() => {
-                    if (bookId) {
-                      setLoadingStates(prev => ({
-                        ...prev,
-                        [bookId]: {
-                          ...prev[bookId],
-                          isLoaded: true,
-                        },
-                      }));
-                    }
+                    if (bookId) markLoaded(bookId);
                   }}
                   onClick={togglePlayPause}
                 />
