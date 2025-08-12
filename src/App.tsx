@@ -76,6 +76,9 @@ function App() {
   //badge fade
   const [badgeVisible, setBadgeVisible] = useState(true);
 
+  // QR code fade
+  const [qrVisible, setQRVisible] = useState(true);
+
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
     const handler = (e: DragEvent) => e.preventDefault();
@@ -243,6 +246,7 @@ function App() {
     if (book?.audiblePageUrl) {
       setTitleShifted(false);
       setBadgeVisible(false);
+      setQRVisible(false);
 
       const titleShiftTimeout = setTimeout(() => {
         setTitleShifted(true);
@@ -252,13 +256,19 @@ function App() {
         setBadgeVisible(true);
       }, 1600);
 
+      const qrTimeout = setTimeout(() => {
+        setQRVisible(true);
+      }, 2400);
+
       return () => {
         clearTimeout(titleShiftTimeout);
         clearTimeout(badgeTimeout);
+        clearTimeout(qrTimeout);
       };
     } else {
       setTitleShifted(false);
       setBadgeVisible(false);
+      setQRVisible(false);
     }
   }, [book?.audiblePageUrl]);
 
@@ -364,9 +374,17 @@ function App() {
                   />
                 </animated.div>
               </div>
-              <div className={`qr-code-container ${!useQRCode ? "hidden" : ""}`}>
+              <animated.div
+                className={`qr-code-container ${!useQRCode ? "hidden" : ""}`}
+                style={{
+                  opacity: qrVisible ? titleOpacity : 0,
+                  transition: qrVisible
+                    ? "opacity 0.6s ease"
+                    : "opacity 0.1s ease-out",
+                }}
+              >
                 {useQRCode && <QRCodeCard url={audibleLink} />}
-              </div>
+              </animated.div>
             </div>
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
