@@ -225,6 +225,17 @@ body {
   aspect-ratio: 1;
 }
 
+.qr-code-container.hidden {
+  width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.book-info-column.qr-hidden .book-info-row {
+  width: 100%;
+}
+
 .qr-code-card {
   display: flex;
   align-self: center;

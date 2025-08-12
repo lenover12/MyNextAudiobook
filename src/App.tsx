@@ -318,7 +318,7 @@ function App() {
 
         {book && (
           <>
-            <div className="book-info-column">
+            <div className={`book-info-column ${!useQRCode ? "qr-hidden" : ""}`}>
               <div className="book-info-row">
                 <div
                   className="redirect-badge-container"
@@ -364,7 +364,7 @@ function App() {
                   />
                 </animated.div>
               </div>
-              <div className="qr-code-container">
+              <div className={`qr-code-container ${!useQRCode ? "hidden" : ""}`}>
                 {useQRCode && <QRCodeCard url={audibleLink} />}
               </div>
             </div>
