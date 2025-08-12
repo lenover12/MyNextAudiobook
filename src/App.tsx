@@ -318,52 +318,56 @@ function App() {
 
         {book && (
           <>
-            <div
-              className="redirect-badge-container"
-              style={{
-                transition: badgeVisible
-                ? 'opacity 0.6s ease'
-                : 'opacity 0.1s ease-out',
-                opacity: badgeVisible ? 1 : 0,
-                visibility: badgeVisible ? 'visible' : 'hidden',
-                willChange: 'opacity',
-              }}
-            >
-              {book.audiblePageUrl && audibleLink && (
-                <animated.div
+            <div className="book-info-column">
+              <div className="book-info-row">
+                <div
+                  className="redirect-badge-container"
                   style={{
-                    opacity: titleOpacity,
+                    transition: badgeVisible
+                    ? 'opacity 0.6s ease'
+                    : 'opacity 0.1s ease-out',
+                    opacity: badgeVisible ? 1 : 0,
+                    visibility: badgeVisible ? 'visible' : 'hidden',
+                    willChange: 'opacity',
                   }}
                 >
-                  <a
-                    href={audibleLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="/src/assets/badge/audible.png"
-                      alt="Find on Audible"
-                      className="redirect-badge"
-                    />
-                  </a>
+                  {book.audiblePageUrl && audibleLink && (
+                    <animated.div
+                      style={{
+                        opacity: titleOpacity,
+                      }}
+                    >
+                      <a
+                        href={audibleLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src="/src/assets/badge/audible.png"
+                          alt="Find on Audible"
+                          className="redirect-badge"
+                        />
+                      </a>
+                    </animated.div>
+                  )}
+                </div>
+                <animated.div
+                  className={`book-title ${titleShifted ? "shifted" : ""}`}
+                  ref={bookTitleRef}
+                  style={{ opacity: titleOpacity }}
+                >
+                  <BookTitle
+                    title={getTitleElements(titleText, 4, true)}
+                    titleText={titleText}
+                    maxHeight={maxTitleHeight}
+                    visible={titleVisible}
+                  />
                 </animated.div>
-              )}
-              {useQRCode && (
-                <QRCodeCard url={audibleLink} />
-              )}
+              </div>
+              <div className="qr-code-container">
+                {useQRCode && <QRCodeCard url={audibleLink} />}
+              </div>
             </div>
-            <animated.div
-              className={`book-title ${titleShifted ? "shifted" : ""}`}
-              ref={bookTitleRef}
-              style={{ opacity: titleOpacity }}
-            >
-              <BookTitle
-                title={getTitleElements(titleText, 4, true)}
-                titleText={titleText}
-                maxHeight={maxTitleHeight}
-                visible={titleVisible}
-              />
-            </animated.div>
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
             )}

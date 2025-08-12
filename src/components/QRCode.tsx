@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from "react";
 import QRCode from "react-qr-code";
 
 type Props = {
@@ -5,22 +6,28 @@ type Props = {
 };
 
 export function QRCodeCard({ url }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [qrSize, setQrSize] = useState(128);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      // Choose smaller dimension, minus padding, to keep it inside the div
+      const size = Math.min(width, height) -5;
+      setQrSize(Math.max(size, 40)); // min size 40px
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   if (!url) return null;
 
   return (
-    <div
-      className="qr-code-card"
-      style={{
-        position: 'absolute',
-        bottom: '20px',
-        right: '20px',
-        padding: '10px',
-        background: 'white',
-        borderRadius: '3px',
-        boxShadow: '0 0 8px rgba(0,0,0,0.2)',
-      }}
-    >
-      <QRCode value={url} size={128} level="L" />
+    <div className="qr-code-card" ref={containerRef}>
+      <QRCode value={url} size={qrSize} level="L" />
     </div>
   );
 }

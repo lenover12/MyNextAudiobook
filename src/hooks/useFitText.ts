@@ -12,7 +12,11 @@ export function useFitText(maxHeight: number, titleText: string, minSize = 0.5, 
     let size = maxSize;
     setIsReady(false);
 
-    const fits = () => el.scrollHeight <= maxHeight;
+    const fits = () => {
+      const withinHeight = el.scrollHeight <= maxHeight;
+      const withinWidth = el.scrollWidth <= el.clientWidth;
+      return withinHeight && withinWidth;
+    };
 
     const adjustFont = () => {
       el.style.fontSize = `${size}rem`;
