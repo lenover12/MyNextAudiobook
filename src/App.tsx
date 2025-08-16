@@ -10,6 +10,7 @@ import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
 import { BookImageWrapper } from "./components/BookImageWrapper";
+import { QRCodeCard } from "./components/QRCode";
 
 import { animated, useSpring } from '@react-spring/web';
 
@@ -43,7 +44,9 @@ function App() {
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bookTitleRef = useRef<HTMLDivElement>(null);
+  const bookInfoRowRef = useRef<HTMLDivElement>(null);
   const [maxTitleHeight, setMaxTitleHeight] = useState(0);
+  const [maxTitleWidth, setMaxTitleWidth] = useState(0);
 
   //image color
   const imageColour = useColourFromImage(book?.itunesImageUrl ?? null);
@@ -74,6 +77,9 @@ function App() {
 
   //badge fade
   const [badgeVisible, setBadgeVisible] = useState(true);
+
+  // QR code fade
+  const [qrVisible, setQRVisible] = useState(false);
 
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
@@ -218,6 +224,18 @@ function App() {
     return () => observer.disconnect();
   }, [book]);
 
+  //book title width
+  useEffect(() => {
+    if (!bookInfoRowRef.current) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setMaxTitleWidth(entry.contentRect.width);
+    });
+
+    observer.observe(bookInfoRowRef.current);
+    return () => observer.disconnect();
+  }, [book]);
+
   //book title inner book-change fade effect for scroll
   useEffect(() => {
     const newTitle = book?.title ?? '';
@@ -242,6 +260,7 @@ function App() {
     if (book?.audiblePageUrl) {
       setTitleShifted(false);
       setBadgeVisible(false);
+      setQRVisible(false);
 
       const titleShiftTimeout = setTimeout(() => {
         setTitleShifted(true);
@@ -251,16 +270,25 @@ function App() {
         setBadgeVisible(true);
       }, 1600);
 
+      const qrTimeout = setTimeout(() => {
+        setQRVisible(true);
+      }, 2400);
+
       return () => {
         clearTimeout(titleShiftTimeout);
         clearTimeout(badgeTimeout);
+        clearTimeout(qrTimeout);
       };
     } else {
       setTitleShifted(false);
       setBadgeVisible(false);
+      setQRVisible(false);
     }
   }, [book?.audiblePageUrl]);
 
+  //Temporary Options
+  const useQRCode = true;
+  const showQR = useQRCode && qrVisible;
 
   return (
     <div className="app">
@@ -315,49 +343,78 @@ function App() {
 
         {book && (
           <>
-            <div
-              className="redirect-badge-container"
-              style={{
-                transition: badgeVisible
-                ? 'opacity 0.6s ease'
-                : 'opacity 0.1s ease-out',
-                opacity: badgeVisible ? 1 : 0,
-                visibility: badgeVisible ? 'visible' : 'hidden',
-                willChange: 'opacity',
-              }}
-            >
-              {book.audiblePageUrl && audibleLink && (
-                <animated.div
+            <div className={"book-info-column"}>
+              <div className="book-info-row" ref={bookInfoRowRef}>
+                <div
+                  className="redirect-badge-container"
                   style={{
-                    opacity: titleOpacity,
+                    transition: badgeVisible
+                    ? 'opacity 0.6s ease'
+                    : 'opacity 0.1s ease-out',
+                    opacity: badgeVisible ? 1 : 0,
+                    visibility: badgeVisible ? 'visible' : 'hidden',
+                    willChange: 'opacity',
                   }}
                 >
-                  <a
-                    href={audibleLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src="/src/assets/badge/audible.png"
-                      alt="Find on Audible"
-                      className="redirect-badge"
-                    />
-                  </a>
+                  {book.audiblePageUrl && audibleLink && (
+                    <animated.div
+                      style={{
+                        opacity: titleOpacity,
+                      }}
+                    >
+                      <a
+                        href={audibleLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src="/src/assets/badge/audible.png"
+                          alt="Find on Audible"
+                          className="redirect-badge"
+                        />
+                      </a>
+                    </animated.div>
+                  )}
+                </div>
+                <animated.div
+                  className={`book-title ${titleShifted ? "shifted" : ""}`}
+                  ref={bookTitleRef}
+                  style={{ opacity: titleOpacity }}
+                >
+                  <BookTitle
+                    title={getTitleElements(titleText, 4, true)}
+                    titleText={titleText}
+                    maxHeight={maxTitleHeight}
+                    maxWidth={maxTitleWidth}
+                    visible={titleVisible}
+                  />
                 </animated.div>
-              )}
+              </div>
+              <div
+                className="qr-code-container"
+                style={{
+                  transition: showQR
+                    ? "opacity 0.6s ease, flex-basis 0.6s ease"
+                    : "opacity 0.1s ease-out, flex-basis 0.1s ease-out",
+                  opacity: showQR ? 1 : 0,
+                  visibility: showQR ? "visible" : "hidden",
+                  willChange: "opacity, flex-basis",
+                  flexBasis: showQR ? "var(--qr-basis)" : 0,
+                }}
+              >
+                {audibleLink && (
+                  <animated.div style={{ opacity: titleOpacity, width: "100%", height: "100%" }}>
+                    <QRCodeCard
+                      url={audibleLink}
+                      style={{
+                        transition: showQR ? "padding 0.6s ease" : "padding 0.1s ease-out",
+                        padding: showQR ? "calc(var(--redirect-badge-size) / 8)" : "0",
+                      }}
+                    />
+                  </animated.div>
+                )}
+              </div>
             </div>
-            <animated.div
-              className={`book-title ${titleShifted ? "shifted" : ""}`}
-              ref={bookTitleRef}
-              style={{ opacity: titleOpacity }}
-            >
-              <BookTitle
-                title={getTitleElements(titleText, 4, true)}
-                titleText={titleText}
-                maxHeight={maxTitleHeight}
-                visible={titleVisible}
-              />
-            </animated.div>
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
             )}
