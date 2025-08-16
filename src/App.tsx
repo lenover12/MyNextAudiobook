@@ -404,7 +404,13 @@ function App() {
               >
                 {audibleLink && (
                   <animated.div style={{ opacity: titleOpacity, width: "100%", height: "100%" }}>
-                    <QRCodeCard url={audibleLink} />
+                    <QRCodeCard
+                      url={audibleLink}
+                      style={{
+                        transition: showQR ? "padding 0.6s ease" : "padding 0.1s ease-out",
+                        padding: showQR ? "calc(var(--redirect-badge-size) / 8)" : "0",
+                      }}
+                    />
                   </animated.div>
                 )}
               </div>

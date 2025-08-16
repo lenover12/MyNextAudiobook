@@ -3,9 +3,10 @@ import QRCode from "react-qr-code";
 
 type Props = {
   url: string | null;
+  style?: React.CSSProperties;
 };
 
-export function QRCodeCard({ url }: Props) {
+export function QRCodeCard({ url, style }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [qrSize, setQrSize] = useState(128);
 
@@ -26,7 +27,11 @@ export function QRCodeCard({ url }: Props) {
   if (!url) return null;
 
   return (
-    <div className="qr-code-card" ref={containerRef}>
+    <div
+      className="qr-code-card"
+      ref={containerRef}
+      style={style}
+    >
       <QRCode value={url} size={qrSize} level="L" />
     </div>
   );
