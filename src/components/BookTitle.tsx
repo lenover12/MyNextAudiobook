@@ -5,14 +5,16 @@ export function BookTitle({
   title,
   titleText,
   maxHeight,
+  maxWidth,
   visible,
 }: {
   title: ReactNode;
   titleText: string;
   maxHeight: number;
+  maxWidth: number;
   visible: boolean;
 }) {
-  const { ref, fontSize, isReady } = useFitText(maxHeight, titleText);
+  const { ref, fontSize, isReady } = useFitText(maxHeight, maxWidth, titleText);
   
   return (
     <h2

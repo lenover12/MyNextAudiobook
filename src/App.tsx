@@ -44,7 +44,9 @@ function App() {
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bookTitleRef = useRef<HTMLDivElement>(null);
+  const bookInfoRowRef = useRef<HTMLDivElement>(null);
   const [maxTitleHeight, setMaxTitleHeight] = useState(0);
+  const [maxTitleWidth, setMaxTitleWidth] = useState(0);
 
   //image color
   const imageColour = useColourFromImage(book?.itunesImageUrl ?? null);
@@ -77,7 +79,7 @@ function App() {
   const [badgeVisible, setBadgeVisible] = useState(true);
 
   // QR code fade
-  const [qrVisible, setQRVisible] = useState(true);
+  const [qrVisible, setQRVisible] = useState(false);
 
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
@@ -222,6 +224,18 @@ function App() {
     return () => observer.disconnect();
   }, [book]);
 
+  //book title width
+  useEffect(() => {
+    if (!bookInfoRowRef.current) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setMaxTitleWidth(entry.contentRect.width);
+    });
+
+    observer.observe(bookInfoRowRef.current);
+    return () => observer.disconnect();
+  }, [book]);
+
   //book title inner book-change fade effect for scroll
   useEffect(() => {
     const newTitle = book?.title ?? '';
@@ -274,6 +288,7 @@ function App() {
 
   //Temporary Options
   const useQRCode = true;
+  const showQR = useQRCode && qrVisible;
 
   return (
     <div className="app">
@@ -328,8 +343,8 @@ function App() {
 
         {book && (
           <>
-            <div className={`book-info-column ${!useQRCode ? "qr-hidden" : ""}`}>
-              <div className="book-info-row">
+            <div className={"book-info-column"}>
+              <div className="book-info-row" ref={bookInfoRowRef}>
                 <div
                   className="redirect-badge-container"
                   style={{
@@ -370,21 +385,29 @@ function App() {
                     title={getTitleElements(titleText, 4, true)}
                     titleText={titleText}
                     maxHeight={maxTitleHeight}
+                    maxWidth={maxTitleWidth}
                     visible={titleVisible}
                   />
                 </animated.div>
               </div>
-              <animated.div
-                className={`qr-code-container ${!useQRCode ? "hidden" : ""}`}
+              <div
+                className="qr-code-container"
                 style={{
-                  opacity: qrVisible ? titleOpacity : 0,
-                  transition: qrVisible
-                    ? "opacity 0.6s ease"
-                    : "opacity 0.1s ease-out",
+                  transition: showQR
+                    ? "opacity 0.6s ease, flex-basis 0.6s ease"
+                    : "opacity 0.1s ease-out, flex-basis 0.1s ease-out",
+                  opacity: showQR ? 1 : 0,
+                  visibility: showQR ? "visible" : "hidden",
+                  willChange: "opacity, flex-basis",
+                  flexBasis: showQR ? "var(--qr-basis)" : 0,
                 }}
               >
-                {useQRCode && <QRCodeCard url={audibleLink} />}
-              </animated.div>
+                {audibleLink && (
+                  <animated.div style={{ opacity: titleOpacity, width: "100%", height: "100%" }}>
+                    <QRCodeCard url={audibleLink} />
+                  </animated.div>
+                )}
+              </div>
             </div>
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
