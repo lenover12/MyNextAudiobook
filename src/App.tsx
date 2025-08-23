@@ -11,6 +11,9 @@ import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
 import { BookImageWrapper } from "./components/BookImageWrapper";
 import { QRCodeCard } from "./components/QRCode";
+import { canUseNavigator } from "./utils/shareSocials";
+import ShareNavigatorButton from "./components/ShareNavigatorButton";
+import ShareDropdownButton from "./components/ShareDropdownButton";
 
 import { animated, useSpring } from '@react-spring/web';
 
@@ -286,6 +289,9 @@ function App() {
     }
   }, [book?.audiblePageUrl]);
 
+  //Device Specific
+  const isNavigatorShare = canUseNavigator();
+
   //Temporary Options
   const useQRCode = true;
   const showQR = useQRCode && qrVisible;
@@ -321,7 +327,24 @@ function App() {
               markLoaded={markLoaded}
               togglePlayPause={togglePlayPause}
               bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
-            />
+            >
+              <div className="share-container">
+                {book && (audibleLink ?? book.audiblePageUrl) && (
+                  isNavigatorShare ? (
+                    <ShareNavigatorButton
+                      title={book.title}
+                      url={audibleLink ?? book.audiblePageUrl!}
+                      text={`Listening to "${book.title}"`}
+                    />
+                  ) : (
+                    <ShareDropdownButton
+                      title={book.title}
+                      url={audibleLink ?? book.audiblePageUrl!}
+                    />
+                  )
+                )}
+              </div>
+            </BookImageWrapper>
           );
         })}
 
