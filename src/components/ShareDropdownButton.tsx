@@ -39,7 +39,7 @@ export default function ShareDropdownButton({ title, url, author }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <i className="fa-brands fa-twitter" aria-hidden="true"></i>
+                <i className="fa-brands fa-x-twitter" aria-hidden="true" style={{color: 'rgb(255, 255, 255)', filter: 'drop-shadow(2px 2px 2px rgb(0, 0, 0))'}}></i>
               </a>
             </li>
             <li>
@@ -50,7 +50,7 @@ export default function ShareDropdownButton({ title, url, author }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <i className="fa-brands fa-facebook" aria-hidden="true"></i>
+                <i className="fa-brands fa-facebook" aria-hidden="true" style={{color: 'rgb(58, 89, 152)', filter: 'drop-shadow(2px 2px 2px rgb(38, 44, 55))'}}></i>
               </a>
             </li>
             <li>
@@ -61,7 +61,7 @@ export default function ShareDropdownButton({ title, url, author }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <i className="fa-brands fa-linkedin" aria-hidden="true"></i>
+                <i className="fa-brands fa-linkedin" aria-hidden="true" style={{color: 'rgb(0, 119, 181)', filter: 'drop-shadow(2px 2px 2px rgba(49, 51, 53, 1))'}}></i>
               </a>
             </li>
             <li>
@@ -70,7 +70,7 @@ export default function ShareDropdownButton({ title, url, author }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <i className="fa-brands fa-goodreads" aria-hidden="true"></i>
+                <i className="fa-brands fa-goodreads" aria-hidden="true" style={{color: 'rgb(233, 229, 205)', filter: 'drop-shadow(2px 2px 2px rgba(117, 66, 14, 1))'}}></i>
               </a>
             </li>
           </ul>

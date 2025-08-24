@@ -347,7 +347,6 @@ h2.urbanist-bold {
   }
 }
 
-
 .share-container {
   z-index: 3;
   width: calc(var(--book-size) * 0.13);
@@ -357,15 +356,19 @@ h2.urbanist-bold {
   top: 10%;
   left: 5%;
   transform: translate(-50%, 0);
-  /* border: 2px dotted red; */
+
+  pointer-events: none;
 }
 
 .share-wrapper {
   width: 100%;
   height: 100%;
+
+  pointer-events: none;
 }
 
-.share-wrapper:hover {
+.share-wrapper:hover ,
+.share-wrapper:has(.share-menu.open) {
   border-radius: 50%;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
 }
@@ -401,9 +404,7 @@ h2.urbanist-bold {
   left: 50%;
   transform: translate(-50%, 0);
   margin-top: calc(var(--book-size) * 0.02);
-  /* border: 2px dotted red; */
 }
-
 
 .share-menu ul {
   list-style: none;
@@ -421,7 +422,6 @@ h2.urbanist-bold {
   width: calc(var(--book-size) * 0.13);
   height: calc(var(--book-size) * 0.13);
   border-radius: 50%;
-  background-color: #ccc;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -429,10 +429,6 @@ h2.urbanist-bold {
   transform: translateY(-10px);
   cursor: pointer;
   transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.share-menu li:hover {
-  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
 }
 
 .share-menu li a,
@@ -453,12 +449,16 @@ h2.urbanist-bold {
 }
 
 .share-menu li a {
-  font-size: calc(var(--book-size) * 0.05);
-
+  font-size: calc(var(--book-size) * 0.10);
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   vertical-align: middle;
   text-decoration: none;
+  pointer-events: all;
+}
+
+.share-menu li a:hover {
+  filter: drop-shadow(1px 1px 1px rgb(255, 255, 255, 0.5));
 }
