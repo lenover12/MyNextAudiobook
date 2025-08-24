@@ -3,10 +3,19 @@ import React, { useState } from "react";
 interface Props {
   title: string;
   url: string;
+  author?: string;
 }
 
-export default function ShareDropdownButton({ title, url }: Props) {
+
+export default function ShareDropdownButton({ title, url, author }: Props) {
   const [open, setOpen] = useState(false);
+  
+  const getGoodreadsUrl = (title: string, author?: string) => {
+    const query = author ? `${title} ${author}` : title;
+    return `https://www.goodreads.com/search?utf8=✓&q=${encodeURIComponent(
+      query
+    )}&search_type=books`;
+  };
 
   return (
     <div className="share-wrapper">
@@ -53,6 +62,15 @@ export default function ShareDropdownButton({ title, url }: Props) {
                 rel="noopener noreferrer"
               >
                 <i className="fa-brands fa-linkedin" aria-hidden="true"></i>
+              </a>
+            </li>
+            <li>
+              <a
+                href={getGoodreadsUrl(title, author)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i className="fa-brands fa-goodreads" aria-hidden="true"></i>
               </a>
             </li>
           </ul>
