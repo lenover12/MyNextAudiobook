@@ -29,3 +29,12 @@ export function getTitleElements(
     </span>
   ));
 }
+
+export function processTitle(rawTitle: string, maxSplits = 3, removeUnabridged = true) {
+  const jsx = getTitleElements(rawTitle, maxSplits, removeUnabridged);
+  const cleaned = removeUnabridged
+    ? rawTitle.replace(/[\[\(\{]\s*unabridged\s*[\]\)\}]/gi, '').trim()
+    : rawTitle;
+
+  return { jsx, cleaned };
+}

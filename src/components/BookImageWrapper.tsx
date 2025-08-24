@@ -27,6 +27,7 @@ type Props = {
   markLoaded: (bookId: string) => void;
   togglePlayPause: () => void;
   bookImageWrapperRef?: React.RefObject<HTMLDivElement>;
+  children?: React.ReactNode
 };
 
 export function BookImageWrapper({
@@ -43,6 +44,7 @@ export function BookImageWrapper({
   markLoaded,
   togglePlayPause,
   bookImageWrapperRef,
+  children,
 }: Props) {
   const bookId = book?.itunesId?.toString() ?? null;
 
@@ -111,6 +113,8 @@ export function BookImageWrapper({
         className={`css-pulse ${cssPulseVisible ? "visible" : ""} ${wasJustCurrent ? "fade-out-glow" : ""}`}
         style={pulseSpring}
       />
+      {/* share options */}
+      {children} 
     </div>
   );
 }

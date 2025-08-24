@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
 import { useColourFromImage } from "./hooks/useColourFromImage";
 import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
-import { getTitleElements } from "./utils/getTitleElements";
+import { getTitleElements, processTitle } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
@@ -11,6 +11,9 @@ import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
 import { BookImageWrapper } from "./components/BookImageWrapper";
 import { QRCodeCard } from "./components/QRCode";
+import { canUseNavigator } from "./utils/shareSocials";
+import ShareNavigatorButton from "./components/ShareNavigatorButton";
+import ShareDropdownButton from "./components/ShareDropdownButton";
 
 import { animated, useSpring } from '@react-spring/web';
 
@@ -286,9 +289,25 @@ function App() {
     }
   }, [book?.audiblePageUrl]);
 
+  //Clean Title
+  const { jsx: cleanedTitleElements, cleaned: cleanedTitleText } = processTitle(titleText, 4, true);
+
+  //Device Specific
+  const isNavigatorShare = canUseNavigator();
+
   //Temporary Options
   const useQRCode = true;
   const showQR = useQRCode && qrVisible;
+  const socialsOptions = {
+    twitter: true,
+    facebook: true,
+    linkedin: false,
+    goodreads: true,
+    instagram: false,
+    pinterest: true,
+    whatsapp: false,
+    telegram: false,
+  }
 
   return (
     <div className="app">
@@ -321,7 +340,27 @@ function App() {
               markLoaded={markLoaded}
               togglePlayPause={togglePlayPause}
               bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
-            />
+            >
+              <div className="share-container">
+                {book && (audibleLink ?? book.audiblePageUrl) && (
+                  isNavigatorShare ? (
+                    <ShareNavigatorButton
+                      title={book.title}
+                      url={audibleLink ?? book.audiblePageUrl!}
+                      text={`Listening to "${book.title}"`}
+                    />
+                  ) : (
+                    <ShareDropdownButton
+                      // title={book.title}
+                      title={cleanedTitleText}
+                      url={audibleLink ?? book.audiblePageUrl!} //TODO: affiliate
+                      author={book.authors?.[0]}
+                      socialsOptions={socialsOptions}
+                    />
+                  )
+                )}
+              </div>
+            </BookImageWrapper>
           );
         })}
 
@@ -382,7 +421,7 @@ function App() {
                   style={{ opacity: titleOpacity }}
                 >
                   <BookTitle
-                    title={getTitleElements(titleText, 4, true)}
+                    title={cleanedTitleElements}
                     titleText={titleText}
                     maxHeight={maxTitleHeight}
                     maxWidth={maxTitleWidth}
