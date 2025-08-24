@@ -298,6 +298,16 @@ function App() {
   //Temporary Options
   const useQRCode = true;
   const showQR = useQRCode && qrVisible;
+  const socialsOptions = {
+    twitter: true,
+    facebook: true,
+    linkedin: false,
+    goodreads: true,
+    instagram: false,
+    pinterest: true,
+    whatsapp: false,
+    telegram: false,
+  }
 
   return (
     <div className="app">
@@ -345,6 +355,7 @@ function App() {
                       title={cleanedTitleText}
                       url={audibleLink ?? book.audiblePageUrl!} //TODO: affiliate
                       author={book.authors?.[0]}
+                      socialsOptions={socialsOptions}
                     />
                   )
                 )}
