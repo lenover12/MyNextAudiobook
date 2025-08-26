@@ -377,6 +377,7 @@ h2.urbanist-bold {
 .share-button {
   pointer-events: all;
   border-radius: 100%;
+  border: none;
   background-color: #ddd;
   width: 100%;
   height: 100%;
