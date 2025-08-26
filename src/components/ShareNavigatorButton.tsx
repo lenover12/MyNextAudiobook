@@ -22,8 +22,10 @@ export default function ShareNavigatorButton({ title, url, text }: Props) {
   };
 
   return (
+    <div className="share-wrapper">
     <button className="share-button" onClick={handleShare}>
       <i className="fa-solid fa-retweet" aria-hidden="true"></i>
     </button>
+    </div>
   );
 }

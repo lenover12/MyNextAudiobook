@@ -292,12 +292,12 @@ function App() {
   //Clean Title
   const { jsx: cleanedTitleElements, cleaned: cleanedTitleText } = processTitle(titleText, 4, true);
 
-  //Device Specific
-  const isNavigatorShare = canUseNavigator();
-
   //Temporary Options
   const useQRCode = true;
   const showQR = useQRCode && qrVisible;
+
+  //Device Specific
+  const allowNavigatorShare = true;
   const socialsOptions = {
     twitter: true,
     facebook: true,
@@ -308,6 +308,7 @@ function App() {
     whatsapp: false,
     telegram: false,
   }
+  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
 
   return (
     <div className="app">
