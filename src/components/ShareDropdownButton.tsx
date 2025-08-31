@@ -1,15 +1,17 @@
-import React, { useState, type JSX } from "react";
+import React, { useState, useEffect, useRef, type JSX } from "react";
+import { getCssVarInPx } from "../utils/getCssVarInPx";
 
 interface Props {
   title: string;
   url: string;
   author?: string;
   socialsOptions?: Record<string, boolean>;
+  bookRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-
-export default function ShareDropdownButton({ title, url, author, socialsOptions }: Props) {
+export default function ShareDropdownButton({ title, url, author, socialsOptions, bookRef }: Props) {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   
   const getGoodreadsUrl = (title: string, author?: string) => {
     const query = author ? `${title} ${author}` : title;
@@ -118,24 +120,102 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     ),
   };
 
+  //dynamically update offset-path
+  useEffect(() => {
+    const menu = menuRef.current;
+    const bookEl = bookRef?.current;
+    if (!menu || !bookEl) return;
+
+    const updateOffsetPath = () => {
+      const bookSizePx = getCssVarInPx(bookEl, "--book-size");
+      const startX = bookSizePx * 0.1;
+      const startY = 0;
+      const endX = startX;
+      const endY = bookSizePx / 1.7;
+      const controlX = (startX + endX) / 1.5;
+      const controlY = 0;
+      const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${endX} ${endY}`;
+
+      const lis = menu.querySelectorAll("li") as NodeListOf<HTMLElement>;
+      lis.forEach(li => {
+        (li.style as any).offsetPath = `path('${path}')`;
+      });
+
+      // debug overlay
+      const debug = false;
+      if (debug) {
+        let svgPath = menu.querySelector("svg.debug-path") as SVGSVGElement | null;
+        if (!svgPath) {
+          svgPath = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svgPath.classList.add("debug-path");
+          svgPath.setAttribute("style", "position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:9999;");
+          const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          pathEl.setAttribute("stroke", "red");
+          pathEl.setAttribute("stroke-width", "2");
+          pathEl.setAttribute("fill", "transparent");
+          svgPath.appendChild(pathEl);
+          menu.appendChild(svgPath);
+        }
+        const pathEl = svgPath.querySelector("path");
+        if (pathEl) pathEl.setAttribute("d", path);
+      }
+    };
+
+    updateOffsetPath();
+
+    const ro = new ResizeObserver(updateOffsetPath);
+    ro.observe(bookEl);
+
+    window.addEventListener("resize", updateOffsetPath);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateOffsetPath);
+    };
+  }, [bookRef, open]);
+
+  //distribute the icons
+  useEffect(() => {
+    const menu = menuRef.current;
+    if (!menu) return;
+
+    const lis = menu.querySelectorAll("li") as NodeListOf<HTMLElement>;
+    if (!lis.length) return;
+
+    if (!open) {
+      lis.forEach(li => (li.style.offsetDistance = "0%"));
+      return;
+    }
+
+    const minOffset = 20;
+    const maxOffset = 100;
+    const step = (maxOffset - minOffset) / (lis.length - 1 || 1);
+
+    lis.forEach((li, index) => {
+      const percent = minOffset + step * index;
+      li.style.offsetDistance = `${percent}%`;
+      li.style.setProperty("--target-distance", `${percent}%`);
+    });
+  }, [open, socialsOptions]);
+
+
   return (
     <div className="share-wrapper">
       <div
         className="share-button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => setOpen(prev => !prev)}
         role="button"
         aria-label="Share"
       >
         <i className="fa-solid fa-retweet" aria-hidden="true"></i>
       </div>
 
-      {open && (
-        <div className={`share-menu ${open ? "open" : ""}`}>
-          <ul>
-            {Object.entries(socialsOptions || {}).map(([key, enabled]) => enabled && socialButtonsMap[key])}
-          </ul>
-        </div>
-      )}
+      <div className={`share-menu ${open ? "open" : ""}`} ref={menuRef}>
+        <ul>
+          {Object.entries(socialsOptions || {}).map(([key, enabled]) =>
+            enabled && socialButtonsMap[key])}
+        </ul>
+      </div>
     </div>
   );
 }

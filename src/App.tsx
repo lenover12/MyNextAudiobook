@@ -301,11 +301,11 @@ function App() {
   const socialsOptions = {
     twitter: true,
     facebook: true,
-    linkedin: false,
+    linkedin: true,
     goodreads: true,
-    instagram: false,
-    pinterest: true,
-    whatsapp: false,
+    instagram: true,
+    pinterest: false,
+    whatsapp: true,
     telegram: false,
   }
   const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
@@ -357,6 +357,7 @@ function App() {
                       url={audibleLink ?? book.audiblePageUrl!} //TODO: affiliate
                       author={book.authors?.[0]}
                       socialsOptions={socialsOptions}
+                      bookRef={bookImageWrapperRef}
                     />
                   )
                 )}
