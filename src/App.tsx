@@ -53,6 +53,18 @@ function App() {
     allowFallback: true,
     ...(seedBook ? { seed: seedBook } : {}),
   });
+  
+  // Update the URL whenever the current book changes
+  useEffect(() => {
+    if (!book) return;
+
+    const params = new URLSearchParams();
+    if (book.itunesId) params.set("i", book.itunesId.toString());
+    if (book.asin) params.set("a", book.asin);
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, "", newUrl);
+  }, [book]);
 
   //book placement for scrolling
   const getBookByOffset = (offset: number) => {
