@@ -292,22 +292,23 @@ function App() {
   //Clean Title
   const { jsx: cleanedTitleElements, cleaned: cleanedTitleText } = processTitle(titleText, 4, true);
 
-  //Device Specific
-  const isNavigatorShare = canUseNavigator();
-
   //Temporary Options
   const useQRCode = true;
   const showQR = useQRCode && qrVisible;
+
+  //Device Specific
+  const allowNavigatorShare = true;
   const socialsOptions = {
     twitter: true,
     facebook: true,
-    linkedin: false,
+    linkedin: true,
     goodreads: true,
-    instagram: false,
-    pinterest: true,
-    whatsapp: false,
+    instagram: true,
+    pinterest: false,
+    whatsapp: true,
     telegram: false,
   }
+  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
 
   return (
     <div className="app">
@@ -356,6 +357,7 @@ function App() {
                       url={audibleLink ?? book.audiblePageUrl!} //TODO: affiliate
                       author={book.authors?.[0]}
                       socialsOptions={socialsOptions}
+                      bookRef={bookImageWrapperRef}
                     />
                   )
                 )}

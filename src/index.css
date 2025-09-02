@@ -354,7 +354,6 @@ h2.urbanist-bold {
   position: absolute;
 
   top: 20%;
-  /* left: 5%; */
   right: -13%;
   transform: translate(-50%, 0);
 
@@ -377,6 +376,7 @@ h2.urbanist-bold {
 .share-button {
   pointer-events: all;
   border-radius: 100%;
+  border: none;
   background-color: #ddd;
   width: 100%;
   height: 100%;
@@ -388,10 +388,11 @@ h2.urbanist-bold {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  position: relative;
+  z-index: 4;
 }
 
 .share-button:hover {
-  /* transform: rotate(360deg); */
   transform: rotate(180deg);
 }
 
@@ -400,36 +401,31 @@ h2.urbanist-bold {
 }
 
 .share-menu {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, 0);
-  margin-top: calc(var(--book-size) * 0.02);
-}
+  position: relative;
+  width: calc(var(--book-size) * 0.13);
+  height: calc(var(--book-size) * 0.65);
+  /* bit of a hacky method to make the div take the space*/
+  border: 1px solid transparent;
 
-.share-menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-
-  gap: calc(var(--book-size) * 0.02);
+  transform: translate(-30%, -10%);
+  z-index: 3;
 }
 
 .share-menu li {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: calc(var(--book-size) * 0.13);
   height: calc(var(--book-size) * 0.13);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  /* this is updated in ShareDropdownButton */
+  offset-path: path("M 20 0 Q 30 0, 20 180");
+  offset-rotate: auto 270deg;
+  offset-distance: 0%;
   opacity: 0;
-  transform: translateY(-10px);
-  cursor: pointer;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: offset-distance .35s ease, opacity .3s ease;
 }
 
 .share-menu li a,
@@ -437,6 +433,8 @@ h2.urbanist-bold {
   background: none;
   border: none;
   cursor: pointer;
+  position: relative;
+  z-index: 1
 }
 
 .share-button i {
@@ -447,6 +445,7 @@ h2.urbanist-bold {
 .share-menu.open li {
   opacity: 1;
   transform: translateY(0);
+  offset-distance: var(--target-distance, 100%);
 }
 
 .share-menu li a {
