@@ -14,10 +14,32 @@ import { QRCodeCard } from "./components/QRCode";
 import { canUseNavigator } from "./utils/shareSocials";
 import ShareNavigatorButton from "./components/ShareNavigatorButton";
 import ShareDropdownButton from "./components/ShareDropdownButton";
+import { useQueryParams } from "./hooks/useQueryParams";
+import { fetchBookByIds } from "./utils/audiobookAPI";
+import type { AudiobookDTO } from "./dto/audiobookDTO";
 
 import { animated, useSpring } from '@react-spring/web';
 
 function App() {
+  //load page with a book itunesId &| asin in the domain then it will be the first book
+  const query = useQueryParams();
+  const sharedItunesId = query.get("i");
+  const sharedAsin = query.get("a");
+  
+  // The seed/shared book
+  const [seedBook, setSeedBook] = useState<AudiobookDTO | null>(null);
+
+  // Fetch the shared book ONCE on page load
+  useEffect(() => {
+    if (sharedItunesId || sharedAsin) {
+      fetchBookByIds({ itunesId: sharedItunesId, asin: sharedAsin })
+        .then((book) => {
+          if (book) setSeedBook(book);
+        })
+        .catch(() => setSeedBook(null));
+    }
+  }, [sharedItunesId, sharedAsin]);
+
   const {
     books,
     currentBook: book,
@@ -29,6 +51,7 @@ function App() {
     genre: "Sci-Fi & Fantasy",
     allowExplicit: false,
     allowFallback: true,
+    ...(seedBook ? { seed: seedBook } : {}),
   });
 
   //book placement for scrolling

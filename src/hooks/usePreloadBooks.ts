@@ -4,7 +4,7 @@ import type { AudiobookDTO } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 
 const PRELOAD_AHEAD = 1;
-const MUST_HAVE_AUDIBLE = true;
+const MUST_HAVE_AUDIBLE = false;
 
 function preloadMedia(book: AudiobookDTO) {
   console.log(book);
@@ -20,13 +20,17 @@ function preloadMedia(book: AudiobookDTO) {
   }
 }
 
-export function usePreloadBooks(options: FetchOptions = {}) {
-  const [books, setBooks] = useState<AudiobookDTO[]>([]);
+export function usePreloadBooks(
+  options: FetchOptions & { seed?: AudiobookDTO | null } = {}
+) {
+  const { seed, ...fetchOptions } = options;
+
+  const [books, setBooks] = useState<AudiobookDTO[]>(() => (seed ? [seed] : []));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
   const isPreloadingRef = useRef(false);
-  const booksRef = useRef<AudiobookDTO[]>([]);
+  const booksRef = useRef<AudiobookDTO[]>(seed ? [seed] : []);
   const indexRef = useRef(0);
 
   useEffect(() => {
@@ -47,11 +51,11 @@ export function usePreloadBooks(options: FetchOptions = {}) {
     isPreloadingRef.current = true;
     setIsFetching(true);
 
-    try{
+    try {
       const newBooks: AudiobookDTO[] = [];
 
       while (newBooks.length < Math.min(count, needed)) {
-        const book = await fetchRandom(options);
+        const book = await fetchRandom(fetchOptions);
         if (
           book &&
           book.itunesId !== null &&
@@ -74,7 +78,7 @@ export function usePreloadBooks(options: FetchOptions = {}) {
       isPreloadingRef.current = false;
       setIsFetching(false);
     }
-  }, [options]);
+  }, [fetchOptions]);
 
   //fetch a book if there's no book at the current index
   useEffect(() => {
