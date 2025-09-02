@@ -333,6 +333,13 @@ function App() {
   }
   const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
 
+  //create the url
+  const domain = window.location.origin;
+  const urlParams = new URLSearchParams();
+  if (book?.itunesId) urlParams.set("i", book.itunesId.toString());
+  if (book?.asin) urlParams.set("a", book.asin);
+  const shareUrl = `${domain}/?${urlParams.toString()}`;
+
   return (
     <div className="app">
       <animated.div
@@ -369,15 +376,18 @@ function App() {
                 {book && (audibleLink ?? book.audiblePageUrl) && (
                   isNavigatorShare ? (
                     <ShareNavigatorButton
-                      title={book.title}
-                      url={audibleLink ?? book.audiblePageUrl!}
+                      // title={book.title}
+                      title={cleanedTitleText}
+                      // url={audibleLink ?? book.audiblePageUrl!}
+                      url={shareUrl}
                       text={`Listening to "${book.title}"`}
                     />
                   ) : (
                     <ShareDropdownButton
                       // title={book.title}
                       title={cleanedTitleText}
-                      url={audibleLink ?? book.audiblePageUrl!} //TODO: affiliate
+                      // url={audibleLink ?? book.audiblePageUrl!}
+                      url={shareUrl}
                       author={book.authors?.[0]}
                       socialsOptions={socialsOptions}
                       bookRef={bookImageWrapperRef}
