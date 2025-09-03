@@ -161,3 +161,26 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
     .filter((item: any) => item.previewUrl)
     .map(mapItunesToDTO);
 }
+
+export async function fetchByItunesId(itunesId: string): Promise<AudiobookDTO | null> {
+  try {
+    const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(itunesId)}`;
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      console.error(`fetchByItunesId failed: HTTP ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    if (!data.results || data.results.length === 0) {
+      return null;
+    }
+
+    const item = data.results[0];
+    return mapItunesToDTO(item);
+  } catch (e) {
+    console.error("fetchByItunesId error:", e);
+    return null;
+  }
+}

@@ -109,3 +109,25 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
     return [];
   }
 }
+
+export async function fetchByAsin(asin: string): Promise<AudiobookDTO | null> {
+  const url = `https://audimeta.de/book/${encodeURIComponent(asin)}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error(`Audimeta fetchByAsin failed: HTTP ${res.status}`);
+      return null;
+    }
+
+    const item = await res.json();
+    if (!item || !item.asin) {
+      return null;
+    }
+
+    return mapAudimetaToDTO(item);
+  } catch (e) {
+    console.error("fetchByAsin error:", e);
+    return null;
+  }
+}

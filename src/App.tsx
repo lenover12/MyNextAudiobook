@@ -14,10 +14,32 @@ import { QRCodeCard } from "./components/QRCode";
 import { canUseNavigator } from "./utils/shareSocials";
 import ShareNavigatorButton from "./components/ShareNavigatorButton";
 import ShareDropdownButton from "./components/ShareDropdownButton";
+import { useQueryParams } from "./hooks/useQueryParams";
+import { fetchBookByIds } from "./utils/audiobookAPI";
+import type { AudiobookDTO } from "./dto/audiobookDTO";
 
 import { animated, useSpring } from '@react-spring/web';
 
 function App() {
+  //load page with a book itunesId &| asin in the domain then it will be the first book
+  const query = useQueryParams();
+  const sharedItunesId = query.get("i");
+  const sharedAsin = query.get("a");
+  
+  // The seed/shared book
+  const [seedBook, setSeedBook] = useState<AudiobookDTO | null>(null);
+  
+  // Fetch the shared book ONCE on page load
+  useEffect(() => {
+    if (sharedItunesId || sharedAsin) {
+      fetchBookByIds({ itunesId: sharedItunesId, asin: sharedAsin })
+      .then((book) => {
+        if (book) setSeedBook(book);
+      })
+      .catch(() => setSeedBook(null));
+    }
+  }, [sharedItunesId, sharedAsin]);
+  
   const {
     books,
     currentBook: book,
@@ -29,7 +51,31 @@ function App() {
     genre: "Sci-Fi & Fantasy",
     allowExplicit: false,
     allowFallback: true,
+    ...(seedBook ? { seed: seedBook } : {}),
   });
+
+  //Temporary Options
+  //Domain Updates
+  const bookIdsInDomain = false;
+  
+  //Update the URL whenever the current book changes
+  useEffect(() => {
+    if (!book) return;
+    
+    if (bookIdsInDomain) {
+      const params = new URLSearchParams();
+      if (book.itunesId) params.set("i", book.itunesId.toString());
+      if (book.asin) params.set("a", book.asin);
+
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, "", newUrl);
+    } else {
+      if (window.location.search) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, "", cleanUrl);
+      }
+    }
+  }, [book, bookIdsInDomain]);
 
   //book placement for scrolling
   const getBookByOffset = (offset: number) => {
@@ -293,11 +339,14 @@ function App() {
   const { jsx: cleanedTitleElements, cleaned: cleanedTitleText } = processTitle(titleText, 4, true);
 
   //Temporary Options
+  //QR code
   const useQRCode = true;
   const showQR = useQRCode && qrVisible;
 
-  //Device Specific
-  const allowNavigatorShare = true;
+  //Navigator Share
+  const allowNavigatorShare = false;
+  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
+  //Dropdown Share Choices 
   const socialsOptions = {
     twitter: true,
     facebook: true,
@@ -308,7 +357,12 @@ function App() {
     whatsapp: true,
     telegram: false,
   }
-  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
+  //Share Url
+  const domain = window.location.origin;
+  const urlParams = new URLSearchParams();
+  if (book?.itunesId) urlParams.set("i", book.itunesId.toString());
+  if (book?.asin) urlParams.set("a", book.asin);
+  const shareUrl = `${domain}/?${urlParams.toString()}`;
 
   return (
     <div className="app">
@@ -346,15 +400,18 @@ function App() {
                 {book && (audibleLink ?? book.audiblePageUrl) && (
                   isNavigatorShare ? (
                     <ShareNavigatorButton
-                      title={book.title}
-                      url={audibleLink ?? book.audiblePageUrl!}
+                      // title={book.title}
+                      title={cleanedTitleText}
+                      // url={audibleLink ?? book.audiblePageUrl!}
+                      url={shareUrl}
                       text={`Listening to "${book.title}"`}
                     />
                   ) : (
                     <ShareDropdownButton
                       // title={book.title}
                       title={cleanedTitleText}
-                      url={audibleLink ?? book.audiblePageUrl!} //TODO: affiliate
+                      // url={audibleLink ?? book.audiblePageUrl!}
+                      url={shareUrl}
                       author={book.authors?.[0]}
                       socialsOptions={socialsOptions}
                       bookRef={bookImageWrapperRef}

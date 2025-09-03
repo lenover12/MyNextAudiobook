@@ -1,6 +1,6 @@
 import type { FetchOptions } from './itunesAPI';
-import { fetchRandom as fetchItunesRandom, searchBooks as searchItunesBooks } from './itunesAPI';
-import { fetchRandom as fetchAudimetaRandom, searchBooks as searchAudimetaBooks } from './audimetaAPI';
+import { fetchRandom as fetchItunesRandom, searchBooks as searchItunesBooks, fetchByItunesId } from './itunesAPI';
+import { fetchRandom as fetchAudimetaRandom, searchBooks as searchAudimetaBooks, fetchByAsin } from './audimetaAPI';
 import { mergeAudiobookDTOs, type AudiobookDTO } from '../dto/audiobookDTO';
 
 type Source = 'audimeta' | 'itunes';
@@ -41,4 +41,23 @@ export async function fetchRandom(options?: FetchOptions, source: Source = 'itun
   return bestMatch
     ? (source === 'itunes' ? mergeAudiobookDTOs(primaryBook, bestMatch) : mergeAudiobookDTOs(bestMatch, primaryBook))
     : primaryBook;
+}
+
+export async function fetchBookByIds(params: { itunesId?: string | null; asin?: string | null }): Promise<AudiobookDTO | null> {
+  const { itunesId, asin } = params;
+
+  if (!itunesId && !asin) {
+    throw new Error("fetchBookByIds: must provide at least one of itunesId or asin");
+  }
+
+  const [itunesBook, audimetaBook] = await Promise.all([
+    itunesId ? fetchByItunesId(itunesId) : Promise.resolve(null),
+    asin ? fetchByAsin(asin) : Promise.resolve(null),
+  ]);
+
+  if (itunesBook && audimetaBook) {
+    return mergeAudiobookDTOs(itunesBook, audimetaBook);
+  }
+
+  return itunesBook ?? audimetaBook ?? null;
 }
