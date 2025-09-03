@@ -17,10 +17,13 @@ import ShareDropdownButton from "./components/ShareDropdownButton";
 import { useQueryParams } from "./hooks/useQueryParams";
 import { fetchBookByIds } from "./utils/audiobookAPI";
 import type { AudiobookDTO } from "./dto/audiobookDTO";
+import { useOptions } from "./hooks/useOptions";
 
 import { animated, useSpring } from '@react-spring/web';
 
 function App() {
+  const { options } = useOptions();
+
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
   const sharedItunesId = query.get("i");
@@ -53,16 +56,12 @@ function App() {
     allowFallback: true,
     ...(seedBook ? { seed: seedBook } : {}),
   });
-
-  //Temporary Options
-  //Domain Updates
-  const bookIdsInDomain = false;
-  
+ 
   //Update the URL whenever the current book changes
   useEffect(() => {
     if (!book) return;
     
-    if (bookIdsInDomain) {
+    if (options.bookIdsInDomain) {
       const params = new URLSearchParams();
       if (book.itunesId) params.set("i", book.itunesId.toString());
       if (book.asin) params.set("a", book.asin);
@@ -75,7 +74,7 @@ function App() {
         window.history.replaceState({}, "", cleanUrl);
       }
     }
-  }, [book, bookIdsInDomain]);
+  }, [book, options.bookIdsInDomain]);
 
   //book placement for scrolling
   const getBookByOffset = (offset: number) => {
@@ -340,23 +339,10 @@ function App() {
 
   //Temporary Options
   //QR code
-  const useQRCode = true;
-  const showQR = useQRCode && qrVisible;
+  const showQR = options.useQRCode && qrVisible;
 
   //Navigator Share
-  const allowNavigatorShare = false;
-  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
-  //Dropdown Share Choices 
-  const socialsOptions = {
-    twitter: true,
-    facebook: true,
-    linkedin: true,
-    goodreads: true,
-    instagram: true,
-    pinterest: false,
-    whatsapp: true,
-    telegram: false,
-  }
+  const isNavigatorShare = canUseNavigator() && options.allowNavigatorShare;
   //Share Url
   const domain = window.location.origin;
   const urlParams = new URLSearchParams();
@@ -413,7 +399,7 @@ function App() {
                       // url={audibleLink ?? book.audiblePageUrl!}
                       url={shareUrl}
                       author={book.authors?.[0]}
-                      socialsOptions={socialsOptions}
+                      socialsOptions={options.socialsOptions}
                       bookRef={bookImageWrapperRef}
                     />
                   )
