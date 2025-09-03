@@ -25,13 +25,22 @@ export function usePreloadBooks(
 ) {
   const { seed, ...fetchOptions } = options;
 
-  const [books, setBooks] = useState<AudiobookDTO[]>(() => (seed ? [seed] : []));
+  const [books, setBooks] = useState<AudiobookDTO[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
   const isPreloadingRef = useRef(false);
-  const booksRef = useRef<AudiobookDTO[]>(seed ? [seed] : []);
+  const booksRef = useRef<AudiobookDTO[]>([]);
   const indexRef = useRef(0);
+
+  useEffect(() => {
+    if (seed && books.length === 0) {
+      console.log("[usePreloadBooks] Seeding initial book:", seed);
+      setBooks([seed]);
+      booksRef.current = [seed];
+      setCurrentIndex(0);
+    }
+  }, [seed, books.length]);
 
   useEffect(() => {
     booksRef.current = books;
