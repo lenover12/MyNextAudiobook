@@ -28,18 +28,18 @@ function App() {
   
   // The seed/shared book
   const [seedBook, setSeedBook] = useState<AudiobookDTO | null>(null);
-
+  
   // Fetch the shared book ONCE on page load
   useEffect(() => {
     if (sharedItunesId || sharedAsin) {
       fetchBookByIds({ itunesId: sharedItunesId, asin: sharedAsin })
-        .then((book) => {
-          if (book) setSeedBook(book);
-        })
-        .catch(() => setSeedBook(null));
+      .then((book) => {
+        if (book) setSeedBook(book);
+      })
+      .catch(() => setSeedBook(null));
     }
   }, [sharedItunesId, sharedAsin]);
-
+  
   const {
     books,
     currentBook: book,
@@ -53,18 +53,29 @@ function App() {
     allowFallback: true,
     ...(seedBook ? { seed: seedBook } : {}),
   });
+
+  //Temporary Options
+  //Domain Updates
+  const bookIdsInDomain = false;
   
-  // Update the URL whenever the current book changes
+  //Update the URL whenever the current book changes
   useEffect(() => {
     if (!book) return;
+    
+    if (bookIdsInDomain) {
+      const params = new URLSearchParams();
+      if (book.itunesId) params.set("i", book.itunesId.toString());
+      if (book.asin) params.set("a", book.asin);
 
-    const params = new URLSearchParams();
-    if (book.itunesId) params.set("i", book.itunesId.toString());
-    if (book.asin) params.set("a", book.asin);
-
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState({}, "", newUrl);
-  }, [book]);
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, "", newUrl);
+    } else {
+      if (window.location.search) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, "", cleanUrl);
+      }
+    }
+  }, [book, bookIdsInDomain]);
 
   //book placement for scrolling
   const getBookByOffset = (offset: number) => {
@@ -328,11 +339,14 @@ function App() {
   const { jsx: cleanedTitleElements, cleaned: cleanedTitleText } = processTitle(titleText, 4, true);
 
   //Temporary Options
+  //QR code
   const useQRCode = true;
   const showQR = useQRCode && qrVisible;
 
-  //Device Specific
-  const allowNavigatorShare = true;
+  //Navigator Share
+  const allowNavigatorShare = false;
+  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
+  //Dropdown Share Choices 
   const socialsOptions = {
     twitter: true,
     facebook: true,
@@ -343,9 +357,7 @@ function App() {
     whatsapp: true,
     telegram: false,
   }
-  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
-
-  //create the url
+  //Share Url
   const domain = window.location.origin;
   const urlParams = new URLSearchParams();
   if (book?.itunesId) urlParams.set("i", book.itunesId.toString());
