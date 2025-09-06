@@ -18,6 +18,7 @@ import { useQueryParams } from "./hooks/useQueryParams";
 import { fetchBookByIds } from "./utils/audiobookAPI";
 import type { AudiobookDTO } from "./dto/audiobookDTO";
 import { useOptions } from "./hooks/useOptions";
+import LibraryMenu from "./components/LibraryMenu";
 import OptionsMenu from "./components/OptionsMenu";
 
 import { animated, useSpring } from '@react-spring/web';
@@ -354,6 +355,7 @@ function App() {
   return (
     <div className="app">
       <OptionsMenu />
+      <LibraryMenu />
       <animated.div
         className="book-swipe-layer"
         style={{
