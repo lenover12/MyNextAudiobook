@@ -7,15 +7,11 @@ const menuStructure = [
     label: "General",
     boolKeys: [
       "allowExplicit",
-      "allowFallback",
+      // "allowFallback",
       "useQRCode",
-      "allowNavigatorShare",
+      // "allowNavigatorShare",
       "bookIdsInDomain",
     ] as const,
-  },
-  {
-    label: "Country",
-    special: "countryCode" as const,
   },
   {
     label: "Socials",
@@ -132,6 +128,7 @@ export default function OptionsMenu(): JSX.Element {
                       id={`options-section-${idx}`}
                       className={`options-submenu ${isOpen ? "expanded" : ""}`}
                     >
+                    <div>
                       {section.boolKeys?.map((k) => (
                         <label
                           className="options-submenu-item"
@@ -151,9 +148,7 @@ export default function OptionsMenu(): JSX.Element {
                           </div>
                         </label>
                       ))}
-
-
-                      {section.special === "countryCode" && (
+                      {section.label === "General" && (
                         <div className="options-submenu-item">
                           <span className="options-label">Country</span>
                           <select
@@ -169,30 +164,32 @@ export default function OptionsMenu(): JSX.Element {
                           </select>
                         </div>
                       )}
-
+                    </div>
                       {section.nested === "socialsOptions" && (
-                        <div className="options-social-grid">
-                          {(Object.keys(options.socialsOptions) as SocialKey[]).map(
-                            (k, idx) => {
-                              const active = options.socialsOptions[k];
-                              return (
-                                <button
-                                  key={k}
-                                  type="button"
-                                  className={`options-social-icon ${active ? "active" : ""}`}
-                                  onClick={() => toggleSocial(k)}
-                                  aria-pressed={active}
-                                  aria-label={k}
-                                  data-idx={idx} // optional if you want to target row logic
-                                >
-                                  <i className={`fa-brands fa-${k}`} />
-                                </button>
-                              );
-                            }
-                          )}
+                        <div>
+                          <p className="options-section-description">Enable these bad bois and they will create a share link on each audiobook</p>
+                          <div className="options-social-flex">
+                            {(Object.keys(options.socialsOptions) as SocialKey[]).map(
+                              (k, idx) => {
+                                const active = options.socialsOptions[k];
+                                return (
+                                  <button
+                                    key={k}
+                                    type="button"
+                                    className={`options-social-icon ${active ? "active" : ""}`}
+                                    onClick={() => toggleSocial(k)}
+                                    aria-pressed={active}
+                                    aria-label={k}
+                                    data-idx={idx}
+                                  >
+                                    <i className={`fa-brands fa-${k}`} />
+                                  </button>
+                                );
+                              }
+                            )}
+                          </div>
                         </div>
                       )}
-
                     </div>
                   </div>
                 );
