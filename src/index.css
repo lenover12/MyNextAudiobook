@@ -13,6 +13,12 @@
   --book-border-radius: 10px;
   --qr-basis: calc(var(--book-size) * 0.25);
 
+  --ui-scale: min(3.75vmax, 3.75vmin);
+  --ui-font-size: calc(var(--ui-scale) * 0.9);
+  --ui-icon-size: calc(var(--ui-scale) * 1.8);
+  --ui-padding: calc(var(--ui-scale) * 1.2);
+  --ui-radius: calc(var(--ui-scale) * 1.2);
+
   /* light dark theme default*/
   --background: #111;
   --text-color: white;
@@ -474,28 +480,30 @@ h2.urbanist-bold {
 }
 
 .options-menu .options-button {
-  font-size: 24px;
+  font-size: var(--ui-icon-size);
+  font-size: 22px;
   padding: 10px;
   width: 52px;
   height: 52px;
   margin-left: auto;
-  margin-right: 24px;
-  border: 2.2px transparent;
-  border-radius: 16px;
+  margin-right: 10px;
+  margin-top: 10px;
+  border: calc(var(--ui-scale) * 0.15) transparent;
+  border-radius: var(--ui-radius);
   background-color: transparent;
   color: #CFD8DC;
   cursor: pointer;
   
   position: absolute;
-  right: -2vw;
-  top: 2vw;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .options-menu .options-button i {
-  text-shadow: 0 0 10px #0080ff;
+  /* text-shadow: 0 0 calc(var(--ui-scale) * 0.8) #0080ff; */
+  text-shadow: 0 0 calc(var(--ui-scale) * 0.8) #ffffff81;
 }
 
 .options-menu .spin {
@@ -519,23 +527,22 @@ h2.urbanist-bold {
 .options-menu .options-modal {
   background: #1f1f1f;
   color: #eee;
-  padding: 1.5rem;
-  border-radius: 12px;
-  width: 340px;
-  max-width: 80%;
-  max-height: 80%;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  padding: calc(var(--ui-scale) * 1.2);
+  border-radius: calc(var(--ui-scale) * 1);
+  width: calc(var(--ui-scale) * 15);
+  max-width: 85vmin;
+  max-height: 85vmin;
+  box-shadow: 0 calc(var(--ui-scale) * 0.4) calc(var(--ui-scale) * 1) rgba(0,0,0,0.5);
 }
 .options-menu .options-title {
   text-align: center;
-  margin-bottom: 1rem;
-  font-size: 1.3rem;
+  margin-bottom: calc(var(--ui-padding) * 0.5);
+  padding-bottom: var(--ui-padding);
+  font-size: calc(var(--ui-font-size) * 1.2);
   font-weight: bold;
   border-bottom: 1px solid #333;
-  padding-bottom: 0.5rem;
 }
 
-/* Section + Header */
 .options-menu .options-section {
   border-bottom: 1px solid #333;
 }
@@ -546,12 +553,13 @@ h2.urbanist-bold {
   width: 100%;
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: calc(var(--ui-font-size) * 0.9);
   font-weight: bold;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.6rem 0;
+  padding: calc(var(--ui-scale) * 0.3) 0;
+  min-height: calc(var(--ui-scale) * 1.5);
   cursor: pointer;
   color: #eee;
 }
@@ -569,25 +577,26 @@ h2.urbanist-bold {
   transition: max-height 0.35s ease, opacity 0.35s ease;
 }
 .options-menu .options-submenu.expanded {
-  max-height: 500px;
+  max-height: calc(var(--ui-scale) * 20);
   opacity: 1;
 }
 .options-menu .options-submenu-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.4rem 0;
-  font-size: 0.95rem;
+  padding: calc(var(--ui-scale) * 0.25) 0;
+  font-size: calc(var(--ui-font-size) * 0.85);
   color: #ddd;
+  min-height: calc(var(--ui-scale) * 1.2);
 }
 
 .options-menu .options-submenu-item select {
   background: #2a2a2a;
   color: #eee;
   border: 1px solid #444;
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.9rem;
+  border-radius: calc(var(--ui-scale) * 0.4);
+  padding: calc(var(--ui-scale) * 0.1) calc(var(--ui-scale) * 0.6);
+  font-size: calc(var(--ui-scale) * 0.8);
   font-family: inherit;
   outline: none;
   appearance: none;
@@ -597,8 +606,8 @@ h2.urbanist-bold {
 }
 
 .options-menu .options-submenu-item select:focus {
-  border-color: #4ade80;
-  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+  border-color: #bbfca4;
+  box-shadow: 0 0 0 2px #bbfca451;
 }
 
 .options-menu .options-submenu-item select option {
@@ -608,8 +617,8 @@ h2.urbanist-bold {
 
 .options-menu .toggle {
   position: relative;
-  width: 40px;
-  height: 20px;
+  width: calc(var(--ui-scale) * 2.2);
+  height: calc(var(--ui-scale) * 1.1);
 }
 .options-menu .toggle input {
   display: none;
@@ -618,7 +627,7 @@ h2.urbanist-bold {
   position: absolute;
   cursor: pointer;
   background: #555;
-  border-radius: 20px;
+  border-radius: calc(var(--ui-scale) * 1);
   width: 100%;
   height: 100%;
   transition: background 0.3s ease;
@@ -626,62 +635,52 @@ h2.urbanist-bold {
 .options-menu .toggle label::after {
   content: "";
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
+  top: calc(var(--ui-scale) * 0.1);
+  left: calc(var(--ui-scale) * 0.1);
+  width: calc(var(--ui-scale) * 0.9);
+  height: calc(var(--ui-scale) * 0.9);
   background: #fff;
   border-radius: 50%;
   transition: transform 0.3s ease;
 }
 .options-menu .toggle input:checked + label {
-  background: #4ade80;
+  background: #bbfca4;
 }
 .options-menu .toggle input:checked + label::after {
-  transform: translateX(20px);
+  transform: translateX(calc(var(--ui-scale) * 1.1));
 }
 
-.options-menu .options-social-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* top row: 5 items */
-  grid-auto-rows: 60px;
-  gap: 12px;
-  justify-items: center; /* center each item in its cell */
-  margin-top: 10px;
+.options-menu .options-section-description {
+  text-align: center;
+  margin-bottom: calc(var(--ui-padding) * 0.1);
+  font-size: calc(var(--ui-font-size) * 0.7);
+  font-weight:lighter;
 }
 
-/* Push last 3 icons into second row */
-.options-menu .options-social-icon:nth-child(n + 6) {
-  grid-column: span 1;
-}
-
-/* Trick: span 3 bottom icons across 5 columns for centering */
-.options-menu .options-social-icon:nth-child(6) {
-  grid-column-start: 2;
-}
-.options-menu .options-social-icon:nth-child(7) {
-  grid-column-start: 3;
-}
-.options-menu .options-social-icon:nth-child(8) {
-  grid-column-start: 4;
+.options-menu .options-social-flex {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin-top: calc(var(--ui-scale) * 0.4);
 }
 
 .options-menu .options-social-icon {
   background: none;
   border: none;
-  font-size: 28px;
+  font-size: calc(var(--ui-icon-size) * 0.8);
   cursor: pointer;
-  color: #bbb;
+  color: #bbbbbb28;
   transition: color 0.2s, transform 0.1s;
 }
 
 .options-menu .options-social-icon:hover {
-  color: #fff;
-  transform: scale(1.1);
+  /* color: #fff; */
+  transform: scale(1.2);
 }
 
 .options-menu .options-social-icon.active {
-  color: #2ecc71;
+  color: #bbb;
 }
 
 
@@ -695,17 +694,16 @@ h2.urbanist-bold {
 }
 
 .library-menu .library-button {
-  margin-right: auto;
-  margin-left: 24px;
   padding: 10px;
+  margin-right: auto;
+  margin-left: 10px;
+  margin-top: 10px;
   width: 52px;
   height: 52px;
   background-color: transparent;
   border: none;
   cursor: pointer;
   position: absolute;
-  left: -2vw;
-  top: 2vw;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -713,13 +711,14 @@ h2.urbanist-bold {
 
 .library-menu .library-button span {
   display: block;
-  width: 23px;
+  width: 21px;
   height: 4px;
   background-color: #CFD8DC;
   margin-bottom: 4px;
   transition: transform 350ms, background-color 350ms;
 
-  box-shadow: 0 0 10px #0080ff;
+  box-shadow: 0 0 10px #ffffff81;
+  /* text-shadow: 0 0 calc(var(--ui-scale) * 0.8) #ffffff81; */
 }
 
 .library-menu .library-button span:last-child {
