@@ -828,25 +828,20 @@ h2.urbanist-bold {
 
 .library-menu .library-content {
   max-height: 0;
+  overflow: hidden;
   transition: max-height 0.4s ease;
 }
 
 .library-menu .library-content.active {
-  max-height: 80vh;
+  max-height: calc(80vh - var(--ui-scale) * 1.5 * 2); /* subtract top+bottom padding */
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   transition: max-height 0.4s ease;
-
 }
 
-.library-overlay {
-  overflow: hidden;
-}
-
-.library-box {
-  overflow: hidden;
-}
-
-.library-content {
-  overflow: hidden;
+.library-menu .library-content.active::-webkit-scrollbar {
+  display: none;
 }
 
 .library-menu .library-grid {
@@ -854,13 +849,12 @@ h2.urbanist-bold {
   flex-wrap: wrap;
   justify-content: center;
   gap: calc(var(--ui-scale) * 1);
+  padding-top: calc(var(--ui-scale) * 0.25);
 }
 
 .library-menu .library-item-square {
   flex: 0 1 calc(var(--ui-scale) * 7);
   aspect-ratio: 1 / 1;
-  background: #333;
-  border-radius: calc(var(--ui-radius));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -868,8 +862,47 @@ h2.urbanist-bold {
   color: #fff;
   cursor: pointer;
   transition: background 0.25s ease;
+  position: relative;
 }
 
-.library-menu .library-item-square:hover {
-  background: #444;
+.library-menu .library-single-shelf {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2
+}
+
+.library-menu .library-single-shelf:hover > * {
+  z-index:0;
+}
+
+.library-menu .library-audiobook {
+  position: relative;
+  width:100%;
+  height:100%;
+}
+
+.library-menu .library-thumb {
+  position: absolute;
+  top: 0;
+  left: 4%;
+  width: 92%;
+  height: 92%;
+  z-index: 1
+}
+
+.library-menu .library-case {
+  z-index: 2;
+}
+
+.library-menu .library-audiobook > * {
+  transform: scale(1.0);
+  filter: brightness(50%);
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.library-menu .library-audiobook:hover > * {
+  transform: scale(1.05);
+  filter: brightness(100%);
 }

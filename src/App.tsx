@@ -20,11 +20,13 @@ import type { AudiobookDTO } from "./dto/audiobookDTO";
 import { useOptions } from "./hooks/useOptions";
 import LibraryMenu from "./components/LibraryMenu";
 import OptionsMenu from "./components/OptionsMenu";
+import { useHistory } from "./hooks/useHistory";
 
 import { animated, useSpring } from '@react-spring/web';
 
 function App() {
   const { options } = useOptions();
+  const { addEntry } = useHistory();
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -90,6 +92,24 @@ function App() {
   ];
 
   const { loadingStates, initLoadingState, markFadeIn, markLoaded } = useLoadingStates();
+  
+  //add fetched book to history
+  useEffect(() => {
+    if (!book) return;
+
+    addEntry({
+      asin: book.asin ?? null,
+      itunesId: book.itunesId ?? null,
+      title: book.title,
+      authors: book.authors ?? [],
+      audiblePageUrl: book.audiblePageUrl ?? null,
+      audioPreviewUrl: book.audioPreviewUrl ?? null,
+      itunesImageUrl: book.itunesImageUrl ?? null,
+      genre: book.genre ?? null,
+      timestamp: Date.now(),
+    });
+  }, [book, addEntry]);
+
 
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
