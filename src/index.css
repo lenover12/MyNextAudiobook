@@ -685,9 +685,8 @@ h2.urbanist-bold {
 
 
 /* Library Menu */
-
 .library-menu {
-  position: relative;
+  position: absolute;
   z-index: 4;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
@@ -707,6 +706,7 @@ h2.urbanist-bold {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 }
 
 .library-menu .library-button span {
@@ -716,19 +716,13 @@ h2.urbanist-bold {
   background-color: #CFD8DC;
   margin-bottom: 4px;
   transition: transform 350ms, background-color 350ms;
-
-  box-shadow: 0 0 10px #ffffff81;
-  /* text-shadow: 0 0 calc(var(--ui-scale) * 0.8) #ffffff81; */
+  box-shadow: 0 0 calc(var(--ui-scale) * 0.8) #ffffff81;
 }
 
 .library-menu .library-button span:last-child {
   margin-bottom: 0;
 }
 
-.library-menu .library-button.active span {
-  /* background-color: #444; */
-  /* box-shadow: 0 0 10px #00274e; */
-}
 .library-menu .library-button.active span.one {
   transform: rotate(60deg) translate3d(11px, -3px, 0px);
 }
@@ -739,35 +733,143 @@ h2.urbanist-bold {
   transform: rotate(90deg) translate3d(-10px, 10px, 0);
 }
 
-.library-menu .library-box {
-  display: absolute;
+.library-menu .library-overlay {
   position: fixed;
-  top: 20px;
-  border-radius: 10px 50px;
-  left: -100%;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.library-menu .library-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.library-menu .library-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-150%, -50%);
   width: 80vw;
-  height: 100%;
-  margin: 0;
-  padding: 80px 0;
-  list-style: none;
-  background-color: rgb(236, 239, 241, 70%);
-  box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
-  transition: left 0.25s ease-in-out;
-  z-index: 1;
+  max-width: 500px;
+  max-height: 80vh;
+  padding: calc(var(--ui-scale) * 1.5);
+  background: #1f1f1f;
+  color: #eee;
+  box-shadow: 0 calc(var(--ui-scale) * 0.6) calc(var(--ui-scale) * 1.2) rgba(0,0,0,0.5);
+  border-radius: calc(var(--ui-scale) * 1.2);
+  transition: transform 0.35s ease;
+  overflow: hidden;
+  z-index: 4;
 }
 
 .library-menu .library-box.active {
-  left: 10%;
+  transform: translate(-50%, -50%);
+  max-height: 80vh;
 }
 
 .library-menu .library-item {
   display: block;
-  padding: 12px 32px;
-  color: #333;
-  font-size: 24px;
+  padding: calc(var(--ui-scale) * 0.6) calc(var(--ui-scale) * 1.2);
+  color: #ddd;
+  font-size: calc(var(--ui-font-size) * 0.95);
   text-decoration: none;
-  transition-duration: .25s;
+  transition: background 0.25s;
 }
 .library-menu .library-item:hover {
-  background-color: #CFD8DC;
+  background-color: #2a2a2a;
+}
+
+.library-menu .library-tabs {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: calc(var(--ui-scale) * 1.2);
+}
+
+.library-menu .library-tab {
+  flex: 1;
+  text-align: center;
+  padding: calc(var(--ui-scale) * 0.8);
+  font-size: calc(var(--ui-scale) * 1.1);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #eee;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+
+.library-menu .library-tab.active {
+  border-color: #0080ff;
+  color: #fff;
+}
+
+.library-content-wrapper {
+  transition: height 0.35s ease;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  
+}
+
+.library-content-wrapper::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+
+.library-menu .library-content {
+  max-height: 0;
+  transition: max-height 0.4s ease;
+}
+
+.library-menu .library-content.active {
+  max-height: 80vh;
+  transition: max-height 0.4s ease;
+
+}
+
+.library-overlay {
+  overflow: hidden;
+}
+
+.library-box {
+  overflow: hidden;
+}
+
+.library-content {
+  overflow: hidden;
+}
+
+.library-menu .library-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--ui-scale) * 1);
+}
+
+.library-menu .library-item-square {
+  flex: 0 1 calc(var(--ui-scale) * 7);
+  aspect-ratio: 1 / 1;
+  background: #333;
+  border-radius: calc(var(--ui-radius));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--ui-scale) * 1);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.library-menu .library-item-square:hover {
+  background: #444;
 }

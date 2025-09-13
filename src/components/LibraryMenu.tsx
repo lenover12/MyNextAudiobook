@@ -2,6 +2,9 @@ import { useState } from "react";
 
 export default function LibraryMenu() {
   const [active, setActive] = useState(false);
+  const [tab, setTab] = useState<"favourites" | "history">("favourites");
+
+  const closeMenu = () => setActive(false);
 
   return (
     <div className="library-menu">
@@ -17,13 +20,56 @@ export default function LibraryMenu() {
         </div>
       </button>
 
-      <ul className={`library-box ${active ? "active" : ""}`}>
-        <li><a className="library-item" href="#">Home</a></li>
-        <li><a className="library-item" href="#">About</a></li>
-        <li><a className="library-item" href="#">Team</a></li>
-        <li><a className="library-item" href="#">Contact</a></li>
-        <li><a className="library-item" href="#">Twitter</a></li>
-      </ul>
+      <div
+        className={`library-overlay ${active ? "active" : ""}`}
+        onClick={closeMenu}
+      >
+        <div
+          className={`library-box ${active ? "active" : ""}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="library-tabs">
+            <button
+              className={`library-tab ${tab === "favourites" ? "active" : ""}`}
+              onClick={() => setTab("favourites")}
+            >
+              Favourites
+            </button>
+            <button
+              className={`library-tab ${tab === "history" ? "active" : ""}`}
+              onClick={() => setTab("history")}
+            >
+              History
+            </button>
+          </div>
+
+          <div className="library-content-wrapper">
+            <div
+              className={`library-content ${tab === "favourites" ? "active" : ""}`}
+            >
+              <div className="library-grid">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div key={i} className="library-item-square">
+                    Fav {i + 1}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div
+              className={`library-content ${tab === "history" ? "active" : ""}`}
+            >
+              <div className="library-grid">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="library-item-square">
+                    Hist {i + 1}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
