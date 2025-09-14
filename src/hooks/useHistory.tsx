@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import type { BookHistoryEntry } from "../dto/bookHistory";
+import type { BookDBEntry } from "../dto/bookDB";
 import { getHistory, addHistoryEntry, removeHistoryEntry, clearHistory } from "../utils/historyStorage";
 
 type HistoryContextValue = {
-  history: BookHistoryEntry[];
-  addEntry: (entry: BookHistoryEntry) => Promise<void>;
-  removeEntry: (asin: string) => Promise<void>;
+  history: BookDBEntry[];
+  addEntry: (entry: BookDBEntry) => Promise<void>;
+  removeEntry: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -13,20 +13,20 @@ type HistoryContextValue = {
 const HistoryContext = createContext<HistoryContextValue | undefined>(undefined);
 
 export function HistoryProvider({ children }: { children: React.ReactNode }) {
-  const [history, setHistory] = useState<BookHistoryEntry[]>([]);
+  const [history, setHistory] = useState<BookDBEntry[]>([]);
 
   const refresh = async () => {
     const entries = await getHistory();
     setHistory(entries);
   };
 
-  const addEntryWrapper = async (entry: BookHistoryEntry) => {
+  const addEntryWrapper = async (entry: BookDBEntry) => {
     await addHistoryEntry(entry);
     await refresh();
   };
 
-  const removeEntryWrapper = async (asin: string) => {
-    await removeHistoryEntry(asin);
+  const removeEntryWrapper = async (id: string) => {
+    await removeHistoryEntry(id);
     await refresh();
   };
 

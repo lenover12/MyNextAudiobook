@@ -1,4 +1,5 @@
-export type BookHistoryEntry = {
+export type BookDBEntry = {
+  id?: string;
   asin: string | null;
   itunesId: number | null;
   title: string;

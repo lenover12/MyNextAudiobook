@@ -1,9 +1,9 @@
 import { openDB } from "idb";
 import type { BookDBEntry } from "../dto/bookDB";
 
-const DB_NAME = "tokbooka-history";
+const DB_NAME = "tokbooka-favourites";
 const STORE_NAME = "books";
-//TODO: add cap limit for history
+//TODO: add cap limit for favourites
 
 async function getDB() {
     return openDB(DB_NAME, 1, {
@@ -39,7 +39,7 @@ async function resizeImageToBase64(blob: Blob, size = 100): Promise<string> {
     });
 }
 
-export async function addHistoryEntry( //TODO: remove after cap level
+export async function addFavouritesEntry(
     entry: Omit<BookDBEntry, "timestamp" | "thumbnailData">
 ) {
     const db = await getDB();
@@ -95,7 +95,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 
-export async function getHistory(limit = 50): Promise<BookDBEntry[]> { //TODO: update limit
+export async function getFavourites(limit = 50): Promise<BookDBEntry[]> { //TODO: update limit
     const db = await getDB();
     const tx = db.transaction(STORE_NAME, "readonly");
     const index = tx.store.index("timestamp");
@@ -111,12 +111,12 @@ export async function getHistory(limit = 50): Promise<BookDBEntry[]> { //TODO: u
     return results;
 }
 
-export async function removeHistoryEntry(id: string) {
+export async function removeFavouritesEntry(id: string) {
     const db = await getDB();
     await db.delete(STORE_NAME, id.toString());
 }
 
-export async function clearHistory() {
+export async function clearFavourites() {
     const db = await getDB();
     await db.clear(STORE_NAME);
 }

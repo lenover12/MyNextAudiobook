@@ -21,12 +21,13 @@ import { useOptions } from "./hooks/useOptions";
 import LibraryMenu from "./components/LibraryMenu";
 import OptionsMenu from "./components/OptionsMenu";
 import { useHistory } from "./hooks/useHistory";
+import FavouritesButton from './components/FavouritesButton';
 
 import { animated, useSpring } from '@react-spring/web';
 
 function App() {
   const { options } = useOptions();
-  const { addEntry } = useHistory();
+  const { addEntry: addHistory } = useHistory();
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -97,7 +98,7 @@ function App() {
   useEffect(() => {
     if (!book) return;
 
-    addEntry({
+    addHistory({
       asin: book.asin ?? null,
       itunesId: book.itunesId ?? null,
       title: book.title,
@@ -108,7 +109,7 @@ function App() {
       genre: book.genre ?? null,
       timestamp: Date.now(),
     });
-  }, [book, addEntry]);
+  }, [book, addHistory]);
 
 
   //canvas background effect
@@ -406,6 +407,23 @@ function App() {
               togglePlayPause={togglePlayPause}
               bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
             >
+              <div className="favourite-container">
+                {book && (
+                  <FavouritesButton
+                    book={{
+                      asin: book.asin ?? null,
+                      itunesId: book.itunesId ?? null,
+                      title: book.title,
+                      authors: book.authors ?? [],
+                      audiblePageUrl: book.audiblePageUrl ?? null,
+                      audioPreviewUrl: book.audioPreviewUrl ?? null,
+                      itunesImageUrl: book.itunesImageUrl ?? null,
+                      genre: book.genre ?? null,
+                      timestamp: Date.now(),
+                    }}
+                  />
+                )}
+              </div>
               <div className="share-container">
                 {book && (audibleLink ?? book.audiblePageUrl) && (
                   isNavigatorShare ? (
