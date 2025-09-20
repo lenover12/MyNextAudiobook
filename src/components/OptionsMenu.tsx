@@ -1,6 +1,8 @@
-import React, { useState, type JSX } from "react";
+import React, { useEffect, useState, type JSX } from "react";
 import { useOptions } from "../hooks/useOptions";
 import type { Options } from "../utils/optionsStorage";
+import { useHistory } from "../hooks/useHistory";
+import { useFavourites } from "../hooks/useFavourites";
 
 const menuStructure = [
   {
@@ -16,6 +18,10 @@ const menuStructure = [
   {
     label: "Socials",
     nested: "socialsOptions" as const,
+  },
+  {
+    label: "Data",
+    actions: ["clearHistory", "clearFavourites"] as const,
   },
 ];
 
@@ -34,6 +40,8 @@ const optionLabels: Record<string, string> = {
   pinterest: "Pinterest",
   whatsapp: "WhatsApp",
   telegram: "Telegram",
+  clearHistory: "Delete History",
+  clearFavourites: "Delete Favourites",
 };
 
 type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
@@ -48,6 +56,9 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
   const { options, setOptions } = useOptions();
   const [spinning, setSpinning] = useState(false);
   const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [confirmingAction, setConfirmingAction] = useState<null | "clearHistory" | "clearFavourites">(null);
+  const { clearAll: clearFavourites, favourites } = useFavourites();
+  const { clearAll: clearHistory, history } = useHistory();
 
   const handleClick = () => {
     setSpinning(true);
@@ -84,6 +95,17 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
     }));
   };
 
+  const deleteData = (action: "clearHistory" | "clearFavourites") => {
+    if (action === "clearHistory") clearHistory();
+    if (action === "clearFavourites") clearFavourites();
+  };
+
+  useEffect(() => {
+    if (!active || openMenu === null) {
+      setConfirmingAction(null);
+    }
+  }, [active, openMenu]);
+
   return (
     <div className="options-menu">
       <button
@@ -93,8 +115,6 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
       >
         <i className={`fa-solid fa-gear ${spinning ? "spin" : ""}`} />
       </button>
-
-
         <div
           className={`options-overlay ${active ? "active" : ""}`}
           role="dialog"
@@ -137,7 +157,6 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                         id={`options-section-${idx}`}
                         className={`options-submenu ${isOpen ? "expanded" : ""}`}
                       >
-                      <div>
                         {section.boolKeys?.map((k) => (
                           <label
                             className="options-submenu-item"
@@ -173,7 +192,6 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                             </select>
                           </div>
                         )}
-                      </div>
                         {section.nested === "socialsOptions" && (
                           <div>
                             <p className="options-section-description">Enable these bad bois and they will create a share link on each audiobook</p>
@@ -199,6 +217,53 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                             </div>
                           </div>
                         )}
+                        <div className="options-danger-button-wrapper">
+                          {section.actions?.map((action) => {
+                            const isHistory = action === "clearHistory";
+                            const isFavourites = action === "clearFavourites";
+
+                            const isEnabled =
+                              (isHistory && history.length > 1) ||
+                              (isFavourites && favourites.length > 0);
+
+                            return (
+                              <div key={action} className="options-submenu-item">
+                                {confirmingAction === action ? (
+                                  <div className="confirm-buttons">
+                                    <button
+                                      type="button"
+                                      className="options-cancel-button"
+                                      onClick={() => setConfirmingAction(null)}
+                                    >
+                                      Cancel
+                                    </button>
+                                    <i className="fa-solid fa-trash centre-icon" aria-hidden="true"></i>
+                                    <button
+                                      type="button"
+                                      className="options-confirm-button"
+                                      onClick={() => {
+                                        deleteData(action);
+                                        setConfirmingAction(null);
+                                      }}
+                                    >
+                                      Confirm
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className={`options-danger-button ${!isEnabled ? "disabled" : ""}`}
+                                    onClick={() => isEnabled && setConfirmingAction(action)}
+                                    disabled={!isEnabled}
+                                  >
+                                    <i className="fa-solid fa-trash" aria-hidden="true"></i>
+                                    <span>{optionLabels[action]}</span>
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   );
