@@ -102,17 +102,7 @@ function App() {
   useEffect(() => {
     if (!book) return;
 
-    addHistory({
-      asin: book.asin ?? null,
-      itunesId: book.itunesId ?? null,
-      title: book.title,
-      authors: book.authors ?? [],
-      audiblePageUrl: book.audiblePageUrl ?? null,
-      audioPreviewUrl: book.audioPreviewUrl ?? null,
-      itunesImageUrl: book.itunesImageUrl ?? null,
-      genre: book.genre ?? null,
-      timestamp: Date.now(),
-    });
+   addHistory(audiobookDTOToDbEntry(book));
   }, [book, addHistory]);
 
 
