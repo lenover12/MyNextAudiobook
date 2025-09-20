@@ -173,41 +173,43 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                         id={`options-section-${idx}`}
                         className={`options-submenu ${isOpen ? "expanded" : ""}`}
                       >
-                        {section.boolKeys?.map((k) => (
-                          <label
-                            className="options-submenu-item"
-                            key={k}
-                            htmlFor={`opt-${k}`}
-                          >
-                            <span className="options-label">{optionLabels[k]}</span>
-
-                            <div className="toggle">
-                              <input
-                                id={`opt-${k}`}
-                                type="checkbox"
-                                checked={Boolean(options[k as keyof Options])}
-                                onChange={() => toggleBool(k)}
-                              />
-                              <label htmlFor={`opt-${k}`} />
-                            </div>
-                          </label>
-                        ))}
-                        {section.label === "General" && (
-                          <div className="options-submenu-item">
-                            <span className="options-label">Country</span>
-                            <select
-                              value={options.countryCode ?? ""}
-                              onChange={(e) => setCountry(e.target.value)}
-                              aria-label="Choose country"
+                        <div className="indent-the-children">
+                          {section.boolKeys?.map((k) => (
+                            <label
+                              className="options-submenu-item"
+                              key={k}
+                              htmlFor={`opt-${k}`}
                             >
-                              {countryOptions.map((c) => (
-                                <option key={c.code} value={c.code}>
-                                  {c.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
+                              <span className="options-label">{optionLabels[k]}</span>
+
+                              <div className="toggle">
+                                <input
+                                  id={`opt-${k}`}
+                                  type="checkbox"
+                                  checked={Boolean(options[k as keyof Options])}
+                                  onChange={() => toggleBool(k)}
+                                />
+                                <label htmlFor={`opt-${k}`} />
+                              </div>
+                            </label>
+                          ))}
+                          {section.label === "General" && (
+                            <div className="options-submenu-item">
+                              <span className="options-label">Country</span>
+                              <select
+                                value={options.countryCode ?? ""}
+                                onChange={(e) => setCountry(e.target.value)}
+                                aria-label="Choose country"
+                              >
+                                {countryOptions.map((c) => (
+                                  <option key={c.code} value={c.code}>
+                                    {c.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
                         {section.nested === "socialsOptions" && (
                           <div>
                             <p className="options-section-description">Enable these bad bois and they will create a share link on each audiobook</p>

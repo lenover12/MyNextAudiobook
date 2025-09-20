@@ -661,6 +661,11 @@ h2.urbanist-bold {
   max-height: calc(var(--ui-scale) * 20);
   opacity: 1;
 }
+
+.options-menu .indent-the-children {
+  margin-left: calc(var(--ui-font-size) * 0.4);
+}
+
 .options-menu .options-submenu-item {
   display: flex;
   justify-content: space-between;
