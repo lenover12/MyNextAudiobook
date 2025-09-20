@@ -44,6 +44,22 @@ const optionLabels: Record<string, string> = {
   clearFavourites: "Delete Favourites",
 };
 
+const countryOptions = [
+  { code: "us", label: "United States" },
+  { code: "au", label: "Australia" },
+  { code: "uk", label: "United Kingdom" },
+  { code: "ca", label: "Canada" },
+  { code: "in", label: "India" },
+] as const;
+
+//TODO localization
+const languageOptions = [
+  { code: "en", label: "English" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+];
+
+
 type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
 type SocialKey = keyof Options["socialsOptions"];
 
@@ -184,11 +200,11 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                               onChange={(e) => setCountry(e.target.value)}
                               aria-label="Choose country"
                             >
-                              <option value="us">United States</option>
-                              <option value="au">Australia</option>
-                              <option value="uk">United Kingdom</option>
-                              <option value="ca">Canada</option>
-                              <option value="in">India</option>
+                              {countryOptions.map((c) => (
+                                <option key={c.code} value={c.code}>
+                                  {c.label}
+                                </option>
+                              ))}
                             </select>
                           </div>
                         )}
