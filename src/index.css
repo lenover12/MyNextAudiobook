@@ -609,7 +609,8 @@ h2.urbanist-bold {
   color: #eee;
   padding: calc(var(--ui-scale) * 1.2);
   border-radius: calc(var(--ui-scale) * 1);
-  width: calc(var(--ui-scale) * 15);
+  /* width: calc(var(--ui-scale) * 15); */
+  width: calc(var(--book-size) * 1);
   max-width: 85vmin;
   max-height: 85vmin;
   box-shadow: 0 calc(var(--ui-scale) * 0.4) calc(var(--ui-scale) * 1) rgba(0,0,0,0.5);
@@ -663,6 +664,7 @@ h2.urbanist-bold {
 }
 
 .options-menu .indent-the-children {
+  margin-right: calc(var(--ui-font-size) * 0.4);
   margin-left: calc(var(--ui-font-size) * 0.4);
 }
 
@@ -759,6 +761,7 @@ h2.urbanist-bold {
   cursor: pointer;
   color: #bbbbbb28;
   transition: color 0.2s, transform 0.1s;
+  padding-right: calc(var(--ui-scale) * 0.05);
 }
 
 .options-menu .options-social-icon:hover {
