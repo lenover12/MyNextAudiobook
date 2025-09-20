@@ -135,5 +135,15 @@ export function usePreloadBooks(
     isFetching,
     next,
     previous,
+    jumpTo: (index: number) => setCurrentIndex(index),
+    insertNext: (book: AudiobookDTO) => {
+      setBooks(prev => {
+        const updated = [...prev];
+        updated.splice(currentIndex + 1, 0, book);
+        return updated;
+      });
+      setCurrentIndex(i => i + 1);
+    },
   };
+
 }

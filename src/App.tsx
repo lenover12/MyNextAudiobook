@@ -17,6 +17,8 @@ import ShareDropdownButton from "./components/ShareDropdownButton";
 import { useQueryParams } from "./hooks/useQueryParams";
 import { fetchBookByIds } from "./utils/audiobookAPI";
 import type { AudiobookDTO } from "./dto/audiobookDTO";
+import type { BookDBEntry } from "./dto/bookDB";
+import { dbEntryToAudiobookDTO, audiobookDTOToDbEntry } from "./dto/audiobookConverters";
 import { useOptions } from "./hooks/useOptions";
 import LibraryMenu from "./components/LibraryMenu";
 import OptionsMenu from "./components/OptionsMenu";
@@ -55,6 +57,8 @@ function App() {
     isFetching,
     next,
     previous,
+    insertNext,
+    jumpTo,
   } = usePreloadBooks({
     genre: "Sci-Fi & Fantasy",
     allowExplicit: false,
@@ -327,6 +331,28 @@ function App() {
     return abs < 60 ? 1 : abs > 120 ? 0 : 1 - (abs - 60) / 60;
   });
 
+  // History and Favourites
+  const handleLibrarySelect = (selectedBook: BookDBEntry, source: "favourites" | "history") => {
+    const dto = dbEntryToAudiobookDTO(selectedBook);
+    
+    const idx = books.findIndex(b => b.itunesId === selectedBook.itunesId);
+
+    if (idx !== -1) {
+      const distance = idx - currentIndex;
+
+      //close or in history buffer then scroll to book
+      if (Math.abs(distance) <= 2 || source === "history") {
+        jumpTo(idx);
+      //make it the next book
+      } else {
+        insertNext(dto);
+      }
+    } else {
+      insertNext(dto);
+    }
+  };
+
+  // Transition effects for book information
   useEffect(() => {
     if (book?.audiblePageUrl) {
       setTitleShifted(false);
@@ -376,7 +402,7 @@ function App() {
   return (
     <div className="app">
       <OptionsMenu />
-      <LibraryMenu />
+      <LibraryMenu onSelectBook={handleLibrarySelect}/>
       <animated.div
         className="book-swipe-layer"
         style={{

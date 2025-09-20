@@ -3,8 +3,13 @@ import { useHistory } from "../hooks/useHistory";
 import { useFavourites } from "../hooks/useFavourites";
 import shelf from '../assets/shelf/shelf-4.png';
 import cdCase from '../assets/shelf/cd-case-2.png';
+import type { BookDBEntry } from "../dto/bookDB";
 
-export default function LibraryMenu() {
+interface LibraryMenuProps {
+  onSelectBook: (book: BookDBEntry, source: "favourites" | "history") => void;
+}
+
+export default function LibraryMenu({ onSelectBook }: LibraryMenuProps) {
   const [active, setActive] = useState(false);
   const [tab, setTab] = useState<"favourites" | "history">("favourites");
   const { history } = useHistory();
@@ -47,7 +52,11 @@ export default function LibraryMenu() {
             <div className={`library-content ${tab === "favourites" ? "active" : ""}`}>
               <div className="library-grid">
                 {favourites.map((entry) => (
-                  <div key={entry.asin ?? entry.itunesId} className="library-item-square">
+                  <div
+                    key={`${tab}-${entry.asin ?? entry.itunesId}`}
+                    className="library-item-square"
+                    onClick={() => onSelectBook(entry, "favourites")}
+                  >
                     <img
                       src={shelf}
                       className="library-single-shelf"
@@ -77,7 +86,11 @@ export default function LibraryMenu() {
             <div className={`library-content ${tab === "history" ? "active" : ""}`}>
               <div className="library-grid">
                 {history.map((entry) => (
-                  <div key={entry.asin ?? entry.itunesId} className="library-item-square">
+                  <div
+                    key={`${tab}-${entry.asin ?? entry.itunesId}`}
+                    className="library-item-square"
+                    onClick={() => onSelectBook(entry, "history")}
+                  >
                     <img
                       src={shelf}
                       className="library-single-shelf"
