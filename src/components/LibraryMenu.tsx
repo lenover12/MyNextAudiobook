@@ -7,21 +7,24 @@ import type { BookDBEntry } from "../dto/bookDB";
 
 interface LibraryMenuProps {
   onSelectBook: (book: BookDBEntry, source: "favourites" | "history") => void;
+  active: boolean;
+  setActive: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function LibraryMenu({ onSelectBook }: LibraryMenuProps) {
-  const [active, setActive] = useState(false);
+export default function LibraryMenu({ onSelectBook, active, setActive }: LibraryMenuProps) {
+  const activeState = active;
+  const setActiveState = setActive;
   const [tab, setTab] = useState<"favourites" | "history">("favourites");
   const { history } = useHistory();
   const { favourites } = useFavourites();
 
-  const closeMenu = () => setActive(false);
+  const closeMenu = () => setActiveState(false);
 
   return (
     <div className="library-menu">
       <button
-        className={`library-button ${active ? "active" : ""}`}
-        onClick={() => setActive((prev) => !prev)}
+        className={`library-button ${activeState ? "active" : ""}`}
+        onClick={() => setActiveState((prev) => !prev)}
         aria-label="Toggle library menu"
       >
         <div className="library-button-layers">
@@ -31,8 +34,15 @@ export default function LibraryMenu({ onSelectBook }: LibraryMenuProps) {
         </div>
       </button>
 
-      <div className={`library-overlay ${active ? "active" : ""}`} onClick={closeMenu}>
-        <div className={`library-box ${active ? "active" : ""}`} onClick={(e) => e.stopPropagation()}>
+      <div 
+        className={`library-overlay ${activeState ? "active" : ""}`}
+        onClick={closeMenu}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
+      >
+        <div className={`library-box ${activeState ? "active" : ""}`} onClick={(e) => e.stopPropagation()}>
           <div className="library-tabs">
             <button
               className={`library-tab ${tab === "favourites" ? "active" : ""}`}

@@ -39,16 +39,20 @@ const optionLabels: Record<string, string> = {
 type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
 type SocialKey = keyof Options["socialsOptions"];
 
-export default function OptionsMenu(): JSX.Element {
+interface OptionsMenuProps {
+  active: boolean;
+  setActive: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JSX.Element {
   const { options, setOptions } = useOptions();
   const [spinning, setSpinning] = useState(false);
-  const [open, setOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<number | null>(null);
 
   const handleClick = () => {
     setSpinning(true);
     setTimeout(() => setSpinning(false), 1100);
-    setOpen(true);
+    setActive(true);
   };
 
   const toggleMenu = (idx: number) => {
@@ -57,13 +61,10 @@ export default function OptionsMenu(): JSX.Element {
 
   const toggleBool = (key: BoolKey) => {
     if (typeof options[key] !== "boolean") return;
-    setOptions((prev) => {
-      const next = {
-        ...prev,
-        [key]: !(prev[key] as boolean),
-      } as Options;
-      return next;
-    });
+    setOptions((prev) => ({
+      ...prev,
+      [key]: !(prev[key] as boolean),
+    } as Options));
   };
 
   const toggleSocial = (k: SocialKey) => {
@@ -93,12 +94,16 @@ export default function OptionsMenu(): JSX.Element {
         <i className={`fa-solid fa-gear ${spinning ? "spin" : ""}`} />
       </button>
 
-      {open && (
+      {active && (
         <div
           className="options-overlay"
           role="dialog"
           aria-modal="true"
-          onClick={() => setOpen(false)}
+          onClick={() => setActive(false)}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
         >
           <div className="options-modal" onClick={(e) => e.stopPropagation()}>
             <h2 className="options-title">Options</h2>

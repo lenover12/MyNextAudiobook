@@ -155,13 +155,25 @@ function App() {
 
   const [lastBookId, setLastBookId] = useState<string | null>(null);
 
+  //active menu's to ignore scroll/swipe events
+  const [libraryActive, setLibraryActive] = useState(false);
+  const [optionsActive, setOptionsActive] = useState(false);
+
+  const menuActive = libraryActive || optionsActive;
+
+  useEffect(() => {
+    document.body.style.overflow = menuActive ? "hidden" : "";
+  }, [menuActive]);
+
   const onScrollNext = () => {
+    if (menuActive) return;
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     isPausedRef.current = audioRef.current?.paused ?? true;
     next();
   };
   
   const onScrollPrevious = () => {
+    if (menuActive) return;
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     previous();
   };
@@ -391,8 +403,14 @@ function App() {
 
   return (
     <div className="app">
-      <OptionsMenu />
-      <LibraryMenu onSelectBook={handleLibrarySelect}/>
+      <OptionsMenu 
+        active={optionsActive} 
+        setActive={setOptionsActive} 
+      />
+      <LibraryMenu 
+        active={libraryActive} 
+        setActive={setLibraryActive} 
+        onSelectBook={handleLibrarySelect}/>
       <animated.div
         className="book-swipe-layer"
         style={{
