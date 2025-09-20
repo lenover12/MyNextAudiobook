@@ -94,9 +94,9 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
         <i className={`fa-solid fa-gear ${spinning ? "spin" : ""}`} />
       </button>
 
-      {active && (
+
         <div
-          className="options-overlay"
+          className={`options-overlay ${active ? "active" : ""}`}
           role="dialog"
           aria-modal="true"
           onClick={() => setActive(false)}
@@ -105,104 +105,108 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
           onTouchEnd={(e) => e.stopPropagation()}
           onWheel={(e) => e.stopPropagation()}
         >
-          <div className="options-modal" onClick={(e) => e.stopPropagation()}>
-            <h2 className="options-title">Options</h2>
+          <div
+            className={`options-box ${active ? "active" : ""}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="options-modal">
+              <h2 className="options-title">Options</h2>
 
-            <div className="options-list">
-              {menuStructure.map((section, idx) => {
-                const isOpen = openMenu === idx;
-                return (
-                  <div className="options-section" key={section.label}>
-                    <button
-                      type="button"
-                      className="options-section-header"
-                      onClick={() => toggleMenu(idx)}
-                      aria-expanded={isOpen}
-                      aria-controls={`options-section-${idx}`}
-                    >
-                      <span>{section.label}</span>
-                      <i
-                        className={`fa-solid fa-chevron-down arrow ${
-                          isOpen ? "open" : ""
-                        }`}
-                        aria-hidden
-                      />
-                    </button>
+              <div className="options-list">
+                {menuStructure.map((section, idx) => {
+                  const isOpen = openMenu === idx;
+                  return (
+                    <div className="options-section" key={section.label}>
+                      <button
+                        type="button"
+                        className="options-section-header"
+                        onClick={() => toggleMenu(idx)}
+                        aria-expanded={isOpen}
+                        aria-controls={`options-section-${idx}`}
+                      >
+                        <span>{section.label}</span>
+                        <i
+                          className={`fa-solid fa-chevron-down arrow ${
+                            isOpen ? "open" : ""
+                          }`}
+                          aria-hidden
+                        />
+                      </button>
 
-                    <div
-                      id={`options-section-${idx}`}
-                      className={`options-submenu ${isOpen ? "expanded" : ""}`}
-                    >
-                    <div>
-                      {section.boolKeys?.map((k) => (
-                        <label
-                          className="options-submenu-item"
-                          key={k}
-                          htmlFor={`opt-${k}`}
-                        >
-                          <span className="options-label">{optionLabels[k]}</span>
-
-                          <div className="toggle">
-                            <input
-                              id={`opt-${k}`}
-                              type="checkbox"
-                              checked={Boolean(options[k as keyof Options])}
-                              onChange={() => toggleBool(k)}
-                            />
-                            <label htmlFor={`opt-${k}`} />
-                          </div>
-                        </label>
-                      ))}
-                      {section.label === "General" && (
-                        <div className="options-submenu-item">
-                          <span className="options-label">Country</span>
-                          <select
-                            value={options.countryCode ?? ""}
-                            onChange={(e) => setCountry(e.target.value)}
-                            aria-label="Choose country"
+                      <div
+                        id={`options-section-${idx}`}
+                        className={`options-submenu ${isOpen ? "expanded" : ""}`}
+                      >
+                      <div>
+                        {section.boolKeys?.map((k) => (
+                          <label
+                            className="options-submenu-item"
+                            key={k}
+                            htmlFor={`opt-${k}`}
                           >
-                            <option value="us">United States</option>
-                            <option value="au">Australia</option>
-                            <option value="uk">United Kingdom</option>
-                            <option value="ca">Canada</option>
-                            <option value="in">India</option>
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                      {section.nested === "socialsOptions" && (
-                        <div>
-                          <p className="options-section-description">Enable these bad bois and they will create a share link on each audiobook</p>
-                          <div className="options-social-flex">
-                            {(Object.keys(options.socialsOptions) as SocialKey[]).map(
-                              (k, idx) => {
-                                const active = options.socialsOptions[k];
-                                return (
-                                  <button
-                                    key={k}
-                                    type="button"
-                                    className={`options-social-icon ${active ? "active" : ""}`}
-                                    onClick={() => toggleSocial(k)}
-                                    aria-pressed={active}
-                                    aria-label={k}
-                                    data-idx={idx}
-                                  >
-                                    <i className={`fa-brands fa-${k}`} />
-                                  </button>
-                                );
-                              }
-                            )}
+                            <span className="options-label">{optionLabels[k]}</span>
+
+                            <div className="toggle">
+                              <input
+                                id={`opt-${k}`}
+                                type="checkbox"
+                                checked={Boolean(options[k as keyof Options])}
+                                onChange={() => toggleBool(k)}
+                              />
+                              <label htmlFor={`opt-${k}`} />
+                            </div>
+                          </label>
+                        ))}
+                        {section.label === "General" && (
+                          <div className="options-submenu-item">
+                            <span className="options-label">Country</span>
+                            <select
+                              value={options.countryCode ?? ""}
+                              onChange={(e) => setCountry(e.target.value)}
+                              aria-label="Choose country"
+                            >
+                              <option value="us">United States</option>
+                              <option value="au">Australia</option>
+                              <option value="uk">United Kingdom</option>
+                              <option value="ca">Canada</option>
+                              <option value="in">India</option>
+                            </select>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                        {section.nested === "socialsOptions" && (
+                          <div>
+                            <p className="options-section-description">Enable these bad bois and they will create a share link on each audiobook</p>
+                            <div className="options-social-flex">
+                              {(Object.keys(options.socialsOptions) as SocialKey[]).map(
+                                (k, idx) => {
+                                  const active = options.socialsOptions[k];
+                                  return (
+                                    <button
+                                      key={k}
+                                      type="button"
+                                      className={`options-social-icon ${active ? "active" : ""}`}
+                                      onClick={() => toggleSocial(k)}
+                                      aria-pressed={active}
+                                      aria-label={k}
+                                      data-idx={idx}
+                                    >
+                                      <i className={`fa-brands fa-${k}`} />
+                                    </button>
+                                  );
+                                }
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }

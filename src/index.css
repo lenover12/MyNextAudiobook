@@ -498,7 +498,6 @@ h2.urbanist-bold {
   border: none;
   cursor: pointer;
   position: relative;
-  z-index: 1
 }
 
 .share-button i {
@@ -532,7 +531,6 @@ h2.urbanist-bold {
 
 .options-menu {
   position: relative;
-  z-index: 4;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
 }
@@ -557,6 +555,8 @@ h2.urbanist-bold {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  z-index: 1;
 }
 
 .options-menu .options-button i {
@@ -581,7 +581,29 @@ h2.urbanist-bold {
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 10;
 }
+
+.options-menu .options-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.options-menu .options-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(150%, -50%);
+  transition: transform 0.35s ease;
+}
+
+.options-menu .options-box.active {
+  transform: translate(-50%, -50%);
+}
+
 .options-menu .options-modal {
   background: #1f1f1f;
   color: #eee;
@@ -592,6 +614,7 @@ h2.urbanist-bold {
   max-height: 85vmin;
   box-shadow: 0 calc(var(--ui-scale) * 0.4) calc(var(--ui-scale) * 1) rgba(0,0,0,0.5);
 }
+
 .options-menu .options-title {
   text-align: center;
   margin-bottom: calc(var(--ui-padding) * 0.5);
@@ -745,7 +768,6 @@ h2.urbanist-bold {
 /* Library Menu */
 .library-menu {
   position: absolute;
-  z-index: 4;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
 }
@@ -764,7 +786,7 @@ h2.urbanist-bold {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 1;
 }
 
 .library-menu .library-button span {
@@ -801,8 +823,8 @@ h2.urbanist-bold {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.35s ease;
-  z-index: 3;
   overflow: hidden;
+  z-index: 10;
 }
 
 .library-menu .library-overlay.active {
@@ -825,7 +847,6 @@ h2.urbanist-bold {
   border-radius: calc(var(--ui-scale) * 1.2);
   transition: transform 0.35s ease;
   overflow: hidden;
-  z-index: 4;
 }
 
 .library-menu .library-box.active {
@@ -932,7 +953,7 @@ h2.urbanist-bold {
 }
 
 .library-menu .library-single-shelf:hover > * {
-  z-index:0;
+  z-index: 0;
 }
 
 .library-menu .library-audiobook {
