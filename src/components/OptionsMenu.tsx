@@ -4,6 +4,7 @@ import type { Options } from "../utils/optionsStorage";
 import { useHistory } from "../hooks/useHistory";
 import { useFavourites } from "../hooks/useFavourites";
 import { genreOptions } from "../dto/genres";
+import { countryOptions, type CountryCode } from "../dto/countries";
 
 const menuStructure = [
   {
@@ -48,14 +49,6 @@ const optionLabels: Record<string, string> = {
   clearHistory: "Delete History",
   clearFavourites: "Delete Favourites",
 };
-
-const countryOptions = [
-  { code: "us", label: "United States" },
-  { code: "au", label: "Australia" },
-  { code: "uk", label: "United Kingdom" },
-  { code: "ca", label: "Canada" },
-  { code: "in", label: "India" },
-] as const;
 
 //TODO localization
 const languageOptions = [
@@ -217,7 +210,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                               <span className="options-label">Country</span>
                               <select
                                 value={options.countryCode ?? ""}
-                                onChange={(e) => setCountry(e.target.value)}
+                                onChange={(e) => setCountry(e.target.value as CountryCode)}
                                 aria-label="Choose country"
                               >
                                 {countryOptions.map((c) => (
