@@ -3,8 +3,6 @@ import { fetchRandom } from "../utils/audiobookAPI";
 import type { AudiobookDTO } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 
-const PRELOAD_AHEAD = 1;
-const MUST_HAVE_AUDIBLE = false;
 
 function preloadMedia(book: AudiobookDTO) {
   console.log(book);
@@ -21,9 +19,18 @@ function preloadMedia(book: AudiobookDTO) {
 }
 
 export function usePreloadBooks(
-  options: FetchOptions & { seed?: AudiobookDTO | null } = {}
+  options: FetchOptions & {
+    seed?: AudiobookDTO | null;
+    preloadAhead: number;
+    mustHaveAudible: boolean;
+  }
 ) {
-  const { seed, ...fetchOptions } = options;
+  const {
+    seed = null,
+    preloadAhead,
+    mustHaveAudible,
+    ...fetchOptions
+  } = options;
 
   const [books, setBooks] = useState<AudiobookDTO[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -53,7 +60,7 @@ export function usePreloadBooks(
   const preload = useCallback(async (count: number) => {
     const existingBooks = booksRef.current;
     const forwardCount = existingBooks.length - indexRef.current - 1;
-    const needed = PRELOAD_AHEAD - forwardCount;
+    const needed = preloadAhead - forwardCount;
 
     if (needed <= 0 || isPreloadingRef.current) return;
 
@@ -70,7 +77,7 @@ export function usePreloadBooks(
           book.itunesId !== null &&
           !newBooks.some(b => b.itunesId === book.itunesId) &&
           !existingBooks.some(b => b.itunesId === book.itunesId) &&
-          ((MUST_HAVE_AUDIBLE && book.audiblePageUrl != null) || !MUST_HAVE_AUDIBLE)
+          ((mustHaveAudible && book.audiblePageUrl != null) || !mustHaveAudible)
         ) {
           newBooks.push(book);
           preloadMedia(book);
@@ -99,7 +106,7 @@ export function usePreloadBooks(
 
   useEffect(() => {
     const forwardCount = booksRef.current.length - indexRef.current - 1;
-    const needed = PRELOAD_AHEAD - forwardCount;
+    const needed = preloadAhead - forwardCount;
     if (needed > 0) {
       preload(needed + 1);
     }
@@ -107,7 +114,7 @@ export function usePreloadBooks(
 
   useEffect(() => {
     const forwardCount = books.length - currentIndex - 1;
-    const needed = PRELOAD_AHEAD - forwardCount;
+    const needed = preloadAhead - forwardCount;
 
     if (needed > 0 && !isPreloadingRef.current) {
       preload(needed);

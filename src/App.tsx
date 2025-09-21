@@ -63,8 +63,10 @@ function App() {
     jumpTo,
   } = usePreloadBooks({
     genres: options.enabledGenres as Genre[],
-    allowExplicit: false,
-    allowFallback: true,
+    allowExplicit: options.allowExplicit,
+    allowFallback: options.allowFallback,
+    mustHaveAudible: options.mustHaveAudible,
+    preloadAhead: options.preloadAhead,
     ...(seedBook ? { seed: seedBook } : {}),
   });
  

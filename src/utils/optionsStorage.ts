@@ -17,6 +17,8 @@ export type Options = {
   };
   bookIdsInDomain: boolean;
   enabledGenres: string[];
+  mustHaveAudible: boolean;
+  preloadAhead: number;
 };
 
 const STORAGE_KEY = "tokbooka-options";
@@ -43,6 +45,8 @@ export const defaultOptions: Options = {
   },
   bookIdsInDomain: true,
   enabledGenres: [],
+  mustHaveAudible: false,
+  preloadAhead: 1,
 };
 
 export function loadOptions(): Options {

@@ -14,8 +14,9 @@ const menuStructure = [
       "allowExplicit",
       // "allowFallback",
       "useQRCode",
-      // "allowNavigatorShare",
+      // "allowNavigatorShare", (if viable)
       "bookIdsInDomain",
+      "mustHaveAudible",
     ] as const,
   },
   {
@@ -35,9 +36,10 @@ const menuStructure = [
 const optionLabels: Record<string, string> = {
   allowExplicit: "Allow NSFW Audiobooks",
   allowFallback: "Allow Fallback",
-  useQRCode: "Use QR Code",
+  useQRCode: "Show QR Code",
   allowNavigatorShare: "Allow Navigator Share",
   bookIdsInDomain: "Book IDs in Domain",
+  mustHaveAudible: "Only books with Audible",
   countryCode: "Country",
   languageCode: "Language",
   twitter: "Twitter",
@@ -238,6 +240,22 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                               </select>
                             </div>
                           )}
+                          {/* {section.label === "General" && (
+                            <div className="options-submenu-item">
+                              <span className="options-label">Preload Ahead</span>
+                              <input
+                                type="number"
+                                min={0}
+                                value={options.preloadAhead}
+                                onChange={(e) =>
+                                  setOptions((prev) => ({
+                                    ...prev,
+                                    preloadAhead: parseInt(e.target.value, 10) || 0,
+                                  }))
+                                }
+                              />
+                            </div>
+                          )} */}
                         </div>
                         {section.nested === "genresOptions" && (
                           <div>
