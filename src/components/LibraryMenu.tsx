@@ -127,6 +127,7 @@ export default function LibraryMenu({ onSelectBook, active, setActive }: Library
               </div>
             </div>
           </div>
+          <div className="gradient-overlay gradient-bottom"></div>
         </div>
       </div>
     </div>

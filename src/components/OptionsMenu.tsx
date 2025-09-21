@@ -340,6 +340,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                 })}
               </div>
             </div>
+            <div className="gradient-overlay gradient-bottom options-modal-gradient"></div>
           </div>
         </div>
     </div>
