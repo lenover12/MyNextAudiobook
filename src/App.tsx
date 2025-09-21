@@ -25,6 +25,7 @@ import OptionsMenu from "./components/OptionsMenu";
 import type { Genre } from "./dto/genres";
 import { useHistory } from "./hooks/useHistory";
 import FavouritesButton from './components/FavouritesButton';
+import { GenreLabel } from "./components/GenreLabel";
 
 import { animated, useSpring } from '@react-spring/web';
 
@@ -442,6 +443,13 @@ function App() {
               togglePlayPause={togglePlayPause}
               bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
             >
+              <div className="genre-title-container">
+                {book && (
+                  <GenreLabel
+                    genre={book.genre ?? null}
+                  />
+                )}
+              </div>
               <div className="favourite-container">
                 {book && (
                   <FavouritesButton
