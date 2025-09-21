@@ -364,6 +364,7 @@ h2.urbanist-bold {
   margin:0px;
   width: calc(var(--book-size) * 0.5);
   text-align: right;
+  user-select: none;
 
   /* top */
   /* top: calc(var(--book-size) * -0.075);
@@ -644,6 +645,7 @@ h2.urbanist-bold {
   font-size: calc(var(--ui-font-size) * 1.2);
   font-weight: bold;
   border-bottom: 1px solid #333;
+  user-select: none;
 }
 
 .options-menu .options-section {
@@ -665,7 +667,13 @@ h2.urbanist-bold {
   min-height: calc(var(--ui-scale) * 1.5);
   cursor: pointer;
   color: #eee;
+  user-select: none;
 }
+
+.options-menu .options-label {
+  user-select: none;
+}
+
 .options-menu .arrow {
   transition: transform 0.3s ease;
 }
@@ -695,7 +703,7 @@ h2.urbanist-bold {
   justify-content: center;
   align-items: center;
 
-  gap: calc(var(--ui-scale) * 0.4);
+  gap: calc(var(--ui-scale) * 0.2);
   margin-bottom: calc(var(--ui-scale) * 0.3);
   margin-top: calc(var(--ui-scale) * 0.3);
 }
@@ -725,7 +733,8 @@ h2.urbanist-bold {
   padding: calc(var(--ui-scale) * 0.25) 0;
   font-size: calc(var(--ui-font-size) * 0.85);
   color: #ddd;
-  min-height: calc(var(--ui-scale) * 1.2);
+  /* min-height: calc(var(--ui-scale) * 1.2); */
+  font-weight: normal;
 }
 
 .options-menu .options-submenu-item select {
@@ -794,6 +803,7 @@ h2.urbanist-bold {
   margin-bottom: calc(var(--ui-padding) * 0.1);
   font-size: calc(var(--ui-font-size) * 0.7);
   font-weight:lighter;
+  user-select: none;
 }
 
 .options-menu .options-social-flex {
@@ -1082,6 +1092,7 @@ h2.urbanist-bold {
   cursor: pointer;
   transition: background 0.25s ease;
   position: relative;
+  user-select: none;
 }
 
 .library-menu .library-single-shelf {
