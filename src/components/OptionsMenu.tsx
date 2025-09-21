@@ -18,7 +18,7 @@ const menuStructure = [
     ] as const,
   },
   {
-    label: "Genres",
+    label: "Audiobook Genres",
     nested: "genresOptions" as const,
   },
   {
