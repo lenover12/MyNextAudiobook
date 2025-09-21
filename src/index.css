@@ -733,7 +733,7 @@ h2.urbanist-bold {
   color: #eee;
   border: 1px solid #444;
   border-radius: calc(var(--ui-scale) * 0.4);
-  padding: calc(var(--ui-scale) * 0.1) calc(var(--ui-scale) * 0.6);
+  padding: calc(var(--ui-scale) * 0.05) calc(var(--ui-scale) * 0.6);
   font-size: calc(var(--ui-scale) * 0.8);
   font-family: inherit;
   outline: none;
@@ -741,6 +741,7 @@ h2.urbanist-bold {
   -webkit-appearance: none;
   -moz-appearance: none;
   cursor: pointer;
+  width: 50%;
 }
 
 .options-menu .options-submenu-item select:focus {
