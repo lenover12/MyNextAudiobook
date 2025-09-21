@@ -5,6 +5,7 @@ import { useHistory } from "../hooks/useHistory";
 import { useFavourites } from "../hooks/useFavourites";
 import { genreOptions } from "../dto/genres";
 import { countryOptions, type CountryCode } from "../dto/countries";
+import { languageOptions, type LanguageCode } from "../dto/languages";
 
 const menuStructure = [
   {
@@ -38,6 +39,7 @@ const optionLabels: Record<string, string> = {
   allowNavigatorShare: "Allow Navigator Share",
   bookIdsInDomain: "Book IDs in Domain",
   countryCode: "Country",
+  languageCode: "Language",
   twitter: "Twitter",
   facebook: "Facebook",
   linkedin: "LinkedIn",
@@ -49,14 +51,6 @@ const optionLabels: Record<string, string> = {
   clearHistory: "Delete History",
   clearFavourites: "Delete Favourites",
 };
-
-//TODO localization
-const languageOptions = [
-  { code: "en", label: "English" },
-  { code: "fr", label: "French" },
-  { code: "de", label: "German" },
-];
-
 
 type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
 type SocialKey = keyof Options["socialsOptions"];
@@ -120,6 +114,13 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
     setOptions((prev) => ({
       ...prev,
       countryCode: value || undefined,
+    }));
+  };
+
+  const setLanguage = (value: string) => {
+    setOptions((prev) => ({
+      ...prev,
+      languageCode: value || undefined,
     }));
   };
 
@@ -214,6 +215,22 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                                 aria-label="Choose country"
                               >
                                 {countryOptions.map((c) => (
+                                  <option key={c.code} value={c.code}>
+                                    {c.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                          {section.label === "General" && (
+                            <div className="options-submenu-item">
+                              <span className="options-label">Language</span>
+                              <select
+                                value={options.languageCode ?? ""}
+                                onChange={(e) => setLanguage(e.target.value as LanguageCode)}
+                                aria-label="Choose language"
+                              >
+                                {languageOptions.map((c) => (
                                   <option key={c.code} value={c.code}>
                                     {c.label}
                                   </option>

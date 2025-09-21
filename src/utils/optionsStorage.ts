@@ -2,6 +2,7 @@ export type Options = {
   allowExplicit: boolean;
   allowFallback: boolean;
   countryCode?: string;
+  languageCode?: string;
   useQRCode: boolean;
   allowNavigatorShare: boolean;
   socialsOptions: {
