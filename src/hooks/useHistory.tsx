@@ -16,7 +16,8 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
   const [history, setHistory] = useState<BookDBEntry[]>([]);
 
   const refresh = async () => {
-    const entries = await getHistory();
+    const maxItems = 500;
+    const entries = await getHistory(maxItems);
     setHistory(entries);
   };
 

@@ -95,7 +95,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 
-export async function getFavourites(limit = 50): Promise<BookDBEntry[]> { //TODO: update limit
+export async function getFavourites(limit?: number): Promise<BookDBEntry[]> {
     const db = await getDB();
     const tx = db.transaction(STORE_NAME, "readonly");
     const index = tx.store.index("timestamp");
@@ -103,7 +103,7 @@ export async function getFavourites(limit = 50): Promise<BookDBEntry[]> { //TODO
     const results: BookDBEntry[] = [];
     let cursor = await index.openCursor(null, "prev");
 
-    while (cursor && results.length < limit) {
+    while (cursor && (!limit || results.length < limit)) {
         results.push(cursor.value as BookDBEntry);
         cursor = await cursor.continue();
     }

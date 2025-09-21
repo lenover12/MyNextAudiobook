@@ -16,7 +16,8 @@ export function FavouritesProvider({ children }: { children: React.ReactNode }) 
   const [favourites, setFavourites] = useState<BookDBEntry[]>([]);
 
   const refresh = async () => {
-    const entries = await getFavourites();
+    const maxItems = 500;
+    const entries = await getFavourites(maxItems);
     setFavourites(entries);
   };
 
