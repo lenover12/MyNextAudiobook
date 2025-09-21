@@ -7,6 +7,7 @@ interface SwipeNavigationOptions {
   canGoNext: boolean;
   canGoPrevious: boolean;
   threshold?: number;
+  disabled?: boolean;
 }
 
 export function useSwipeNavigation({
@@ -15,11 +16,14 @@ export function useSwipeNavigation({
   canGoNext,
   canGoPrevious,
   threshold = 100,
+  disabled,
 }: SwipeNavigationOptions) {
   const [{ y }, api] = useSpring(() => ({ y: 0 }));
 
   useDrag(
     ({ movement: [, my], velocity: [, vy], direction: [, dy], last, }) => {
+      if (disabled) return;
+      
       const clampedY = Math.max(
         canGoPrevious ? -window.innerHeight * 0.5 : 0,
         Math.min(my, canGoNext ? window.innerHeight * 0.5 : 0)
@@ -64,9 +68,9 @@ export function useSwipeNavigation({
       target: typeof window !== 'undefined' ? window : undefined,
       pointer: { touch: true },
       eventOptions: { passive: false },
+      enabled: !disabled,
     }
   );
-
 
   return { y };
 }

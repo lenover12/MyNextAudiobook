@@ -5,6 +5,7 @@ interface UseScrollNavigationOptions {
   onPrevious: () => void;
   canGoNext: boolean;
   canGoPrevious: boolean;
+  disabled?: boolean;
 }
 
 export function useScrollNavigation({
@@ -12,11 +13,13 @@ export function useScrollNavigation({
   onPrevious,
   canGoNext,
   canGoPrevious,
+  disabled,
 }: UseScrollNavigationOptions) {
   const scrollLock = useRef(false);
 
   const handleScroll = useCallback(
     (deltaY: number) => {
+      if (disabled) return;
       if (scrollLock.current) return;
       scrollLock.current = true;
 
@@ -30,15 +33,17 @@ export function useScrollNavigation({
         scrollLock.current = false;
       }, 500);
     },
-    [onNext, onPrevious, canGoNext, canGoPrevious]
+    [onNext, onPrevious, canGoNext, canGoPrevious, disabled]
   );
 
   useEffect(() => {
     const wheelHandler = (e: WheelEvent) => {
+      if (disabled) return;
       handleScroll(e.deltaY);
     };
 
     const keyHandler = (e: KeyboardEvent) => {
+      if (disabled) return;
       if (e.key === "ArrowDown" && canGoNext) {
         handleScroll(100);
       } else if (e.key === "ArrowUp" && canGoPrevious) {
@@ -53,5 +58,5 @@ export function useScrollNavigation({
       window.removeEventListener("wheel", wheelHandler);
       window.removeEventListener("keydown", keyHandler);
     };
-  }, [handleScroll]);
+  }, [handleScroll, disabled, canGoNext, canGoPrevious]);
 }

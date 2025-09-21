@@ -188,6 +188,7 @@ function App() {
       onPrevious: onScrollPrevious,
       canGoNext: !!book,
       canGoPrevious: currentIndex > 0,
+      disabled: menuActive,
     });
   }
 
@@ -196,6 +197,7 @@ function App() {
     onPrevious: onScrollPrevious,
     canGoNext: !!book,
     canGoPrevious: currentIndex > 0,
+    disabled: menuActive,
   });
 
   //affiliate links
