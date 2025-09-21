@@ -22,6 +22,7 @@ import { dbEntryToAudiobookDTO, audiobookDTOToDbEntry } from "./dto/audiobookCon
 import { useOptions } from "./hooks/useOptions";
 import LibraryMenu from "./components/LibraryMenu";
 import OptionsMenu from "./components/OptionsMenu";
+import type { Genre } from "./dto/genres";
 import { useHistory } from "./hooks/useHistory";
 import FavouritesButton from './components/FavouritesButton';
 
@@ -60,7 +61,7 @@ function App() {
     insertNext,
     jumpTo,
   } = usePreloadBooks({
-    genre: "Sci-Fi & Fantasy",
+    genres: options.enabledGenres as Genre[],
     allowExplicit: false,
     allowFallback: true,
     ...(seedBook ? { seed: seedBook } : {}),

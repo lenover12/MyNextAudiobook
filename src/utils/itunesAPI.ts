@@ -1,10 +1,11 @@
 import { getSearchTerm } from './getSearchTerm';
 import { pruneString } from './pruneString';
 import type { AudiobookDTO } from '../dto/audiobookDTO';
+import type { Genre } from "../dto/genres";
 
 export interface FetchOptions {
   term?: string;
-  genre?: string;
+  genres?: Genre[];
   authorHint?: string;
   // limit?: number;
   // country?: string;
@@ -66,22 +67,29 @@ function mapItunesToDTO(item: any): AudiobookDTO {
 
 let cachedFallbackBooks: FallbackBooksByGenre | null = null;
 
-async function getFallbackBook(genre?: string): Promise<AudiobookDTO & { _fallback: true }> {
+async function getFallbackBook(genres?: string[]): Promise<AudiobookDTO & { _fallback: true }> {
   if (!cachedFallbackBooks) {
     const { default: rawBooks } = await import('../assets/fallbackBooks.json');
     cachedFallbackBooks = JSON.parse(JSON.stringify(rawBooks)) as FallbackBooksByGenre;
   }
 
-  let genreKey = genre && cachedFallbackBooks[genre] ? genre : null;
+  let candidateGenres: string[];
 
-  if (!genreKey) {
-    const genres = Object.keys(cachedFallbackBooks);
-    genreKey = genres[Math.floor(Math.random() * genres.length)];
+  if (genres && genres.length > 0) {
+    candidateGenres = genres.filter(g => cachedFallbackBooks![g]);
+  } else {
+    candidateGenres = Object.keys(cachedFallbackBooks!);
   }
 
-  const booksForGenre = cachedFallbackBooks[genreKey];
+  if (candidateGenres.length === 0) {
+    candidateGenres = Object.keys(cachedFallbackBooks!);
+  }
+
+  const genreKey = candidateGenres[Math.floor(Math.random() * candidateGenres.length)];
+  const booksForGenre = cachedFallbackBooks![genreKey];
+
   if (!booksForGenre || booksForGenre.length === 0) {
-    throw new Error(`No fallback books available for enre "${genreKey}"`);
+    throw new Error(`No fallback books available for genre "${genreKey}"`);
   }
 
   const book = booksForGenre[Math.floor(Math.random() * booksForGenre.length)];
@@ -94,7 +102,7 @@ async function getFallbackBook(genre?: string): Promise<AudiobookDTO & { _fallba
 export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
   let maxRetries: number;
   if (options?.allowFallback) {
-    maxRetries = options?.genre ? 7 : 5;
+    maxRetries = options?.genres && options.genres.length > 0 ? 7 : 5;
   } else {
     maxRetries = Infinity;
   }
@@ -129,11 +137,14 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
       }
 
       const data = await response.json();
-      const results = data.results.filter((item: any) =>
-        item.previewUrl &&
-        (!options?.genre || item.primaryGenreName === options.genre)
-      )
-      .map((item: any) => mapItunesToDTO(item));
+      const results = data.results
+        .filter((item: any) => {
+          if (!item.previewUrl) return false;
+          if (!options?.genres || options.genres.length === 0) return true;
+          return options.genres.includes(item.primaryGenreName as Genre);
+        })
+        .map((item: any) => mapItunesToDTO(item));
+
 
       if (results.length > 0) {
         return results[Math.floor(Math.random() * results.length)];
@@ -146,7 +157,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
   console.log("FALLBACK")
 
   if (options?.allowFallback) {
-    return await getFallbackBook(options.genre);
+    return await getFallbackBook(options.genres);
   }
 
   return null;

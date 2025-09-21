@@ -560,7 +560,6 @@ h2.urbanist-bold {
 }
 
 .options-menu .options-button i {
-  /* text-shadow: 0 0 calc(var(--ui-scale) * 0.8) #0080ff; */
   text-shadow: 0 0 calc(var(--ui-scale) * 0.8) #ffffff81;
 }
 
@@ -609,7 +608,6 @@ h2.urbanist-bold {
   color: #eee;
   padding: calc(var(--ui-scale) * 1.2);
   border-radius: calc(var(--ui-scale) * 1);
-  /* width: calc(var(--ui-scale) * 15); */
   width: calc(var(--book-size) * 1);
   max-width: 85vmin;
   max-height: 85vmin;
@@ -666,6 +664,35 @@ h2.urbanist-bold {
 .options-menu .indent-the-children {
   margin-right: calc(var(--ui-font-size) * 0.4);
   margin-left: calc(var(--ui-font-size) * 0.4);
+}
+
+.options-genre-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+
+  gap: calc(var(--ui-scale) * 0.4);
+  margin-bottom: calc(var(--ui-scale) * 0.3);
+  margin-top: calc(var(--ui-scale) * 0.3);
+}
+
+.options-genre-pill {
+  padding: calc(var(--ui-scale) * 0.25) calc(var(--ui-scale) * 0.35);
+  border-radius: 9999px;
+  border: calc(var(--ui-scale) * 0.001) solid #ccc;
+  cursor: pointer;
+  font-size: calc(var(--ui-scale) * 0.48);
+  transition: all 0.2s ease;
+  background-color: #bbbbbb28;
+  color: #7c7c7c;
+}
+
+.options-genre-pill.active {
+  background: #bbfca4;
+  background-color: #bbb;
+  color: #282828;
+  border-color: #bbfca4;
 }
 
 .options-menu .options-submenu-item {

@@ -3,6 +3,7 @@ import { useOptions } from "../hooks/useOptions";
 import type { Options } from "../utils/optionsStorage";
 import { useHistory } from "../hooks/useHistory";
 import { useFavourites } from "../hooks/useFavourites";
+import { genreOptions } from "../dto/genres";
 
 const menuStructure = [
   {
@@ -14,6 +15,10 @@ const menuStructure = [
       // "allowNavigatorShare",
       "bookIdsInDomain",
     ] as const,
+  },
+  {
+    label: "Genres",
+    nested: "genresOptions" as const,
   },
   {
     label: "Socials",
@@ -92,6 +97,20 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
       ...prev,
       [key]: !(prev[key] as boolean),
     } as Options));
+  };
+
+  const toggleGenre = (genre: string) => {
+    setOptions((prev) => {
+      const exists = prev.enabledGenres.includes(genre);
+      const newGenres = exists
+        ? prev.enabledGenres.filter((g) => g !== genre)
+        : [...prev.enabledGenres, genre];
+
+      return {
+        ...prev,
+        enabledGenres: newGenres.filter((g): g is string => !!g),
+      };
+    });
   };
 
   const toggleSocial = (k: SocialKey) => {
@@ -210,6 +229,29 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                             </div>
                           )}
                         </div>
+                        {section.nested === "genresOptions" && (
+                          <div>
+                            <p className="options-section-description">
+                              limit results by specific genres
+                            </p>
+                            <div className="options-genre-flex">
+                              {genreOptions.map((g) => {
+                                const active = options.enabledGenres.includes(g.label);
+                                return (
+                                  <button
+                                    key={g.label}
+                                    type="button"
+                                    className={`options-genre-pill ${active ? "active" : ""}`}
+                                    onClick={() => toggleGenre(g.label)}
+                                    aria-pressed={active}
+                                  >
+                                    {g.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                         {section.nested === "socialsOptions" && (
                           <div>
                             <p className="options-section-description">Enable these bad bois and they will create a share link on each audiobook</p>

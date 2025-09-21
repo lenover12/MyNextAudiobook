@@ -15,6 +15,7 @@ export type Options = {
     telegram: boolean;
   };
   bookIdsInDomain: boolean;
+  enabledGenres: string[];
 };
 
 const STORAGE_KEY = "tokbooka-options";
@@ -40,6 +41,7 @@ export const defaultOptions: Options = {
     telegram: false,
   },
   bookIdsInDomain: true,
+  enabledGenres: [],
 };
 
 export function loadOptions(): Options {
@@ -55,6 +57,9 @@ export function loadOptions(): Options {
         ...defaultOptions.socialsOptions,
         ...(parsed.socialsOptions ?? {}),
       },
+      enabledGenres: (parsed.enabledGenres ?? defaultOptions.enabledGenres).filter(
+        (g): g is string => !!g
+      ),
     };
   } catch {
     return defaultOptions;
