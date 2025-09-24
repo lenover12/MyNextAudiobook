@@ -120,8 +120,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     ),
   };
 
+  const pathDataRef = useRef<{
+    path: string;
+    bottomY: number;
+    horizontalStartPercent: number;
+  }>({ path: "", bottomY: 0, horizontalStartPercent: 0 });
+
   //dynamically update offset-path
-  useEffect(() => {
+    useEffect(() => {
     const menu = menuRef.current;
     const bookEl = bookRef?.current;
     if (!menu || !bookEl) return;
@@ -130,11 +136,17 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
       const bookSizePx = getCssVarInPx(bookEl, "--book-size");
       const startX = bookSizePx * 0.1;
       const startY = 0;
-      const endX = startX;
-      const endY = bookSizePx / 1.7;
-      const controlX = (startX + endX) / 1.5;
+      const bottomY = bookSizePx / 1.4;
+      const horizontalEndX = startX - bookSizePx;
+      const horizontalEndY = bottomY;
+      
+      const controlX = (startX + startX) / 1.5;
       const controlY = 0;
-      const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${endX} ${endY}`;
+      
+      const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${startX} ${bottomY} L ${horizontalEndX} ${horizontalEndY}`;
+      const horizontalStartPercent = (bottomY / (bottomY + bookSizePx)) * 100;
+
+      pathDataRef.current = { path, bottomY, horizontalStartPercent };
 
       const lis = menu.querySelectorAll("li") as NodeListOf<HTMLElement>;
       lis.forEach(li => {
@@ -187,14 +199,30 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
       return;
     }
 
-    const minOffset = 20;
-    const maxOffset = 100;
-    const step = (maxOffset - minOffset) / (lis.length - 1 || 1);
+    //--linear distribution
+    // const minOffset = 7;
+    // const maxOffset = 100;
+    // const step = (maxOffset - minOffset) / (lis.length - 1 || 1);
+
+    //--fixed step distribution
+    const distancePerIcon = 7;
+    const iconStep = 7;
+
+    const { path, horizontalStartPercent } = pathDataRef.current;
 
     lis.forEach((li, index) => {
-      const percent = minOffset + step * index;
+      //--linear distribution
+      // const percent = minOffset + step * index;
+      //--fixed step distribution
+      const percent = distancePerIcon * index + iconStep;
+      li.style.offsetPath = `path('${path}')`;
       li.style.offsetDistance = `${percent}%`;
       li.style.setProperty("--target-distance", `${percent}%`);
+
+      // rotate when reaching the horizontal part
+      if (percent >= horizontalStartPercent) {
+        li.style.transform = `rotate(-90deg)`;
+      }
     });
   }, [open, socialsOptions]);
 
@@ -211,7 +239,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
       </div>
 
       <div className={`share-menu ${open ? "open" : ""}`} ref={menuRef}>
-        <ul>
+        <ul key={JSON.stringify(socialsOptions)}>
           {Object.entries(socialsOptions || {}).map(([key, enabled]) =>
             enabled && socialButtonsMap[key])}
         </ul>

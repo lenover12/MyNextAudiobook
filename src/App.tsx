@@ -17,10 +17,22 @@ import ShareDropdownButton from "./components/ShareDropdownButton";
 import { useQueryParams } from "./hooks/useQueryParams";
 import { fetchBookByIds } from "./utils/audiobookAPI";
 import type { AudiobookDTO } from "./dto/audiobookDTO";
+import type { BookDBEntry } from "./dto/bookDB";
+import { dbEntryToAudiobookDTO, audiobookDTOToDbEntry } from "./dto/audiobookConverters";
+import { useOptions } from "./hooks/useOptions";
+import LibraryMenu from "./components/LibraryMenu";
+import OptionsMenu from "./components/OptionsMenu";
+import type { Genre } from "./dto/genres";
+import { useHistory } from "./hooks/useHistory";
+import FavouritesButton from './components/FavouritesButton';
+import { GenreLabel } from "./components/GenreLabel";
 
 import { animated, useSpring } from '@react-spring/web';
 
 function App() {
+  const { options } = useOptions();
+  const { addEntry: addHistory } = useHistory();
+
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
   const sharedItunesId = query.get("i");
@@ -47,22 +59,22 @@ function App() {
     isFetching,
     next,
     previous,
+    insertNext,
+    jumpTo,
   } = usePreloadBooks({
-    genre: "Sci-Fi & Fantasy",
-    allowExplicit: false,
-    allowFallback: true,
+    genres: options.enabledGenres as Genre[],
+    allowExplicit: options.allowExplicit,
+    allowFallback: options.allowFallback,
+    mustHaveAudible: options.mustHaveAudible,
+    preloadAhead: options.preloadAhead,
     ...(seedBook ? { seed: seedBook } : {}),
   });
-
-  //Temporary Options
-  //Domain Updates
-  const bookIdsInDomain = false;
-  
+ 
   //Update the URL whenever the current book changes
   useEffect(() => {
     if (!book) return;
     
-    if (bookIdsInDomain) {
+    if (options.bookIdsInDomain) {
       const params = new URLSearchParams();
       if (book.itunesId) params.set("i", book.itunesId.toString());
       if (book.asin) params.set("a", book.asin);
@@ -75,7 +87,7 @@ function App() {
         window.history.replaceState({}, "", cleanUrl);
       }
     }
-  }, [book, bookIdsInDomain]);
+  }, [book, options.bookIdsInDomain]);
 
   //book placement for scrolling
   const getBookByOffset = (offset: number) => {
@@ -89,6 +101,14 @@ function App() {
   ];
 
   const { loadingStates, initLoadingState, markFadeIn, markLoaded } = useLoadingStates();
+  
+  //add fetched book to history
+  useEffect(() => {
+    if (!book) return;
+
+   addHistory(audiobookDTOToDbEntry(book));
+  }, [book, addHistory]);
+
 
   //canvas background effect
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -139,13 +159,25 @@ function App() {
 
   const [lastBookId, setLastBookId] = useState<string | null>(null);
 
+  //active menu's to ignore scroll/swipe events
+  const [libraryActive, setLibraryActive] = useState(false);
+  const [optionsActive, setOptionsActive] = useState(false);
+
+  const menuActive = libraryActive || optionsActive;
+
+  useEffect(() => {
+    document.body.style.overflow = menuActive ? "hidden" : "";
+  }, [menuActive]);
+
   const onScrollNext = () => {
+    if (menuActive) return;
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     isPausedRef.current = audioRef.current?.paused ?? true;
     next();
   };
   
   const onScrollPrevious = () => {
+    if (menuActive) return;
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     previous();
   };
@@ -158,6 +190,7 @@ function App() {
       onPrevious: onScrollPrevious,
       canGoNext: !!book,
       canGoPrevious: currentIndex > 0,
+      disabled: menuActive,
     });
   }
 
@@ -166,6 +199,7 @@ function App() {
     onPrevious: onScrollPrevious,
     canGoNext: !!book,
     canGoPrevious: currentIndex > 0,
+    disabled: menuActive,
   });
 
   //affiliate links
@@ -305,6 +339,28 @@ function App() {
     return abs < 60 ? 1 : abs > 120 ? 0 : 1 - (abs - 60) / 60;
   });
 
+  // History and Favourites
+  const handleLibrarySelect = (selectedBook: BookDBEntry, source: "favourites" | "history") => {
+    const dto = dbEntryToAudiobookDTO(selectedBook);
+    
+    const idx = books.findIndex(b => b.itunesId === selectedBook.itunesId);
+
+    if (idx !== -1) {
+      const distance = idx - currentIndex;
+
+      //close or in history buffer then scroll to book
+      if (Math.abs(distance) <= 2 || source === "history") {
+        jumpTo(idx);
+      //make it the next book
+      } else {
+        insertNext(dto);
+      }
+    } else {
+      insertNext(dto);
+    }
+  };
+
+  // Transition effects for book information
   useEffect(() => {
     if (book?.audiblePageUrl) {
       setTitleShifted(false);
@@ -340,23 +396,10 @@ function App() {
 
   //Temporary Options
   //QR code
-  const useQRCode = true;
-  const showQR = useQRCode && qrVisible;
+  const showQR = options.useQRCode && qrVisible;
 
   //Navigator Share
-  const allowNavigatorShare = false;
-  const isNavigatorShare = canUseNavigator() && allowNavigatorShare;
-  //Dropdown Share Choices 
-  const socialsOptions = {
-    twitter: true,
-    facebook: true,
-    linkedin: true,
-    goodreads: true,
-    instagram: true,
-    pinterest: false,
-    whatsapp: true,
-    telegram: false,
-  }
+  const isNavigatorShare = canUseNavigator() && options.allowNavigatorShare;
   //Share Url
   const domain = window.location.origin;
   const urlParams = new URLSearchParams();
@@ -366,6 +409,14 @@ function App() {
 
   return (
     <div className="app">
+      <OptionsMenu 
+        active={optionsActive} 
+        setActive={setOptionsActive} 
+      />
+      <LibraryMenu 
+        active={libraryActive} 
+        setActive={setLibraryActive} 
+        onSelectBook={handleLibrarySelect}/>
       <animated.div
         className="book-swipe-layer"
         style={{
@@ -396,6 +447,30 @@ function App() {
               togglePlayPause={togglePlayPause}
               bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
             >
+              <div className="genre-title-container">
+                {book && (
+                  <GenreLabel
+                    genre={book.genre ?? null}
+                  />
+                )}
+              </div>
+              <div className="favourite-container">
+                {book && (
+                  <FavouritesButton
+                    book={{
+                      asin: book.asin ?? null,
+                      itunesId: book.itunesId ?? null,
+                      title: book.title,
+                      authors: book.authors ?? [],
+                      audiblePageUrl: book.audiblePageUrl ?? null,
+                      audioPreviewUrl: book.audioPreviewUrl ?? null,
+                      itunesImageUrl: book.itunesImageUrl ?? null,
+                      genre: book.genre ?? null,
+                      timestamp: Date.now(),
+                    }}
+                  />
+                )}
+              </div>
               <div className="share-container">
                 {book && (audibleLink ?? book.audiblePageUrl) && (
                   isNavigatorShare ? (
@@ -413,7 +488,7 @@ function App() {
                       // url={audibleLink ?? book.audiblePageUrl!}
                       url={shareUrl}
                       author={book.authors?.[0]}
-                      socialsOptions={socialsOptions}
+                      socialsOptions={options.socialsOptions}
                       bookRef={bookImageWrapperRef}
                     />
                   )
