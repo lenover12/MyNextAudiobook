@@ -32,7 +32,7 @@ export const defaultOptions: Options = {
   allowExplicit: false,
   allowFallback: true,
   useQRCode: true,
-  allowNavigatorShare: true,
+  allowNavigatorShare: false,
   socialsOptions: {
     twitter: true,
     facebook: true,

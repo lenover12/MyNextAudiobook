@@ -7,32 +7,6 @@ import { genreOptions } from "../dto/genres";
 import { countryOptions, type CountryCode } from "../dto/countries";
 import { languageOptions, type LanguageCode } from "../dto/languages";
 
-const menuStructure = [
-  {
-    label: "General",
-    boolKeys: [
-      "allowExplicit",
-      // "allowFallback",
-      "useQRCode",
-      // "allowNavigatorShare", (if viable)
-      "bookIdsInDomain",
-      "mustHaveAudible",
-    ] as const,
-  },
-  {
-    label: "Audiobook Genres",
-    nested: "genresOptions" as const,
-  },
-  {
-    label: "Socials",
-    nested: "socialsOptions" as const,
-  },
-  {
-    label: "Data",
-    actions: ["clearHistory", "clearFavourites"] as const,
-  },
-];
-
 const optionLabels: Record<string, string> = {
   allowExplicit: "Allow NSFW Audiobooks",
   allowFallback: "Allow Fallback",
@@ -54,9 +28,6 @@ const optionLabels: Record<string, string> = {
   clearFavourites: "Delete Favourites",
 };
 
-type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
-type SocialKey = keyof Options["socialsOptions"];
-
 interface OptionsMenuProps {
   active: boolean;
   setActive: React.Dispatch<React.SetStateAction<boolean>>;
@@ -69,6 +40,34 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
   const [confirmingAction, setConfirmingAction] = useState<null | "clearHistory" | "clearFavourites">(null);
   const { clearAll: clearFavourites, favourites } = useFavourites();
   const { clearAll: clearHistory, history } = useHistory();
+
+  const menuStructure = [
+    {
+      label: "General",
+      boolKeys: [
+        "allowExplicit",
+        // "allowFallback",
+        "useQRCode",
+        // "allowNavigatorShare", (if viable)
+        "bookIdsInDomain",
+        "mustHaveAudible",
+      ] as const,
+    },
+    {
+      label: "Audiobook Genres",
+      nested: "genresOptions" as const,
+    },
+    ...(!options.allowNavigatorShare
+      ? [{ label: "Socials", nested: "socialsOptions" as const }]
+      : []),
+    {
+      label: "Data",
+      actions: ["clearHistory", "clearFavourites"] as const,
+    },
+  ];
+
+  type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
+  type SocialKey = keyof Options["socialsOptions"];
 
   const handleClick = () => {
     setSpinning(true);
@@ -280,9 +279,9 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                             </div>
                           </div>
                         )}
-                        {section.nested === "socialsOptions" && (
+                        {section.nested === "socialsOptions" && !options.allowNavigatorShare && (
                           <div>
-                            <p className="options-section-description">Enable these bad bois and they will create a share link on each audiobook</p>
+                            <p className="options-section-description">Enable social media share options</p>
                             <div className="options-social-flex">
                               {(Object.keys(options.socialsOptions) as SocialKey[]).map(
                                 (k, idx) => {
