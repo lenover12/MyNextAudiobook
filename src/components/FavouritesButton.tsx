@@ -13,6 +13,7 @@ export default function FavouriteButton({ book }: FavouriteButtonProps) {
     const { favourites, addEntry, removeEntry } = useFavourites();
     const [isFavourite, setIsFavourite] = useState(false);
     const [spin, setSpin] = useState(false);
+    const [gradientId] = useState(() => `goldGradient-${Math.random().toString(36).slice(2)}`);
 
     const id = getBookDBId(book);
     const iconRef = useRef<HTMLSpanElement>(null);
@@ -65,20 +66,21 @@ export default function FavouriteButton({ book }: FavouriteButtonProps) {
                     height="1em"
                 >
                     <defs>
-                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id={`${gradientId}-gold`} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#FFD700" />
                             <stop offset="100%" stopColor="#FFA500" />
                         </linearGradient>
-                        <linearGradient id="greyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id={`${gradientId}-grey`} x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#DDD" />
                             <stop offset="100%" stopColor="#AAA" />
                         </linearGradient>
                     </defs>
                     <path
-                        fill={isFavourite ? "url(#goldGradient)" : "url(#greyGradient)"}
+                        className={`star-path ${isFavourite ? "favourited" : "unfavourited"}`}
                         d="M259.3 17.8L194 150.2 47.9 171.5c-26.2 3.8-36.7 36-17.7 54.6l105.7 103-25 145.5c-4.5
             26.3 23.2 46 46.4 33.7L288 439.6l130.7 68.7c23.2 12.2 50.9-7.4 46.4-33.7l-25-145.5 
             105.7-103c19-18.6 8.5-50.8-17.7-54.6L382 150.2 316.7 17.8c-11.7-23.6-45.6-23.9-57.4 0z"
+                        style={{ fill: `url(#${isFavourite ? `${gradientId}-gold` : `${gradientId}-grey`})` }}
                     />
                 </svg>
             </span>
