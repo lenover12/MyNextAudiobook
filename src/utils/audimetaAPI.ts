@@ -7,7 +7,7 @@ const BASE_URL = 'https://audimeta.de/search';
 const supportedRegions = ['us', 'ca', 'uk', 'au', 'fr', 'de', 'jp', 'it', 'in', 'es', 'br'];
 
 export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
-  const offset = Math.floor(Math.random() * 200);
+  // const offset = Math.floor(Math.random() * 200);
   const limit = 50;
 
   const userCountryCode = (await getCountryCode()).toLowerCase();
