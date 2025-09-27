@@ -1,7 +1,9 @@
 import { useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
+import { type RefObject } from 'react';
 
 interface SwipeNavigationOptions {
+  swipeContainerRef?: React.RefObject<HTMLElement | null>;
   onNext: () => void;
   onPrevious: () => void;
   canGoNext: boolean;
@@ -11,6 +13,7 @@ interface SwipeNavigationOptions {
 }
 
 export function useSwipeNavigation({
+  swipeContainerRef,
   onNext,
   onPrevious,
   canGoNext,
@@ -20,53 +23,50 @@ export function useSwipeNavigation({
 }: SwipeNavigationOptions) {
   const [{ y }, api] = useSpring(() => ({ y: 0 }));
 
+  const rubberBand = (dy: number, limit: number) =>
+    (dy / (Math.abs(dy) + limit)) * limit;
+
   useDrag(
     ({ movement: [, my], velocity: [, vy], direction: [, dy], last, }) => {
       if (disabled) return;
-      
-      const clampedY = Math.max(
-        canGoPrevious ? -window.innerHeight * 0.5 : 0,
-        Math.min(my, canGoNext ? window.innerHeight * 0.5 : 0)
-      );
-      const isSwipeUp = dy < 0;
-      const isSwipeDown = dy > 0;
 
-      if (last) {
+      const clampedY = rubberBand(
+        my,
+        window.innerHeight * 0.5
+      );
+
+      if (!last) {
+        api.start({ y: clampedY, immediate: false });
+      } else {
         const isFastEnough = vy > 0.5;
-      
         const shouldGoNext =
-          (my < -threshold && canGoNext) || (isFastEnough && isSwipeUp && canGoNext);
+          (my < -threshold && canGoNext) || (isFastEnough && dy < 0 && canGoNext);
         const shouldGoPrev =
-          (my > threshold && canGoPrevious) || (isFastEnough && isSwipeDown && canGoPrevious);
-      
+          (my > threshold && canGoPrevious) || (isFastEnough && dy > 0 && canGoPrevious);
+
         if (shouldGoNext) {
           api.start({
             y: -window.innerHeight,
-            config: { tension: 250, friction: 28 },
+            config: { tension: 120, friction: 20 },
             onRest: () => api.set({ y: 0 }),
           });
           onNext();
         } else if (shouldGoPrev) {
           api.start({
             y: window.innerHeight,
-            config: { tension: 250, friction: 28 },
+            config: { tension: 120, friction: 20 },
             onRest: () => api.set({ y: 0 }),
           });
           onPrevious();
         } else {
-          api.start({ y: 0, config: { tension: 180, friction: 24 } });
+          api.start({ y: 0, config: { tension: 120, friction: 20 } });
         }
-      } else {
-        api.start({
-          y: clampedY,
-          immediate: true,
-        });
       }
     },
     {
       axis: 'y',
-      target: typeof window !== 'undefined' ? window : undefined,
-      pointer: { touch: true },
+      target: swipeContainerRef?.current ?? undefined,
+      pointer: { touch: true, mouse: true, keys: false },
       eventOptions: { passive: false },
       enabled: !disabled,
     }
