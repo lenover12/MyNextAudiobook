@@ -6,6 +6,7 @@ import { getTitleElements, processTitle } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
+import { useArrowNavigation } from "./hooks/useArrowNavigation"
 import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
@@ -182,6 +183,8 @@ function App() {
     previous();
   };
 
+  const swipeContainerRef = useRef<HTMLDivElement>(null);
+
   const isTouchDevice = /Mobi|Android|iPhone|iPad|iPod|Tablet|Touch/i.test(navigator.userAgent);
 
   if (!isTouchDevice) {
@@ -192,9 +195,18 @@ function App() {
       canGoPrevious: currentIndex > 0,
       disabled: menuActive,
     });
+
+    useArrowNavigation({
+      onNext: onScrollNext,
+      onPrevious: onScrollPrevious,
+      canGoNext: !!book,
+      canGoPrevious: currentIndex > 0,
+      disabled: menuActive,
+    });
   }
 
   const { y } = useSwipeNavigation({
+    swipeContainerRef,
     onNext: onScrollNext,
     onPrevious: onScrollPrevious,
     canGoNext: !!book,
@@ -408,7 +420,7 @@ function App() {
   const shareUrl = `${domain}/?${urlParams.toString()}`;
 
   return (
-    <div className="app">
+    <div className="app" ref={swipeContainerRef}>
       <OptionsMenu 
         active={optionsActive} 
         setActive={setOptionsActive} 

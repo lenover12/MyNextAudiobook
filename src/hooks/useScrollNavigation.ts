@@ -31,7 +31,7 @@ export function useScrollNavigation({
 
       setTimeout(() => {
         scrollLock.current = false;
-      }, 500);
+      }, 150);
     },
     [onNext, onPrevious, canGoNext, canGoPrevious, disabled]
   );
