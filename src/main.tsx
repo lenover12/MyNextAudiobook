@@ -6,8 +6,6 @@ import { OptionsProvider } from "./hooks/useOptions";
 import { HistoryProvider } from "./hooks/useHistory";
 import { FavouritesProvider } from "./hooks/useFavourites";
 
-import '@fortawesome/fontawesome-free/css/all.min.css';
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <OptionsProvider>

@@ -66,12 +66,12 @@ export default function FavouriteButton({ book }: FavouriteButtonProps) {
                 >
                     <defs>
                         <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#FFD700" />
-                            <stop offset="100%" stop-color="#FFA500" />
+                            <stop offset="0%" stopColor="#FFD700" />
+                            <stop offset="100%" stopColor="#FFA500" />
                         </linearGradient>
                         <linearGradient id="greyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#DDD" />
-                            <stop offset="100%" stop-color="#AAA" />
+                            <stop offset="0%" stopColor="#DDD" />
+                            <stop offset="100%" stopColor="#AAA" />
                         </linearGradient>
                     </defs>
                     <path
