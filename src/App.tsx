@@ -68,7 +68,7 @@ function App() {
     allowFallback: options.allowFallback,
     mustHaveAudible: options.mustHaveAudible,
     preloadAhead: options.preloadAhead,
-    ...(seedBook ? { seed: seedBook } : {}),
+    seed: seedBook ?? null,
   });
  
   //Update the URL whenever the current book changes
