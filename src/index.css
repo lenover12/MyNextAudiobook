@@ -355,25 +355,27 @@ h2.urbanist-bold {
 
 /* Genre title */
 .genre-title-container {
-  position: absolute;
+  position: relative;
   font-size: calc(var(--book-size) * 0.035);
   font-weight: 600;
   z-index: 2;
   color:#ffffff1f;
   padding: 0px;
   margin:0px;
-  width: calc(var(--book-size) * 0.5);
-  text-align: right;
+  width: var(--book-size);
   user-select: none;
+  transform-origin: center, center;
 
   /* top */
-  /* top: calc(var(--book-size) * -0.075);
-  left: calc(var(--book-size) * -0.02); */
+  /* top: calc(var(--book-size) * -0.52);
+  right: calc(var(--book-size) * -0.05);
+  text-align: left; */
 
   /* side */
-  bottom: calc(var(--book-size) * 0.66);
-  left: calc(var(--book-size) * -0.27);
+  top: calc(var(--book-size) * 0.05);
+  left: calc(var(--book-size) * -0.52);
   transform: rotate(270deg);
+  text-align: right;
 }
 
 
