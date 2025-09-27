@@ -10,6 +10,7 @@ import { useArrowNavigation } from "./hooks/useArrowNavigation"
 import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
+import audibleBadge from "./assets/badge/audible.png";
 import { BookImageWrapper } from "./components/BookImageWrapper";
 import { QRCodeCard } from "./components/QRCode";
 import { canUseNavigator } from "./utils/shareSocials";
@@ -553,7 +554,7 @@ function App() {
                         rel="noopener noreferrer"
                       >
                         <img
-                          src="/src/assets/badge/audible.png"
+                          src={audibleBadge}
                           alt="Find on Audible"
                           className="redirect-badge"
                         />
