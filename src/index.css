@@ -400,6 +400,7 @@ h2.urbanist-bold {
   font-size: calc(var(--book-size) * 0.125);
   cursor: pointer;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .favourite-button .icon-wrapper {
@@ -407,14 +408,20 @@ h2.urbanist-bold {
   transform-origin: center center;
 }
 
-.favourite-button:hover .star-icon {
-  transform: rotate(15deg) scale(1.15);
-  filter: drop-shadow(0 0 calc(var(--ui-scale) * 0.6) rgb(255, 248, 166));
-  transition: transform 0.6s cubic-bezier(.4,0,.2,1), filter 0.4s ease;
+@media (hover: hover) and (pointer: fine) {
+  .favourite-button:hover .star-icon {
+    transform: rotate(15deg) scale(1.15);
+    filter: drop-shadow(0 0 calc(var(--ui-scale) * 0.6) rgb(255, 248, 166));
+    transition: transform 0.6s cubic-bezier(.4,0,.2,1), filter 0.4s ease;
+  }
+  .favourite-button:hover .favourited.star-icon {
+    filter: drop-shadow(0 0 calc(var(--ui-scale) * 0.6) rgb(255, 193, 37));
+  }
 }
-
-.favourite-button:hover .favourited.star-icon {
-  filter: drop-shadow(0 0 calc(var(--ui-scale) * 0.6) rgb(255, 193, 37));
+@media (hover: none) and (pointer: coarse) {
+  .favourite-button:active .star-icon {
+    transform: scale(1.05);
+  }
 }
 
 .favourite-button .icon-wrapper.spin {
@@ -455,10 +462,20 @@ h2.urbanist-bold {
   pointer-events: none;
 }
 
-.share-wrapper:hover ,
+@media (hover: hover) and (pointer: fine) {
+  .share-wrapper:hover {
+    border-radius: 50%;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+  }
+}
 .share-wrapper:has(.share-menu.open) {
   border-radius: 50%;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+}
+@media (hover: none) and (pointer: coarse) {
+  .share-wrapper:has(.share-menu.open) .share-button {
+    transform: rotate(180deg);
+  }
 }
 
 .share-button {
@@ -480,8 +497,10 @@ h2.urbanist-bold {
   z-index: 4;
 }
 
-.share-button:hover {
-  transform: rotate(180deg);
+@media (hover: hover) and (pointer: fine) {
+  .share-button:hover {
+    transform: rotate(180deg);
+  }
 }
 
 .share-button i {
