@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFavourites } from "../hooks/useFavourites";
 import type { BookDBEntry } from "../dto/bookDB";
 import { getBookDBId } from "../utils/getBookDBId";

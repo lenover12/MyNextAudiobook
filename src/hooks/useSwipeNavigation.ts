@@ -1,6 +1,5 @@
 import { useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
-import { type RefObject } from 'react';
 
 interface SwipeNavigationOptions {
   swipeContainerRef?: React.RefObject<HTMLElement | null>;

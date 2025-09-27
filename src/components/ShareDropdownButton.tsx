@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, type JSX } from "react";
 import { getCssVarInPx } from "../utils/getCssVarInPx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
-import { faSquareFull, faRetweet } from "@fortawesome/free-solid-svg-icons";
+import { faRetweet } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   title: string;
