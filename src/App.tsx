@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAmbientCanvas } from "./hooks/useAmbientCanvas";
 import { useColourFromImage } from "./hooks/useColourFromImage";
 import { useTsPulseCanvas } from "./hooks/useTsPulseCanvas";
-import { getTitleElements, processTitle } from "./utils/getTitleElements";
+import { processTitle } from "./utils/getTitleElements";
 import { usePreloadBooks } from "./hooks/usePreloadBooks";
 import { useScrollNavigation } from "./hooks/useScrollNavigation";
 import { useSwipeNavigation } from "./hooks/useSwipeNavigation";
@@ -28,7 +28,7 @@ import { useHistory } from "./hooks/useHistory";
 import FavouritesButton from './components/FavouritesButton';
 import { GenreLabel } from "./components/GenreLabel";
 
-import { animated, useSpring } from '@react-spring/web';
+import { animated } from '@react-spring/web';
 
 function App() {
   const { options } = useOptions();
@@ -57,7 +57,6 @@ function App() {
     books,
     currentBook: book,
     currentIndex,
-    isFetching,
     next,
     previous,
     insertNext,
@@ -124,7 +123,8 @@ function App() {
   //canvas pulse effect
   const pulseCanvasRef = useRef<HTMLCanvasElement>(null);
   const bookImageWrapperRef = useRef<HTMLDivElement>(null);
-  const [tsPulseEnabled, setTsPulseEnabled] = useState(false);
+  const [tsPulseEnabled] = useState(false);
+  // const [tsPulseEnabled, setTsPulseEnabled] = useState(false);
   const { pulseOnce } = useTsPulseCanvas(pulseCanvasRef, tsPulseEnabled, bookImageWrapperRef, imageColour);
 
   //css pulse effect
@@ -136,7 +136,7 @@ function App() {
   const FADE_OUT_DURATION = 600;
 
   //scroll
-  const [scrolled, setScrolled] = useState(false);
+  // const [scrolled, setScrolled] = useState(false);
 
   //title fade
   const [titleVisible, setTitleVisible] = useState(true);
