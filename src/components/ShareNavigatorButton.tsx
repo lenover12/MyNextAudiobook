@@ -1,4 +1,6 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRetweet } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   title: string;
@@ -24,7 +26,7 @@ export default function ShareNavigatorButton({ title, url, text }: Props) {
   return (
     <div className="share-wrapper">
     <button className="share-button" onClick={handleShare}>
-      <i className="fa-solid fa-retweet" aria-hidden="true"></i>
+      <FontAwesomeIcon icon={faRetweet} aria-hidden="true" style={{ width: "50%", height: "50%" }} />
     </button>
     </div>
   );

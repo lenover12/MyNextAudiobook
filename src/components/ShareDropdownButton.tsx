@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, type JSX } from "react";
 import { getCssVarInPx } from "../utils/getCssVarInPx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
+import { faSquareFull, faRetweet } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   title: string;
@@ -12,6 +15,7 @@ interface Props {
 export default function ShareDropdownButton({ title, url, author, socialsOptions, bookRef }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const instagramRef = useRef<SVGSVGElement | null>(null);
   
   const getGoodreadsUrl = (title: string, author?: string) => {
     const query = author ? `${title} ${author}` : title;
@@ -28,7 +32,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i className="fa-brands fa-x-twitter" aria-hidden="true" style={{color: 'rgb(255, 255, 255)', filter: 'drop-shadow(2px 2px 2px rgb(0, 0, 0))'}}></i>
+          <FontAwesomeIcon
+            icon={faXTwitter}
+            aria-hidden="true"
+            style={{
+              color: "rgb(255, 255, 255)",
+              filter: "drop-shadow(2px 2px 2px rgb(0, 0, 0))",
+            }}
+          />
         </a>
       </li>
     ),
@@ -39,7 +50,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i className="fa-brands fa-facebook" aria-hidden="true" style={{color: 'rgb(58, 89, 152)', filter: 'drop-shadow(2px 2px 2px rgb(38, 44, 55))'}}></i>
+          <FontAwesomeIcon
+            icon={faFacebook}
+            aria-hidden="true"
+            style={{
+              color: "rgb(58, 89, 152)",
+              filter: "drop-shadow(2px 2px 2px rgb(38, 44, 55))",
+            }}
+          />
         </a>
       </li>
     ),
@@ -50,7 +68,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i className="fa-brands fa-linkedin" aria-hidden="true" style={{color: 'rgb(0, 119, 181)', filter: 'drop-shadow(2px 2px 2px rgba(49, 51, 53, 1))'}}></i>
+          <FontAwesomeIcon
+            icon={faLinkedin}
+            aria-hidden="true"
+            style={{
+              color: "rgb(0, 119, 181)",
+              filter: "drop-shadow(2px 2px 2px rgba(49, 51, 53, 1))",
+            }}
+          />
         </a>
       </li>
     ),
@@ -61,7 +86,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i className="fa-brands fa-goodreads" aria-hidden="true" style={{color: 'rgb(233, 229, 205)', filter: 'drop-shadow(2px 2px 2px rgba(117, 66, 14, 1))'}}></i>
+          <FontAwesomeIcon
+            icon={faGoodreads}
+            aria-hidden="true"
+            style={{
+              color: "rgb(233, 229, 205)",
+              filter: "drop-shadow(2px 2px 2px rgba(117, 66, 14, 1))",
+            }}
+          />
         </a>
       </li>
     ),
@@ -72,16 +104,15 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i
-            className="fa-brands fa-instagram"
+          <FontAwesomeIcon
+            icon={faInstagram}
+            ref={instagramRef}
             aria-hidden="true"
             style={{
-              background: 'radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.5))'
+              color: "rgb(233, 229, 205)",
+              filter: "drop-shadow(2px 2px 2px rgba(117, 66, 14, 1))",
             }}
-          ></i>
+          />
         </a>
       </li>
     ),
@@ -92,7 +123,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i className="fa-brands fa-pinterest" aria-hidden="true" style={{color: '#E60023', filter: 'drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.5))'}}></i>
+          <FontAwesomeIcon
+            icon={faPinterest}
+            aria-hidden="true"
+            style={{
+              color: "#E60023",
+              filter: "drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.5))",
+            }}
+          />
         </a>
       </li>
     ),
@@ -103,7 +141,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i className="fa-brands fa-whatsapp" aria-hidden="true" style={{color: '#25D366', filter: 'drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.5))'}}></i>
+          <FontAwesomeIcon
+            icon={faWhatsapp}
+            aria-hidden="true"
+            style={{
+              color: "#25D366",
+              filter: "drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.5))",
+            }}
+          />
         </a>
       </li>
     ),
@@ -114,7 +159,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           target="_blank"
           rel="noopener noreferrer"
         >
-          <i className="fa-brands fa-telegram" aria-hidden="true" style={{color: '#0088CC', filter: 'drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.5))'}}></i>
+          <FontAwesomeIcon
+            icon={faTelegram}
+            aria-hidden="true"
+            style={{
+              color: "#0088CC",
+              filter: "drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.5))",
+            }}
+          />
         </a>
       </li>
     ),
@@ -125,6 +177,38 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     bottomY: number;
     horizontalStartPercent: number;
   }>({ path: "", bottomY: 0, horizontalStartPercent: 0 });
+
+  //instagram gradient
+  useEffect(() => {
+    const svgEl = instagramRef.current;
+    if (!svgEl) return;
+
+    const applyGradient = () => {
+      const paths = svgEl.querySelectorAll("path");
+      paths.forEach((p) => p.setAttribute("fill", "url(#instagramGradient)"));
+    };
+
+    applyGradient();
+
+    //re-apply if react re-mounts
+    const observer = new MutationObserver(applyGradient);
+    observer.observe(svgEl, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [socialsOptions]);
+  //inject gradient defs
+  const InstagramGradientDefs = (
+    <svg style={{ position: "absolute", width: 0, height: 0 }}>
+      <defs>
+        <linearGradient id="instagramGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fdf497" />
+          <stop offset="25%" stopColor="#fd5949" />
+          <stop offset="50%" stopColor="#d6249f" />
+          <stop offset="75%" stopColor="#285AEB" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
 
   //dynamically update offset-path
     useEffect(() => {
@@ -229,13 +313,14 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
 
   return (
     <div className="share-wrapper">
+      {InstagramGradientDefs}
       <div
         className="share-button"
         onClick={() => setOpen(prev => !prev)}
         role="button"
         aria-label="Share"
       >
-        <i className="fa-solid fa-retweet" aria-hidden="true"></i>
+        <FontAwesomeIcon icon={faRetweet} aria-hidden="true" style={{ width: "50%", height: "50%" }} />
       </div>
 
       <div className={`share-menu ${open ? "open" : ""}`} ref={menuRef}>

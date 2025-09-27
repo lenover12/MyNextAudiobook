@@ -6,6 +6,9 @@ import { useFavourites } from "../hooks/useFavourites";
 import { genreOptions } from "../dto/genres";
 import { countryOptions, type CountryCode } from "../dto/countries";
 import { languageOptions, type LanguageCode } from "../dto/languages";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGear, faChevronDown, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 
 const optionLabels: Record<string, string> = {
   allowExplicit: "Allow NSFW Audiobooks",
@@ -26,6 +29,17 @@ const optionLabels: Record<string, string> = {
   telegram: "Telegram",
   clearHistory: "Delete History",
   clearFavourites: "Delete Favourites",
+};
+
+const brandIcons: Record<string, any> = {
+  twitter: faXTwitter,
+  facebook: faFacebook,
+  linkedin: faLinkedin,
+  goodreads: faGoodreads,
+  instagram: faInstagram,
+  pinterest: faPinterest,
+  whatsapp: faWhatsapp,
+  telegram: faTelegram,
 };
 
 interface OptionsMenuProps {
@@ -143,7 +157,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
         onClick={handleClick}
         aria-label="Options"
       >
-        <i className={`fa-solid fa-gear ${spinning ? "spin" : ""}`} />
+        <FontAwesomeIcon icon={faGear} className={spinning ? "spin" : ""} />
       </button>
         <div
           className={`options-overlay ${active ? "active" : ""}`}
@@ -175,12 +189,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                         aria-controls={`options-section-${idx}`}
                       >
                         <span>{section.label}</span>
-                        <i
-                          className={`fa-solid fa-chevron-down arrow ${
-                            isOpen ? "open" : ""
-                          }`}
-                          aria-hidden
-                        />
+                        <FontAwesomeIcon icon={faChevronDown} className={`arrow ${isOpen ? "open" : ""}`} />
                       </button>
 
                       <div
@@ -296,7 +305,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                                       aria-label={k}
                                       data-idx={idx}
                                     >
-                                      <i className={`fa-brands fa-${k}`} />
+                                      <FontAwesomeIcon icon={brandIcons[k]} />
                                     </button>
                                   );
                                 }
@@ -324,7 +333,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                                     >
                                       Cancel
                                     </button>
-                                    <i className="fa-solid fa-trash centre-icon" aria-hidden="true"></i>
+                                    <FontAwesomeIcon icon={faTrash} className="centre-icon" aria-hidden="true" />
                                     <button
                                       type="button"
                                       className="options-confirm-button"
@@ -343,7 +352,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
                                     onClick={() => isEnabled && setConfirmingAction(action)}
                                     disabled={!isEnabled}
                                   >
-                                    <i className="fa-solid fa-trash" aria-hidden="true"></i>
+                                    <FontAwesomeIcon icon={faTrash} aria-hidden="true" />
                                     <span>{optionLabels[action]}</span>
                                   </button>
                                 )}
