@@ -1,7 +1,7 @@
 {
-  "name": "BookTokka",
-  "short_name": "BookTokka",
-  "description": "Windowshop audiobooks with BookTokka.",
+  "name": "My Next Audiobook",
+  "short_name": "My Next Audiobook",
+  "description": "Find your next audiobook, judge a book by its narrator.",
   "start_url": "/",
   "icons": [
     {

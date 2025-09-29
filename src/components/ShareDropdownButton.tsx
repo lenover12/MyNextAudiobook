@@ -100,7 +100,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     instagram: (
       <li key="instagram">
         <a
-          href="https://www.instagram.com/booktokka"
+          href="https://www.instagram.com/mynextaudiobook"
           target="_blank"
           rel="noopener noreferrer"
         >
