@@ -4,6 +4,7 @@ import { useFavourites } from "../hooks/useFavourites";
 import shelf from '../assets/shelf/shelf-4.png';
 import cdCase from '../assets/shelf/cd-case-2.png';
 import type { BookDBEntry } from "../dto/bookDB";
+import { trackEvent } from "../utils/analytics";
 
 interface LibraryMenuProps {
   onSelectBook: (book: BookDBEntry, source: "favourites" | "history") => void;
@@ -24,7 +25,13 @@ export default function LibraryMenu({ onSelectBook, active, setActive }: Library
     <div className="library-menu">
       <button
         className={`library-button ${activeState ? "active" : ""}`}
-        onClick={() => setActiveState((prev) => !prev)}
+        onClick={() => {
+          setActiveState(prev => {
+            const newState = !prev;
+            if (newState) trackEvent("library_opened");
+            return newState;
+          });
+        }}
         aria-label="Toggle library menu"
       >
         <div className="library-button-layers">
@@ -65,7 +72,12 @@ export default function LibraryMenu({ onSelectBook, active, setActive }: Library
                   <div
                     key={`${tab}-${entry.asin ?? entry.itunesId}`}
                     className="library-item-square"
-                    onClick={() => onSelectBook(entry, "favourites")}
+                    onClick={() => {
+                      trackEvent("favourite_item_clicked", {
+                        book_id: (entry.asin ?? entry.itunesId)?.toString() ?? null
+                      });
+                      onSelectBook(entry, "favourites");
+                    }}
                   >
                     <img
                       src={shelf}
@@ -99,7 +111,12 @@ export default function LibraryMenu({ onSelectBook, active, setActive }: Library
                   <div
                     key={`${tab}-${entry.asin ?? entry.itunesId}`}
                     className="library-item-square"
-                    onClick={() => onSelectBook(entry, "history")}
+                    onClick={() => {
+                      trackEvent("history_item_clicked", {
+                        book_id: (entry.asin ?? entry.itunesId)?.toString() ?? null
+                      });
+                      onSelectBook(entry, "history");
+                    }}
                   >
                     <img
                       src={shelf}

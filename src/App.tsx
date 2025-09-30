@@ -28,6 +28,8 @@ import type { Genre } from "./dto/genres";
 import { useHistory } from "./hooks/useHistory";
 import FavouritesButton from './components/FavouritesButton';
 import { GenreLabel } from "./components/GenreLabel";
+import { trackEvent, toBookId } from "./utils/analytics";
+import { usePlaybackAnalytics } from "./hooks/usePlaybackAnalytics";
 
 import { animated } from '@react-spring/web';
 
@@ -135,6 +137,9 @@ function App() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const isPausedRef = useRef(false);
   const FADE_OUT_DURATION = 600;
+
+  //track audio playback
+  usePlaybackAnalytics(audioRef, { id: (book?.asin ?? book?.itunesId)?.toString() });
 
   //scroll
   // const [scrolled, setScrolled] = useState(false);
@@ -552,6 +557,7 @@ function App() {
                         href={audibleLink}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => { if (book) trackEvent("amazon_clicked", { book_id: toBookId(book) }); }}
                       >
                         <img
                           src={audibleBadge}

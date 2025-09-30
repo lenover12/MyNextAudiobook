@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type JSX } from "react";
+import React, { useEffect, useRef, useState, type JSX } from "react";
 import { useOptions } from "../hooks/useOptions";
 import type { Options } from "../utils/optionsStorage";
 import { useHistory } from "../hooks/useHistory";
@@ -6,6 +6,8 @@ import { useFavourites } from "../hooks/useFavourites";
 import { genreOptions } from "../dto/genres";
 import { countryOptions, type CountryCode } from "../dto/countries";
 import { languageOptions, type LanguageCode } from "../dto/languages";
+import { trackEvent } from "../utils/analytics";
+import { diffOptions } from "../utils/optionsDiff";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faChevronDown, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
@@ -83,9 +85,12 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
   type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
   type SocialKey = keyof Options["socialsOptions"];
 
+  const openedOptionsRef = useRef<Options | null>(null);
+
   const handleClick = () => {
     setSpinning(true);
     setTimeout(() => setSpinning(false), 1100);
+    openedOptionsRef.current = JSON.parse(JSON.stringify(options));
     setActive(true);
   };
 
@@ -163,7 +168,27 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
           className={`options-overlay ${active ? "active" : ""}`}
           role="dialog"
           aria-modal="true"
-          onClick={() => setActive(false)}
+          onClick={() => {
+            //modal is closing
+            const prev = openedOptionsRef.current;
+            if (prev) {
+              const delta = diffOptions(prev, options);
+              if (delta) {
+                //send compact events to analytics
+                delta.toggles?.forEach(t => trackEvent("option_changed", { key: t.key, to: t.to }));
+                if (delta.genres) {
+                  if (delta.genres.added.length) trackEvent("genres_changed", { added: delta.genres.added });
+                  if (delta.genres.removed.length) trackEvent("genres_changed", { removed: delta.genres.removed });
+                }
+                if (delta.socials) {
+                  if (delta.socials.enabled.length) trackEvent("social_options_changed", { enabled: delta.socials.enabled });
+                  if (delta.socials.disabled.length) trackEvent("social_options_changed", { disabled: delta.socials.disabled });
+                }
+                delta.selects?.forEach(s => trackEvent("option_changed", { key: s.key, to: s.to ?? null }));
+              }
+            }
+            setActive(false);
+          }}
           onTouchStart={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onTouchEnd={(e) => e.stopPropagation()}
