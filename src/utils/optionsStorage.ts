@@ -21,7 +21,7 @@ export type Options = {
   preloadAhead: number;
 };
 
-const STORAGE_KEY = "tokbooka-options";
+const STORAGE_KEY = "mynextaudiobook-options";
 
 //helper to make all nested fields optional too
 type DeepPartial<T> = {

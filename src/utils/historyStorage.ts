@@ -1,9 +1,8 @@
 import { openDB } from "idb";
 import type { BookDBEntry } from "../dto/bookDB";
 
-const DB_NAME = "tokbooka-history";
+const DB_NAME = "mynextaudiobook-history";
 const STORE_NAME = "books";
-//TODO: add cap limit for history
 
 async function getDB() {
     return openDB(DB_NAME, 1, {
@@ -39,7 +38,8 @@ async function resizeImageToBase64(blob: Blob, size = 100): Promise<string> {
     });
 }
 
-export async function addHistoryEntry( //TODO: remove after cap level
+//TODO: remove oldest history entries past the limit
+export async function addHistoryEntry(
     entry: Omit<BookDBEntry, "timestamp" | "thumbnailData">
 ) {
     const db = await getDB();
