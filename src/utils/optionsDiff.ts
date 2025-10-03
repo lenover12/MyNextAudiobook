@@ -15,7 +15,7 @@ export function diffOptions(prev: Options, next: Options): OptionsDelta | null {
     if (prev[k] !== next[k]) toggles.push({ key: k, to: Boolean(next[k]) });
   }
 
-  // enres
+  //genres
   const prevG = new Set(prev.enabledGenres || []);
   const nextG = new Set(next.enabledGenres || []);
   const added = [...nextG].filter(g => !prevG.has(g));
