@@ -59,16 +59,22 @@ export function loadOptions(): Options {
 
   try {
     const parsed = JSON.parse(raw) as DeepPartial<Options>;
+
+    const socialsOptions = {
+      ...defaultOptions.socialsOptions,
+      ...(parsed.socialsOptions ?? {}),
+    };
+
+    const parsedEnabled = (parsed.enabledGenres ?? defaultOptions.enabledGenres) as any;
+    const enabledGenres = Array.isArray(parsedEnabled)
+      ? parsedEnabled.filter((g: unknown): g is string => typeof g === "string" && g.length > 0)
+      : defaultOptions.enabledGenres;
+
     return {
       ...defaultOptions,
       ...parsed,
-      socialsOptions: {
-        ...defaultOptions.socialsOptions,
-        ...(parsed.socialsOptions ?? {}),
-      },
-      enabledGenres: (parsed.enabledGenres ?? defaultOptions.enabledGenres).filter(
-        (g): g is string => !!g
-      ),
+      socialsOptions,
+      enabledGenres,
     };
   } catch {
     return defaultOptions;
@@ -80,23 +86,30 @@ export function saveOptions(options: Options) {
 
   for (const key in options) {
     const k = key as keyof Options;
-    const value = options[k];
-    const defaultValue = defaultOptions[k];
+    const value = options[k] as any;
+    const def = defaultOptions[k] as any;
 
-    if (typeof value === "object" && value !== null) {
+    if (Array.isArray(value)) {
+      if (JSON.stringify(value) !== JSON.stringify(def)) {
+        (diff as any)[k] = value;
+      }
+      continue;
+    }
+
+    if (value && typeof value === "object") {
       const nestedDiff: Record<string, unknown> = {};
-      for (const nestedKey in value as object) {
-        const v = (value as any)[nestedKey];
-        const dv = (defaultValue as any)[nestedKey];
-        if (v !== dv) {
-          nestedDiff[nestedKey] = v;
+      for (const nk in value) {
+        const v = value[nk];
+        const dv = def?.[nk];
+        if (JSON.stringify(v) !== JSON.stringify(dv)) {
+          nestedDiff[nk] = v;
         }
       }
       if (Object.keys(nestedDiff).length > 0) {
         (diff as any)[k] = nestedDiff;
       }
     } else {
-      if (value !== defaultValue) {
+      if (value !== def) {
         (diff as any)[k] = value;
       }
     }
