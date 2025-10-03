@@ -636,6 +636,11 @@ h2.urbanist-bold {
   pointer-events: auto;
 }
 
+.options-menu .options-list {
+  z-index: 11;
+  position: relative;
+}
+
 .options-menu .options-box {
   position: absolute;
   top: 50%;
@@ -884,9 +889,9 @@ h2.urbanist-bold {
 }
 
 .options-menu .options-danger-button.disabled {
-  background: #666;
+  color: #d4d4d4;
+  background: #535353;
   cursor: not-allowed;
-  opacity: 0.7;
 }
 
 .options-menu .confirm-buttons {
@@ -1163,11 +1168,183 @@ h2.urbanist-bold {
   filter: brightness(100%);
 }
 
+/* cookies modal */
+.cookies-modal {
+  position: relative;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+}
+
+.cookies-modal .cookies-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 10;
+}
+
+.cookies-modal .cookies-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cookies-modal .cookies-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(150%, -50%);
+  transition: transform 0.35s ease;
+}
+
+.cookies-modal .cookies-box.active {
+  transform: translate(-50%, -50%);
+}
+
+.cookies-modal .cookies-modal-contents {
+  background: #1f1f1fda;
+  color: #eee;
+  padding: calc(var(--ui-scale) * 1.2);
+  border-radius: calc(var(--ui-scale) * 1);
+  width: calc(var(--book-size) * 1);
+  max-width: 85vmin;
+  max-height: 85vmin;
+  box-shadow: 0 calc(var(--ui-scale) * 0.4) calc(var(--ui-scale) * 1) rgba(0,0,0,0.5);
+  z-index: 11;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.cookies-modal .cookies-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ui-scale) * 0.2);
+}
+
+.cookies-modal .cookies-button-wrapper {
+  display: flex;
+  gap: calc(var(--ui-scale) * 0.6);
+  margin-top: calc(var(--ui-scale) * 0.6);
+}
+
+.cookies-modal .cookies-title {
+  text-align: center;
+  margin-bottom: calc(var(--ui-padding) * 0.5);
+  padding-bottom: var(--ui-padding);
+  font-size: calc(var(--ui-font-size) * 1.2);
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  user-select: none;
+}
+
+.cookies-modal .cookies-section-header {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: calc(var(--ui-font-size) * 0.9);
+  font-weight: bold;
+  color: #eee;
+  user-select: none;
+  display: block;
+}
+
+.cookies-modal .cookies-submenu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--ui-scale) * 0.25) 0;
+  font-size: calc(var(--ui-font-size) * 0.85);
+  color: #ddd;
+  font-weight: normal;
+}
+
+.options-menu .options-submenu-item[for="opt-enableCookies"] {
+  margin: 0 calc(var(--ui-scale) * 1.60);
+  margin-bottom: calc(var(--ui-scale) * 0.2);
+  font-weight: 500;
+}
+
+.cookies-modal .cookies-section-description {
+  text-align: center;
+  margin-bottom: calc(var(--ui-padding) * 0.1);
+  font-size: calc(var(--ui-font-size) * 0.7);
+  font-weight:lighter;
+  user-select: none;
+}
+
+.cookies-modal .cookies-accept-all-button:hover {
+  background: rgb(81, 98, 196);
+}
+
+.cookies-modal .cookies-only-neccesary-button:hover {
+  background: #7c7777;
+}
+
+.cookies-modal .confirm-buttons {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+.cookies-modal .confirm-buttons {
+  flex: 1;
+}
+
+.cookies-modal .cookies-only-neccesary-button {
+  background: #666;
+  color: #fff;
+  border: none;
+  /* border-radius: calc(var(--ui-scale) * 0.2); */
+  cursor: pointer;
+  padding: calc(var(--ui-scale) * 0.40) calc(var(--ui-scale) * 0.6);
+  font-size: calc(var(--ui-icon-size) * 0.4);
+  text-align: center;
+  width: 45%;
+  margin-right: 3%;
+  border-radius: calc(var(--ui-scale) * 0.2);
+  /* z-index: 11;
+  position: relative; */
+}
+
+.cookies-modal .cookies-accept-all-button {
+  background: rgb(51, 69, 170);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  padding: calc(var(--ui-scale) * 0.4) calc(var(--ui-scale) * 0.6);
+  font-size: calc(var(--ui-icon-size) * 0.4);
+  text-align: center;
+  width: 45%;
+  margin-left: 3%;
+  border-radius: calc(var(--ui-scale) * 0.2);
+    /* z-index: 11;
+  position: relative; */
+}
+
+.cookies-modal .centre-icon {
+  position: absolute;
+  top:50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  font-size: calc(var(--ui-icon-size) * 0.6);
+}
+
+.cookies-modal-gradient {
+  border-radius: calc(var(--ui-scale) * 1);
+}
+
 .gradient-overlay {
   position: absolute;
   left: 0;
   right: 0;
-  height: 120px;
+  height: calc(var(--book-size) * 0.5);
   pointer-events: none;
   user-select: none;
 }

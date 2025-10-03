@@ -19,6 +19,7 @@ export type Options = {
   enabledGenres: string[];
   mustHaveAudible: boolean;
   preloadAhead: number;
+  enableCookies: boolean;
 };
 
 const STORAGE_KEY = "mynextaudiobook-options";
@@ -44,9 +45,12 @@ export const defaultOptions: Options = {
     telegram: false,
   },
   bookIdsInDomain: true,
-  enabledGenres: [],
+  enabledGenres: [
+    "Arts & Entertainment" ,"Biographies & Memoirs" ,"Business & Personal Finance" ,"Children & Teens" ,"Classics" ,"Comedy" ,"Drama & Poetry" ,"Fiction" ,"History" ,"Mysteries & Thrillers" ,"Nonfiction" ,"Romance" ,"Sci-Fi & Fantasy" ,"Science & Nature" ,"Self-Development" ,"Sports & Outdoors" , "Travel & Adventure"
+  ],
   mustHaveAudible: false,
   preloadAhead: 1,
+  enableCookies: false,
 };
 
 export function loadOptions(): Options {

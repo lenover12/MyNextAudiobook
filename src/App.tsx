@@ -30,12 +30,17 @@ import FavouritesButton from './components/FavouritesButton';
 import { GenreLabel } from "./components/GenreLabel";
 import { trackEvent, toBookId } from "./utils/analytics";
 import { usePlaybackAnalytics } from "./hooks/usePlaybackAnalytics";
+import { bootstrapAnalytics } from "./utils/consent";
+import CookieConsentModal from "./components/CookieConsentModal";
 
 import { animated } from '@react-spring/web';
 
 function App() {
   const { options } = useOptions();
   const { addEntry: addHistory } = useHistory();
+
+  const analyticsId = "G-Q45Y5F2WB0"
+  bootstrapAnalytics(analyticsId);
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -167,10 +172,11 @@ function App() {
   const [lastBookId, setLastBookId] = useState<string | null>(null);
 
   //active menu's to ignore scroll/swipe events
+  const [consentActive, setConsentActive] = useState(false);
   const [libraryActive, setLibraryActive] = useState(false);
   const [optionsActive, setOptionsActive] = useState(false);
 
-  const menuActive = libraryActive || optionsActive;
+  const menuActive = consentActive || libraryActive || optionsActive;
 
   useEffect(() => {
     document.body.style.overflow = menuActive ? "hidden" : "";
@@ -429,7 +435,8 @@ function App() {
     <div className="app" ref={swipeContainerRef}>
       <OptionsMenu 
         active={optionsActive} 
-        setActive={setOptionsActive} 
+        setActive={setOptionsActive}
+        analyticsId={analyticsId}
       />
       <LibraryMenu 
         active={libraryActive} 
@@ -610,6 +617,10 @@ function App() {
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
             )}
+            <CookieConsentModal
+              analyticsId={analyticsId}
+              onActiveChange={setConsentActive}
+            />
           </>
         )}
       </div>

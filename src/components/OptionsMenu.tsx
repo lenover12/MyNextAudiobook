@@ -8,6 +8,7 @@ import { countryOptions, type CountryCode } from "../dto/countries";
 import { languageOptions, type LanguageCode } from "../dto/languages";
 import { trackEvent } from "../utils/analytics";
 import { diffOptions } from "../utils/optionsDiff";
+import { getStoredConsent, setConsentFromToggle } from "../utils/consent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faChevronDown, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
@@ -31,6 +32,7 @@ const optionLabels: Record<string, string> = {
   telegram: "Telegram",
   clearHistory: "Delete History",
   clearFavourites: "Delete Favourites",
+  enableCookies: "Enable Cookies",
 };
 
 const brandIcons: Record<string, any> = {
@@ -47,9 +49,10 @@ const brandIcons: Record<string, any> = {
 interface OptionsMenuProps {
   active: boolean;
   setActive: React.Dispatch<React.SetStateAction<boolean>>;
+  analyticsId: string;
 }
 
-export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JSX.Element {
+export default function OptionsMenu({ active, setActive, analyticsId }: OptionsMenuProps): JSX.Element {
   const { options, setOptions } = useOptions();
   const [spinning, setSpinning] = useState(false);
   const [openMenu, setOpenMenu] = useState<number | null>(null);
@@ -78,6 +81,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
       : []),
     {
       label: "Data",
+      boolKeys: ["enableCookies"] as const,
       actions: ["clearHistory", "clearFavourites"] as const,
     },
   ];
@@ -90,7 +94,14 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
   const handleClick = () => {
     setSpinning(true);
     setTimeout(() => setSpinning(false), 1100);
-    openedOptionsRef.current = JSON.parse(JSON.stringify(options));
+
+    const consent = getStoredConsent();
+    const enabled = consent === "accepted_all";
+    openedOptionsRef.current = JSON.parse(JSON.stringify({
+      ...options,
+      enableCookies: enabled,
+    }));
+    setOptions((prev) => ({ ...prev, enableCookies: enabled }));
     setActive(true);
   };
 
@@ -99,6 +110,13 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
   };
 
   const toggleBool = (key: BoolKey) => {
+    if (key === "enableCookies") {
+      const nextEnabled = !options.enableCookies;
+      setOptions((prev) => ({ ...prev, enableCookies: nextEnabled }));
+      setConsentFromToggle(nextEnabled, analyticsId);
+      trackEvent("option_changed", { key: "enableCookies", to: nextEnabled });
+      return;
+    }
     if (typeof options[key] !== "boolean") return;
     setOptions((prev) => ({
       ...prev,
