@@ -1,0 +1,19 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.mynextaudiobook.com" }],
+      "destination": "https://mynextaudiobook.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "book-tokka.vercel.app" }],
+      "destination": "https://mynextaudiobook.com/$1",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}

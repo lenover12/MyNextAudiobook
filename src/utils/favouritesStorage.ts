@@ -1,7 +1,7 @@
 import { openDB } from "idb";
 import type { BookDBEntry } from "../dto/bookDB";
 
-const DB_NAME = "tokbooka-favourites";
+const DB_NAME = "mynextaudiobook-favourites";
 const STORE_NAME = "books";
 //TODO: add cap limit for favourites
 

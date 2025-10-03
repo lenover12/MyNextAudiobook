@@ -3,6 +3,7 @@ import { getCssVarInPx } from "../utils/getCssVarInPx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
+import { trackEvent } from "../utils/analytics";
 
 interface Props {
   title: string;
@@ -31,6 +32,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "twitterx" })}
         >
           <FontAwesomeIcon
             icon={faXTwitter}
@@ -49,6 +51,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "facebook" })}
         >
           <FontAwesomeIcon
             icon={faFacebook}
@@ -67,6 +70,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "linkedin" })}
         >
           <FontAwesomeIcon
             icon={faLinkedin}
@@ -85,6 +89,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           href={getGoodreadsUrl(title, author)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "goodreads" })}
         >
           <FontAwesomeIcon
             icon={faGoodreads}
@@ -100,9 +105,10 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     instagram: (
       <li key="instagram">
         <a
-          href="https://www.instagram.com/booktokka"
+          href="https://www.instagram.com/mynextaudiobook"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "instagram" })}
         >
           <FontAwesomeIcon
             icon={faInstagram}
@@ -122,6 +128,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           href={`https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&media=&description=${encodeURIComponent(title)}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "pinterest" })}
         >
           <FontAwesomeIcon
             icon={faPinterest}
@@ -140,6 +147,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title)}%20${encodeURIComponent(url)}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "whatsapp" })}
         >
           <FontAwesomeIcon
             icon={faWhatsapp}
@@ -158,6 +166,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
           href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("share_clicked", { platform: "telegram" })}
         >
           <FontAwesomeIcon
             icon={faTelegram}

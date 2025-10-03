@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { BookDBEntry } from "../dto/bookDB";
 import { getFavourites, addFavouritesEntry, removeFavouritesEntry, clearFavourites } from "../utils/favouritesStorage";
+import { trackEvent } from "../utils/analytics";
 
 type FavouritesContextValue = {
   favourites: BookDBEntry[];
@@ -33,6 +34,7 @@ export function FavouritesProvider({ children }: { children: React.ReactNode }) 
 
   const clearAllWrapper = async () => {
     await clearFavourites();
+    trackEvent("favourites_deleted_all");
     await refresh();
   };
 

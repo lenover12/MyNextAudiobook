@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
+import { trackEvent } from "../utils/analytics";
 
 interface Props {
   title: string;
@@ -16,6 +17,7 @@ export default function ShareNavigatorButton({ title, url, text }: Props) {
           text,
           url,
         });
+        trackEvent("share_clicked", { platform: "navigator" });
       } catch (err) {
         console.error("Share canceled or failed", err);
       }

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { BookDBEntry } from "../dto/bookDB";
 import { getHistory, addHistoryEntry, removeHistoryEntry, clearHistory } from "../utils/historyStorage";
+import { trackEvent } from "../utils/analytics";
 
 type HistoryContextValue = {
   history: BookDBEntry[];
@@ -33,6 +34,7 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
 
   const clearAllWrapper = async () => {
     await clearHistory();
+    trackEvent("history_deleted_all");
     await refresh();
   };
 

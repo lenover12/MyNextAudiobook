@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type JSX } from "react";
+import React, { useEffect, useRef, useState, type JSX } from "react";
 import { useOptions } from "../hooks/useOptions";
 import type { Options } from "../utils/optionsStorage";
 import { useHistory } from "../hooks/useHistory";
@@ -6,6 +6,9 @@ import { useFavourites } from "../hooks/useFavourites";
 import { genreOptions } from "../dto/genres";
 import { countryOptions, type CountryCode } from "../dto/countries";
 import { languageOptions, type LanguageCode } from "../dto/languages";
+import { trackEvent } from "../utils/analytics";
+import { diffOptions } from "../utils/optionsDiff";
+import { getStoredConsent, setConsentFromToggle } from "../utils/consent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faChevronDown, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
@@ -29,6 +32,7 @@ const optionLabels: Record<string, string> = {
   telegram: "Telegram",
   clearHistory: "Delete History",
   clearFavourites: "Delete Favourites",
+  enableCookies: "Enable Cookies",
 };
 
 const brandIcons: Record<string, any> = {
@@ -45,9 +49,10 @@ const brandIcons: Record<string, any> = {
 interface OptionsMenuProps {
   active: boolean;
   setActive: React.Dispatch<React.SetStateAction<boolean>>;
+  analyticsId: string;
 }
 
-export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JSX.Element {
+export default function OptionsMenu({ active, setActive, analyticsId }: OptionsMenuProps): JSX.Element {
   const { options, setOptions } = useOptions();
   const [spinning, setSpinning] = useState(false);
   const [openMenu, setOpenMenu] = useState<number | null>(null);
@@ -76,6 +81,7 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
       : []),
     {
       label: "Data",
+      boolKeys: ["enableCookies"] as const,
       actions: ["clearHistory", "clearFavourites"] as const,
     },
   ];
@@ -83,9 +89,19 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
   type BoolKey = NonNullable<(typeof menuStructure)[number]["boolKeys"]>[number];
   type SocialKey = keyof Options["socialsOptions"];
 
+  const openedOptionsRef = useRef<Options | null>(null);
+
   const handleClick = () => {
     setSpinning(true);
     setTimeout(() => setSpinning(false), 1100);
+
+    const consent = getStoredConsent();
+    const enabled = consent === "accepted_all";
+    openedOptionsRef.current = JSON.parse(JSON.stringify({
+      ...options,
+      enableCookies: enabled,
+    }));
+    setOptions((prev) => ({ ...prev, enableCookies: enabled }));
     setActive(true);
   };
 
@@ -94,6 +110,13 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
   };
 
   const toggleBool = (key: BoolKey) => {
+    if (key === "enableCookies") {
+      const nextEnabled = !options.enableCookies;
+      setOptions((prev) => ({ ...prev, enableCookies: nextEnabled }));
+      setConsentFromToggle(nextEnabled, analyticsId);
+      trackEvent("option_changed", { key: "enableCookies", to: nextEnabled });
+      return;
+    }
     if (typeof options[key] !== "boolean") return;
     setOptions((prev) => ({
       ...prev,
@@ -163,7 +186,27 @@ export default function OptionsMenu({ active, setActive }: OptionsMenuProps): JS
           className={`options-overlay ${active ? "active" : ""}`}
           role="dialog"
           aria-modal="true"
-          onClick={() => setActive(false)}
+          onClick={() => {
+            //modal is closing
+            const prev = openedOptionsRef.current;
+            if (prev) {
+              const delta = diffOptions(prev, options);
+              if (delta) {
+                //send compact events to analytics
+                delta.toggles?.forEach(t => trackEvent("option_changed", { key: t.key, to: t.to }));
+                if (delta.genres) {
+                  if (delta.genres.added.length) trackEvent("genres_changed", { added: delta.genres.added });
+                  if (delta.genres.removed.length) trackEvent("genres_changed", { removed: delta.genres.removed });
+                }
+                if (delta.socials) {
+                  if (delta.socials.enabled.length) trackEvent("social_options_changed", { enabled: delta.socials.enabled });
+                  if (delta.socials.disabled.length) trackEvent("social_options_changed", { disabled: delta.socials.disabled });
+                }
+                delta.selects?.forEach(s => trackEvent("option_changed", { key: s.key, to: s.to ?? null }));
+              }
+            }
+            setActive(false);
+          }}
           onTouchStart={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onTouchEnd={(e) => e.stopPropagation()}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useFavourites } from "../hooks/useFavourites";
 import type { BookDBEntry } from "../dto/bookDB";
 import { getBookDBId } from "../utils/getBookDBId";
+import { trackEvent } from "../utils/analytics";
 
 type FavouriteButtonProps = {
     book: BookDBEntry;
@@ -29,8 +30,10 @@ export default function FavouriteButton({ book }: FavouriteButtonProps) {
 
         if (isFavourite) {
             await removeEntry(id);
+            trackEvent("favourite_removed", { book_id: id });
         } else {
             await addEntry(book);
+            trackEvent("favourite_added", { book_id: id });
             setSpin(true);
         }
     };
