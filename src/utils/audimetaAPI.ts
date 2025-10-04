@@ -2,6 +2,7 @@ import { getSearchTerm } from './getSearchTerm';
 import type { FetchOptions } from './itunesAPI';
 import type { AudiobookDTO } from '../dto/audiobookDTO';
 import { getCountryCode } from './getGeo';
+import { loadOptions } from './optionsStorage';
 
 const BASE_URL = 'https://audimeta.de/search';
 const supportedRegions = ['us', 'ca', 'uk', 'au', 'fr', 'de', 'jp', 'it', 'in', 'es', 'br'];
@@ -31,7 +32,14 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Audimeta error: ${res.status}`);
     const json = await res.json();
-    const filtered = json?.filter((item: any) => item.isListenable && item.imageUrl);
+    let filtered = json?.filter((item: any) => item.isListenable && item.imageUrl) ?? [];
+
+    const { languageCode } = loadOptions();
+    if (languageCode) {
+      filtered = filtered.filter((item: any) =>
+        item.language?.toLowerCase().startsWith(languageCode.toLowerCase())
+      );
+    }
     if (!filtered || filtered.length === 0) return null;
 
     const random = filtered[Math.floor(Math.random() * filtered.length)];
