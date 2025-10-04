@@ -1,24 +1,22 @@
 import { loadOptions, saveOptions } from "./optionsStorage";
-import { countryOptions, type CountryCode } from "../dto/countries";
+import { mapCountryToAudibleRegion, type CountryCode } from "../dto/countries";
 
-let cachedCountry: string | null = null;
+let cachedCountry: CountryCode | null = null;
 
 export async function getCountryCode(): Promise<CountryCode> {
   const options = loadOptions();
   if (options.countryCode) return options.countryCode as CountryCode;
-  if (cachedCountry) return cachedCountry as CountryCode;
+  if (cachedCountry) return cachedCountry;
+
   try {
     const res = await fetch('https://ipapi.co/json');
     const data = await res.json();
-    const country = data.country?.toLowerCase() as CountryCode | undefined;
+    const iso = data.country?.toLowerCase() as string | undefined;
 
-    if (country && countryOptions.some((c) => c.code === country)) {
-      cachedCountry = country;
-      saveOptions({ ...options, countryCode: country });
-      return country;
-    } else {
-      return 'us'
-    }
+    const region = iso ? mapCountryToAudibleRegion(iso) : "us";
+    cachedCountry = region;
+    saveOptions({ ...options, countryCode: region });
+    return region;
   } catch (e) {
     console.warn('Failed to fetch country code:', e);
     return 'us';

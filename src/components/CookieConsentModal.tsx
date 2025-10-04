@@ -7,6 +7,8 @@ import {
   type ConsentChoice,
 } from "../utils/consent";
 import { trackEvent } from "../utils/analytics";
+import { useOptions } from "../hooks/useOptions";
+import { t } from "../utils/translations";
 
 type Props = {
   analyticsId: string;
@@ -17,7 +19,10 @@ type Props = {
 
 export default function CookieConsentModal({ analyticsId, forceOpen = false, onClose, onActiveChange, }: Props) {
   const [active, setActive] = useState(false);
-
+  
+  const { options } = useOptions();
+  const lang = options.languageCode ?? "en";
+  
   useEffect(() => {
     if (forceOpen || needsConsent()) setActive(true);
   }, [forceOpen]);
@@ -53,14 +58,15 @@ export default function CookieConsentModal({ analyticsId, forceOpen = false, onC
           onClick={(e) => e.stopPropagation()}
         >
           <div className="cookies-modal-contents">
-            <h2 className="cookies-title">Privacy & Cookies</h2>
+            <h2 className="cookies-title">{t(lang, "cookies.title")}</h2>
 
             <div className="cookies-list">
-              <span className="cookies-section-header">Consent</span>
+              <span className="cookies-section-header">{t(lang, "cookies.consent")}</span>
 
               <p className="cookies-section-description">
-                We use lightweight analytics to understand usage and improve the app.
-                Choose <strong>Only necessary</strong> to continue without analytics cookies.
+                {t(lang, "cookies.description.part1")}{" "}
+                <strong>{t(lang, "cookies.description.strong")}</strong>{" "}
+                {t(lang, "cookies.description.part2")}
               </p>
 
               <div className="cookies-button-wrapper">
@@ -69,7 +75,7 @@ export default function CookieConsentModal({ analyticsId, forceOpen = false, onC
                   className="cookies-only-neccesary-button"
                   onClick={() => decide("necessary_only")}
                 >
-                  Only necessary
+                  {t(lang, "cookies.onlyNecessary")}
                 </button>
 
                 <button
@@ -77,7 +83,7 @@ export default function CookieConsentModal({ analyticsId, forceOpen = false, onC
                   className="cookies-accept-all-button"
                   onClick={() => decide("accepted_all")}
                 >
-                  Accept all
+                  {t(lang, "cookies.acceptAll")}
                 </button>
               </div>
             </div>

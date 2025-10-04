@@ -2,6 +2,7 @@ import { getSearchTerm } from './getSearchTerm';
 import { pruneString } from './pruneString';
 import type { AudiobookDTO } from '../dto/audiobookDTO';
 import type { Genre } from "../dto/genres";
+import { getCountryCode } from "./getGeo";
 
 export interface FetchOptions {
   term?: string;
@@ -121,9 +122,12 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
       const offset = Math.floor(Math.random() * 200);
       const limit = Math.min(25, 200 - offset);
       const explicitParam = options?.allowExplicit ? 'yes' : 'no';
-
       
-      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=audiobook&limit=${limit}&explicit=${explicitParam}`;
+      const country = await getCountryCode();
+      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(
+        term
+      )}&media=audiobook&limit=${limit}&explicit=${explicitParam}&country=${country}`;
+
       const response = await fetch(url);
 
       if (!response.ok){
