@@ -6,6 +6,7 @@ import { useFavourites } from "../hooks/useFavourites";
 import { genreOptions } from "../dto/genres";
 import { countryOptions, type CountryCode } from "../dto/countries";
 import { languageOptions, type LanguageCode } from "../dto/languages";
+import { t } from "../utils/translations";
 import { trackEvent } from "../utils/analytics";
 import { diffOptions } from "../utils/optionsDiff";
 import { getStoredConsent, setConsentFromToggle } from "../utils/consent";
@@ -14,25 +15,25 @@ import { faGear, faChevronDown, faTrash } from "@fortawesome/free-solid-svg-icon
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 
 const optionLabels: Record<string, string> = {
-  allowExplicit: "Allow NSFW Audiobooks",
-  allowFallback: "Allow Fallback",
-  useQRCode: "Show QR Code",
-  allowNavigatorShare: "Allow Navigator Share",
-  bookIdsInDomain: "Book IDs in Domain",
-  mustHaveAudible: "Only books with Audible",
-  countryCode: "Country",
-  languageCode: "Language",
-  twitter: "Twitter",
-  facebook: "Facebook",
-  linkedin: "LinkedIn",
-  goodreads: "Goodreads",
-  instagram: "Instagram",
-  pinterest: "Pinterest",
-  whatsapp: "WhatsApp",
-  telegram: "Telegram",
-  clearHistory: "Delete History",
-  clearFavourites: "Delete Favourites",
-  enableCookies: "Enable Cookies",
+  allowExplicit: "label.allowExplicit",
+  allowFallback: "label.allowFallback",
+  useQRCode: "label.showQRCode",
+  allowNavigatorShare: "label.allowNavigatorShare",
+  bookIdsInDomain: "label.bookIdsInDomain",
+  mustHaveAudible: "label.mustHaveAudible",
+  countryCode: "label.country",
+  languageCode: "label.language",
+  twitter: "label.twitter",
+  facebook: "label.facebook",
+  linkedin: "label.linkedin",
+  goodreads: "label.goodreads",
+  instagram: "label.instagram",
+  pinterest: "label.pinterest",
+  whatsapp: "label.whatsapp",
+  telegram: "label.telegram",
+  clearHistory: "options.deleteHistory",
+  clearFavourites: "options.deleteFavourites",
+  enableCookies: "label.enableCookies",
 };
 
 const brandIcons: Record<string, any> = {
@@ -59,6 +60,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
   const [confirmingAction, setConfirmingAction] = useState<null | "clearHistory" | "clearFavourites">(null);
   const { clearAll: clearFavourites, favourites } = useFavourites();
   const { clearAll: clearHistory, history } = useHistory();
+  const lang: LanguageCode = options.languageCode ?? "en";
 
   const menuStructure = [
     {
@@ -73,7 +75,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
       ] as const,
     },
     {
-      label: "Audiobook Genres",
+      label: "Genres",
       nested: "genresOptions" as const,
     },
     ...(!options.allowNavigatorShare
@@ -151,14 +153,14 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
   const setCountry = (value: string) => {
     setOptions((prev) => ({
       ...prev,
-      countryCode: value || undefined,
+      countryCode: (value || undefined) as CountryCode | undefined,
     }));
   };
 
   const setLanguage = (value: string) => {
     setOptions((prev) => ({
       ...prev,
-      languageCode: value || undefined,
+      languageCode: (value || undefined) as LanguageCode | undefined,
     }));
   };
 
@@ -217,7 +219,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
             onClick={(e) => e.stopPropagation()}
           >
             <div className="options-modal">
-              <h2 className="options-title">Options</h2>
+              <h2 className="options-title">{t(lang, "options.title")}</h2>
 
               <div className="options-list">
                 {menuStructure.map((section, idx) => {
@@ -231,7 +233,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                         aria-expanded={isOpen}
                         aria-controls={`options-section-${idx}`}
                       >
-                        <span>{section.label}</span>
+                        <span>{t(lang, `options.${section.label.toLowerCase()}`)}</span>
                         <FontAwesomeIcon icon={faChevronDown} className={`arrow ${isOpen ? "open" : ""}`} />
                       </button>
 
@@ -246,7 +248,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                               key={k}
                               htmlFor={`opt-${k}`}
                             >
-                              <span className="options-label">{optionLabels[k]}</span>
+                              <span className="options-label">{t(lang, optionLabels[k])}</span>
 
                               <div className="toggle">
                                 <input
@@ -261,7 +263,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                           ))}
                           {section.label === "General" && (
                             <div className="options-submenu-item">
-                              <span className="options-label">Country</span>
+                              <span className="options-label">{t(lang, "label.country")}</span>
                               <select
                                 value={options.countryCode ?? ""}
                                 onChange={(e) => setCountry(e.target.value as CountryCode)}
@@ -269,7 +271,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                               >
                                 {countryOptions.map((c) => (
                                   <option key={c.code} value={c.code}>
-                                    {c.label}
+                                    {t(lang, "country." + c.label)}
                                   </option>
                                 ))}
                               </select>
@@ -277,7 +279,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                           )}
                           {section.label === "General" && (
                             <div className="options-submenu-item">
-                              <span className="options-label">Language</span>
+                              <span className="options-label">{t(lang, "label.language")}</span>
                               <select
                                 value={options.languageCode ?? ""}
                                 onChange={(e) => setLanguage(e.target.value as LanguageCode)}
@@ -311,7 +313,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                         {section.nested === "genresOptions" && (
                           <div>
                             <p className="options-section-description">
-                              limit results by specific genres
+                              {t(lang, "options.limitResultsBySpecificGenres")}
                             </p>
                             <div className="options-genre-flex">
                               {genreOptions.map((g) => {
@@ -324,7 +326,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                                     onClick={() => toggleGenre(g.label)}
                                     aria-pressed={active}
                                   >
-                                    {g.label}
+                                    {t(lang, "genre." + g.label)}
                                   </button>
                                 );
                               })}
@@ -333,7 +335,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                         )}
                         {section.nested === "socialsOptions" && !options.allowNavigatorShare && (
                           <div>
-                            <p className="options-section-description">Enable social media share options</p>
+                            <p className="options-section-description">{t(lang, "options.enableSocialMediaShareOptions")}</p>
                             <div className="options-social-flex">
                               {(Object.keys(options.socialsOptions) as SocialKey[]).map(
                                 (k, idx) => {
@@ -374,7 +376,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                                       className="options-cancel-button"
                                       onClick={() => setConfirmingAction(null)}
                                     >
-                                      Cancel
+                                      {t(lang, "options.cancel")}
                                     </button>
                                     <FontAwesomeIcon icon={faTrash} className="centre-icon" aria-hidden="true" />
                                     <button
@@ -385,7 +387,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                                         setConfirmingAction(null);
                                       }}
                                     >
-                                      Confirm
+                                      {t(lang, "options.confirm")}
                                     </button>
                                   </div>
                                 ) : (
@@ -396,7 +398,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                                     disabled={!isEnabled}
                                   >
                                     <FontAwesomeIcon icon={faTrash} aria-hidden="true" />
-                                    <span>{optionLabels[action]}</span>
+                                    <span>{t(lang, optionLabels[action])}</span>
                                   </button>
                                 )}
                               </div>

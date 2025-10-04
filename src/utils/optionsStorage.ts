@@ -1,8 +1,11 @@
+import type { CountryCode } from "../dto/countries";
+import type { LanguageCode } from "../dto/languages";
+
 export type Options = {
   allowExplicit: boolean;
   allowFallback: boolean;
-  countryCode?: string;
-  languageCode?: string;
+  countryCode?: CountryCode;
+  languageCode?: LanguageCode;
   useQRCode: boolean;
   allowNavigatorShare: boolean;
   socialsOptions: {

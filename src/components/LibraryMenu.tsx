@@ -5,6 +5,9 @@ import shelf from '../assets/shelf/shelf-4.png';
 import cdCase from '../assets/shelf/cd-case-2.png';
 import type { BookDBEntry } from "../dto/bookDB";
 import { trackEvent } from "../utils/analytics";
+import { useOptions } from "../hooks/useOptions";
+import type { LanguageCode } from "../dto/languages";
+import { t } from "../utils/translations";
 
 interface LibraryMenuProps {
   onSelectBook: (book: BookDBEntry, source: "favourites" | "history") => void;
@@ -18,6 +21,8 @@ export default function LibraryMenu({ onSelectBook, active, setActive }: Library
   const [tab, setTab] = useState<"favourites" | "history">("favourites");
   const { history } = useHistory();
   const { favourites } = useFavourites();
+  const { options } = useOptions();
+  const lang: LanguageCode = options.languageCode ?? "en";
 
   const closeMenu = () => setActiveState(false);
 
@@ -55,13 +60,13 @@ export default function LibraryMenu({ onSelectBook, active, setActive }: Library
               className={`library-tab ${tab === "favourites" ? "active" : ""}`}
               onClick={() => setTab("favourites")}
             >
-              Favourites
+              {t(lang, "menu.favourites")}
             </button>
             <button
               className={`library-tab ${tab === "history" ? "active" : ""}`}
               onClick={() => setTab("history")}
             >
-              History
+              {t(lang, "menu.history")}
             </button>
           </div>
 
@@ -95,7 +100,7 @@ export default function LibraryMenu({ onSelectBook, active, setActive }: Library
                           className="library-thumb"
                         />
                       ) : (
-                        <span>
+                        <span> //TODO centre
                           ?
                         </span>
                       )}
