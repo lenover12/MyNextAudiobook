@@ -64,9 +64,11 @@ export function mapCountryToAudibleRegion(isoCode: string): CountryCode {
   if (c === "fr") return "fr";
   if (c === "au") return "au";
   if (c === "ca") return "ca";
-  if (c === "in") return "in";
+  // if (c === "in") return "in";
+  if (c === "in") return "us"; //fallback
   if (c === "it") return "it";
-  if (c === "jp") return "jp";
+  // if (c === "jp") return "jp";
+  if (c === "jp") return "us"; //fallback
   if (c === "es") return "es";
 
   //regional heuristics

@@ -1,8 +1,8 @@
 import { regionToStore, type CountryCode } from "../dto/countries";
-
-const AFFILIATE_TAG = "TBD";
+import { affiliateTags } from "../dto/affiliateTag";
 
 export function buildAudibleLink(asin: string, countryCode: CountryCode = "us"): string {
   const store = regionToStore[countryCode] || "audible.com";
-  return `https://www.${store}/pd/${asin}?ref=${AFFILIATE_TAG}`;
+  const tag = affiliateTags[countryCode] || affiliateTags.us;
+  return `https://www.${store}/pd/${asin}?tag=${tag}`;
 }
