@@ -32,6 +32,9 @@ import { trackEvent, toBookId } from "./utils/analytics";
 import { usePlaybackAnalytics } from "./hooks/usePlaybackAnalytics";
 import { bootstrapAnalytics } from "./utils/consent";
 import CookieConsentModal from "./components/CookieConsentModal";
+import type { LanguageCode } from "./dto/languages";
+import { t } from "./utils/translations";
+
 
 import { animated } from '@react-spring/web';
 
@@ -41,6 +44,9 @@ function App() {
 
   const analyticsId = "G-Q45Y5F2WB0"
   bootstrapAnalytics(analyticsId);
+
+  //localisation
+  const lang: LanguageCode = options.languageCode ?? "en";
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -624,6 +630,9 @@ function App() {
           </>
         )}
       </div>
+      <p className="affiliate-disclaimer">
+        {t(lang, "affiliate.disclaimer")}
+      </p>
     </div>
   )
 }
