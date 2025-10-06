@@ -620,6 +620,19 @@ function App() {
                 )}
               </div>
             </div>
+            <p
+              className="affiliate-disclaimer"
+              style={{
+                transition: badgeVisible
+                ? 'opacity 0.6s ease'
+                : 'opacity 0.1s ease-out',
+                opacity: badgeVisible ? 1 : 1,
+                visibility: badgeVisible ? 'visible' : 'visible',
+                willChange: 'opacity',
+              }}
+            >
+              {t(lang, "affiliate.disclaimer")}
+            </p>
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
             )}
@@ -630,9 +643,6 @@ function App() {
           </>
         )}
       </div>
-      <p className="affiliate-disclaimer">
-        {t(lang, "affiliate.disclaimer")}
-      </p>
     </div>
   )
 }
