@@ -1399,7 +1399,7 @@ h2.urbanist-bold {
   text-align: center;
   font-size: clamp(0.4rem, calc(var(--ui-scale) * 0.35), 0.8rem);
   color: #666;
-  margin: 0.5rem auto 0;
+  margin: calc(var(--ui-scale) * 0.05);
   line-height: 1.4;
   pointer-events: none;
   user-select: none;

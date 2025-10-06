@@ -626,8 +626,8 @@ function App() {
                 transition: badgeVisible
                 ? 'opacity 0.6s ease'
                 : 'opacity 0.1s ease-out',
-                opacity: badgeVisible ? 1 : 1,
-                visibility: badgeVisible ? 'visible' : 'visible',
+                opacity: badgeVisible ? 1 : 0,
+                visibility: badgeVisible ? 'visible' : 'hidden',
                 willChange: 'opacity',
               }}
             >
