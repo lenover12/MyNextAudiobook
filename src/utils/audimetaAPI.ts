@@ -7,7 +7,19 @@ import { loadOptions } from './optionsStorage';
 const BASE_URL = 'https://audimeta.de/search';
 const supportedRegions = ['us', 'ca', 'uk', 'au', 'fr', 'de', 'jp', 'it', 'in', 'es', 'br'];
 
+let audimetaDownUntil: number | null = null;
+
+export function isAudiMetaDown(): boolean {
+  return audimetaDownUntil != null && Date.now() < audimetaDownUntil;
+}
+
 export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
+  //skip if audimeta is down
+  if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
+    console.warn("AudiMeta marked as down, skipping audible data.");
+    return null;
+  }
+
   // const offset = Math.floor(Math.random() * 200);
   const limit = 50;
 
@@ -29,7 +41,10 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
   const url = `${BASE_URL}?${query.toString()}`;
 
   try {
-    const res = await fetch(url);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); //10sec
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) throw new Error(`Audimeta error: ${res.status}`);
     const json = await res.json();
     let filtered = json?.filter((item: any) => item.isListenable && item.imageUrl) ?? [];
@@ -45,7 +60,8 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
     const random = filtered[Math.floor(Math.random() * filtered.length)];
     return mapAudimetaToDTO(random);
   } catch (e) {
-    console.error('Failed to fetch from Audimeta', e);
+    console.error('Failed to fetch from Audimeta (fetchRandom)', e);
+    audimetaDownUntil = Date.now() + 5 * 60 * 1000; //5 minutes
     return null;
   }
 }
@@ -101,30 +117,45 @@ export function mapAudimetaToDTO(item: any): AudiobookDTO {
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
+  if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
+    return [];
+  }
 
   const userCountryCode = (await getCountryCode()).toLowerCase();
   const region = supportedRegions.includes(userCountryCode) ? userCountryCode : 'us';
 
   const url = `https://audimeta.de/search?keywords=${encodeURIComponent(query)}&region=${region}&limit=50&page=0&products_sort_by=Relevance&cache=true`;
   try {
-    const res = await fetch(url);
-    if (!res.ok) return [];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); //10sec
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error(`AudiMeta error: ${res.status}`);
     const json = await res.json();
     return json
       .filter((item: any) => item.isListenable && item.imageUrl)
       .map(mapAudimetaToDTO);
-  } catch {
+  } catch (e) {
+    console.error('Failed to fetch from Audimeta (searchBooks)', e);
+    audimetaDownUntil = Date.now() + 5 * 60 * 1000;
     return [];
   }
 }
 
 export async function fetchByAsin(asin: string): Promise<AudiobookDTO | null> {
+  if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
+    return null;
+  }
+  
   const url = `https://audimeta.de/book/${encodeURIComponent(asin)}`;
 
   try {
-    const res = await fetch(url);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); //10sec
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) {
-      console.error(`Audimeta fetchByAsin failed: HTTP ${res.status}`);
+      console.error(`Audimeta error: ${res.status}`);
       return null;
     }
 
@@ -135,7 +166,8 @@ export async function fetchByAsin(asin: string): Promise<AudiobookDTO | null> {
 
     return mapAudimetaToDTO(item);
   } catch (e) {
-    console.error("fetchByAsin error:", e);
+    console.error('Failed to fetch from Audimeta (fetchByAsin)', e);
+    audimetaDownUntil = Date.now() + 5 * 60 * 1000;
     return null;
   }
 }
