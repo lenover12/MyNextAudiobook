@@ -16,6 +16,7 @@
     "@fortawesome/react-fontawesome": "^3.0.2",
     "@react-spring/web": "^10.0.1",
     "@use-gesture/react": "^10.3.1",
+    "gsap": "^3.13.0",
     "idb": "^8.0.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

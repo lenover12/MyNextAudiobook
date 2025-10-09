@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { animated, useSpring } from '@react-spring/web';
+import BookStickerPeel from './BookStickerPeel';
 
 type Book = {
   itunesId: number | null;
@@ -98,6 +99,17 @@ export function BookImageWrapper({
         />
       )}
       {book && book.itunesImageUrl && (
+        <BookStickerPeel
+          imageSrc={book.itunesImageUrl}
+          visible={loadingState?.isLoaded ?? false}
+          onLoad={() => bookId && markLoaded(bookId)}
+          onClick={togglePlayPause}
+          peelDirection={200}
+          peelBackHoverPct={1}
+          peelBackActivePct={66}
+        />
+      )}
+      {/* {book && book.itunesImageUrl && (
         <img
           className={`book-image ${loadingState?.isLoaded ? 'visible' : ''}`}
           src={book.itunesImageUrl}
@@ -108,7 +120,7 @@ export function BookImageWrapper({
           }}
           onClick={togglePlayPause}
         />
-      )}
+      )} */}
       <animated.div
         className={`css-pulse ${cssPulseVisible ? "visible" : ""} ${wasJustCurrent ? "fade-out-glow" : ""}`}
         style={pulseSpring}
