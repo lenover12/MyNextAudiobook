@@ -22,6 +22,8 @@
   --sticker-p: 300px;
   --sticker-start: calc(-1 * var(--sticker-p));
   --sticker-end: calc(100% + var(--sticker-p));
+  --sticker-peelback-active: 66%;
+  --sticker-peelback-tease: -7%;
 
   /* light dark theme default*/
   --background: #111;
@@ -208,7 +210,7 @@ body {
   max-width: 100%;
 }
 
-/* book description hiding behind cover art */
+/* sticker effect */
 .book-sticker-wrapper {
   position: absolute;
   width: var(--book-size);
@@ -223,7 +225,6 @@ body {
   overflow: visible;
   z-index: 1;
 }
-
 .book-sticker-wrapper.visible {
   opacity: 1;
 }
@@ -243,7 +244,7 @@ body {
   transform: rotate(var(--peel-direction));
   transform-origin: center;
   overflow: visible;
- }
+}
 
 .sticker-main {
   position: relative;
@@ -251,59 +252,48 @@ body {
   height: 100%;
   clip-path: polygon(
     var(--sticker-start) var(--sticker-start),
-    var(--sticker-end)   var(--sticker-start),
-    var(--sticker-end)   var(--sticker-end),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-end),
     var(--sticker-start) var(--sticker-end)
   );
   transition: clip-path 0.6s ease-out;
   overflow: visible;
-  filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.4));
+  /* filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.4)); */
+  border-radius: var(--book-border-radius);
 }
 
-.sticker-container:hover .sticker-main {
+.sticker-main.tease {
   clip-path: polygon(
-    var(--sticker-start) var(--sticker-peelback-hover),
-    var(--sticker-end)   var(--sticker-peelback-hover),
-    var(--sticker-end)   var(--sticker-end),
+    var(--sticker-start) var(--sticker-peelback-tease),
+    var(--sticker-end) var(--sticker-peelback-tease),
+    var(--sticker-end) var(--sticker-end),
     var(--sticker-start) var(--sticker-end)
   );
 }
-.sticker-container:active .sticker-main {
+
+.sticker-main.open {
   clip-path: polygon(
     var(--sticker-start) var(--sticker-peelback-active),
-    var(--sticker-end)   var(--sticker-peelback-active),
-    var(--sticker-end)   var(--sticker-end),
+    var(--sticker-end) var(--sticker-peelback-active),
+    var(--sticker-end) var(--sticker-end),
     var(--sticker-start) var(--sticker-end)
   );
 }
 
-.sticker-content {
+.sticker-content,
+.sticker-flap-content {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 100%;
   height: 100%;
-  border-radius: var(--book-border-radius, 12px);
   transform: translate(-50%, -50%) rotate(calc(-1 * var(--peel-direction)));
   transform-origin: center;
-  cursor: hidden;
+  border-radius: var(--book-border-radius);
   overflow: hidden;
 }
 
-.sticker-image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
-  display: block;
-  pointer-events: auto;
-  cursor: pointer;
-  user-select: none;
-}
-
+.sticker-image,
 .sticker-flap-image {
   position: absolute;
   top: 50%;
@@ -313,8 +303,22 @@ body {
   transform: translate(-50%, -50%);
   object-fit: cover;
   display: block;
-  filter: brightness(0.65);
   user-select: none;
+  cursor: help;
+}
+
+.sticker-image {
+  cursor: pointer;
+}
+
+.sticker-flap-image {
+  filter: brightness(2.3);
+  transition: filter 0.6s ease-in-out;
+}
+
+.sticker-flap.open .sticker-flap-image {
+  filter: brightness(0.3);
+  transition: filter 0.6s ease-in-out;
 }
 
 .sticker-flap {
@@ -326,45 +330,51 @@ body {
   transform: scaleY(-1);
   clip-path: polygon(
     var(--sticker-start) var(--sticker-start),
-    var(--sticker-end)   var(--sticker-start),
-    var(--sticker-end)   var(--sticker-start),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-start),
     var(--sticker-start) var(--sticker-start)
   );
   transition: clip-path 0.6s ease-out, top 0.6s ease-out;
   overflow: visible;
 }
 
-.sticker-container:hover .sticker-flap {
+.sticker-flap.tease {
   clip-path: polygon(
     var(--sticker-start) var(--sticker-start),
-    var(--sticker-end)   var(--sticker-start),
-    var(--sticker-end)   var(--sticker-peelback-hover),
-    var(--sticker-start) var(--sticker-peelback-hover)
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-peelback-tease),
+    var(--sticker-start) var(--sticker-peelback-tease)
   );
-  top: calc(-100% + 2 * var(--sticker-peelback-hover) - 1px);
+  top: calc(-100% + 2 * var(--sticker-peelback-tease) - 1px);
 }
 
-.sticker-container:active .sticker-flap {
+.sticker-flap.open {
   clip-path: polygon(
     var(--sticker-start) var(--sticker-start),
-    var(--sticker-end)   var(--sticker-start),
-    var(--sticker-end)   var(--sticker-peelback-active),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-peelback-active),
     var(--sticker-start) var(--sticker-peelback-active)
   );
   top: calc(-100% + 2 * var(--sticker-peelback-active) - 1px);
 }
 
-.sticker-flap-content {
+.peel-corner-button {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  transform: translate(-50%, -50%) rotate(calc(-1 * var(--peel-direction)));
-  transform-origin: center;
-  border-radius: inherit;
-  overflow: hidden;
+  bottom: 0;
+  left: 0;
+  width: calc(var(--ui-icon-size) * 2);
+  height: var(--ui-icon-size);
+  z-index: 1;
+  border-top-right-radius: var(--book-size);
+
+  transition: transform 0.15s ease, background 0.3s ease;
+  cursor: help;
 }
+
+.peel-corner-button.active {
+  cursor: unset;
+}
+
 
 .book-info-column {
   margin-top: var(--redirect-badge-y-start);

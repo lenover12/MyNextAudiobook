@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import BookStickerPeel from './BookStickerPeel';
 
@@ -75,6 +75,17 @@ export function BookImageWrapper({
     }
   }, [bookId, loadingState, initLoadingState]);
 
+  const [stickerOpen, setStickerOpen] = useState(false);
+
+  useEffect(() => {
+    if (stickerOpen) {
+      const handleClickOutside = () => setStickerOpen(false);
+      window.addEventListener('click', handleClickOutside);
+      return () => window.removeEventListener('click', handleClickOutside);
+    }
+  }, [stickerOpen]);
+
+
   return (
     <div
       key={bookId ?? `placeholder-${className}`}
@@ -102,10 +113,10 @@ export function BookImageWrapper({
         <BookStickerPeel
           imageSrc={book.itunesImageUrl}
           visible={loadingState?.isLoaded ?? false}
+          isCurrent={isCurrent}
           onLoad={() => bookId && markLoaded(bookId)}
           onClick={togglePlayPause}
           peelDirection={200}
-          peelBackHoverPct={1}
           peelBackActivePct={66}
         />
       )}
