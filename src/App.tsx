@@ -34,13 +34,16 @@ import { bootstrapAnalytics } from "./utils/consent";
 import CookieConsentModal from "./components/CookieConsentModal";
 import type { LanguageCode } from "./dto/languages";
 import { t } from "./utils/translations";
-
+import { useMeasurements } from "./hooks/useMeasurements";
 
 import { animated } from '@react-spring/web';
 
 function App() {
   const { options } = useOptions();
   const { addEntry: addHistory } = useHistory();
+
+  //measurements
+  const { bookSize } = useMeasurements();
 
   const analyticsId = "G-Q45Y5F2WB0"
   bootstrapAnalytics(analyticsId);
@@ -465,6 +468,7 @@ function App() {
             <BookImageWrapper
               key={bookId ?? `placeholder-${i}`}
               book={book}
+              bookSize={bookSize}
               className={className}
               offset={offset}
               y={y}
@@ -520,7 +524,7 @@ function App() {
                       url={shareUrl}
                       author={book.authors?.[0]}
                       socialsOptions={options.socialsOptions}
-                      bookRef={bookImageWrapperRef}
+                      bookSize={bookSize}
                     />
                   )
                 )}
