@@ -14,7 +14,7 @@ export function BookTitle({
   maxWidth: number;
   visible: boolean;
 }) {
-  const { ref, fontSize, isReady } = useFitText(maxHeight, maxWidth, titleText);
+  const { ref, fontSize, isReady } = useFitText(maxHeight, maxWidth, titleText, 0.5, 3.5);
   
   return (
     <h2
