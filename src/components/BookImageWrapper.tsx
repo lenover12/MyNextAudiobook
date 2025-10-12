@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import BookStickerPeel from './BookStickerPeel';
+import { useFitText } from '../hooks/useFitText';
+import DOMPurify from 'dompurify';
 
 type Book = {
   itunesId: number | null;
   itunesImageUrl?: string | null;
   title: string;
+  description?: string | null;
+  summary?: string | null;
 };
 
 type LoadingState = {
@@ -16,6 +20,7 @@ type LoadingState = {
 
 type Props = {
   book: Book | null;
+  bookSize: number;
   className: string;
   offset: string;
   y: any;
@@ -33,6 +38,7 @@ type Props = {
 
 export function BookImageWrapper({
   book,
+  bookSize,
   className,
   offset,
   y,
@@ -58,6 +64,21 @@ export function BookImageWrapper({
     opacity: shouldShowPulse ? 1 : 0,
     config: { tension: 120, friction: 20 },
   });
+
+  const maxWidth = bookSize;
+  const maxHeight = bookSize * 0.66;
+
+  const rawDescription = book?.description?.trim() || book?.summary?.trim() || "Nothing here but us chickens 🐔";
+  const safeDescription = useMemo(() => DOMPurify.sanitize(rawDescription), [rawDescription]);
+
+  const { ref: fitRef, fontSize, isReady } = useFitText(
+    maxHeight,
+    maxWidth,
+    safeDescription,
+    0.1,
+    0.5,
+    0.05,
+  );
 
   const wasJustCurrent =
     cssPulseVisible &&
@@ -98,6 +119,20 @@ export function BookImageWrapper({
         pointerEvents: shouldHide ? 'none' : 'auto',
       }}
     >
+      <div className="sticker-reveal-text">
+        <p
+          ref={fitRef}
+          style={{ 
+            fontSize: isCurrent && isReady ? `${fontSize}rem` : 0,
+            opacity: isCurrent ? 1 : 0,
+            visibility: isCurrent && isReady ? "visible" : "hidden",
+            transition: "opacity 0.5s ease, font-size 0.3s ease",
+           }}
+          className="sticker-reveal-description"
+          dangerouslySetInnerHTML={{ __html: safeDescription }}
+        >
+        </p>
+      </div>
       {loadingState?.loadingImg && (
         <img
           className={`loading-image ${loadingState.fadeIn && !loadingState.isLoaded ? 'visible' : ''}`}

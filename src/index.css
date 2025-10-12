@@ -375,6 +375,32 @@ body {
   cursor: unset;
 }
 
+/* description */
+.sticker-reveal-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--book-size);
+  height: var(--book-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  text-align: center;
+  padding: calc(var(--ui-scale) * 0.2);
+  clip-path: none !important;
+  pointer-events: none;
+  
+  clip-path: polygon(
+    0% 100%,
+    100% 100%,
+    100% calc(var(--sticker-peelback-active)),
+    0% calc(var(--sticker-peelback-active) - 10%)
+  );
+
+  transition: clip-path 0.5s ease;
+}
+
 
 .book-info-column {
   margin-top: var(--redirect-badge-y-start);
