@@ -73,7 +73,7 @@ export default function BookStickerPeel({
     return () => document.removeEventListener("pointerdown", handleDocPointerDown, true);
   }, [isOpen]);
 
-  const handleCornerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleCornerClick = (_e: React.MouseEvent<HTMLDivElement>) => {
     setIsOpen((prev) => {
       const next = !prev;
       setTease(!next);
