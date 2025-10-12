@@ -3,12 +3,13 @@ import { useEffect, useRef, useState } from "react";
 export function useFitText(
   maxHeight: number,
   maxWidth: number,
-  titleText: string,
+  text: string,
   minSize = 0.5,
   maxSize = 3.5,
   step = 0.05
 ) {
-  const ref = useRef<HTMLHeadingElement>(null);
+  // const ref = useRef<HTMLHeadingElement>(null);
+  const ref = useRef<HTMLParagraphElement>(null);
   const [fontSize, setFontSize] = useState(maxSize);
   const [isReady, setIsReady] = useState(false);
 
@@ -37,7 +38,7 @@ export function useFitText(
     };
 
     requestAnimationFrame(adjustFont);
-  }, [maxHeight, maxWidth, titleText]);
+  }, [maxHeight, maxWidth, text, minSize, maxSize, step]);
 
   return { ref, fontSize, isReady };
 }
