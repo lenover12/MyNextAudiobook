@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, type JSX } from "react";
-import { getCssVarInPx } from "../utils/getCssVarInPx";
+import { useState, useEffect, useRef, type JSX } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
@@ -10,10 +9,10 @@ interface Props {
   url: string;
   author?: string;
   socialsOptions?: Record<string, boolean>;
-  bookRef?: React.RefObject<HTMLDivElement | null>;
+  bookSize: number;
 }
 
-export default function ShareDropdownButton({ title, url, author, socialsOptions, bookRef }: Props) {
+export default function ShareDropdownButton({ title, url, author, socialsOptions, bookSize }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const instagramRef = useRef<SVGSVGElement | null>(null);
@@ -220,24 +219,22 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
   );
 
   //dynamically update offset-path
-    useEffect(() => {
+  useEffect(() => {
     const menu = menuRef.current;
-    const bookEl = bookRef?.current;
-    if (!menu || !bookEl) return;
+    if (!menu) return;
 
     const updateOffsetPath = () => {
-      const bookSizePx = getCssVarInPx(bookEl, "--book-size");
-      const startX = bookSizePx * 0.1;
+      const startX = bookSize * 0.1;
       const startY = 0;
-      const bottomY = bookSizePx / 1.4;
-      const horizontalEndX = startX - bookSizePx;
+      const bottomY = bookSize / 1.4;
+      const horizontalEndX = startX - bookSize;
       const horizontalEndY = bottomY;
       
       const controlX = (startX + startX) / 1.5;
       const controlY = 0;
       
       const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${startX} ${bottomY} L ${horizontalEndX} ${horizontalEndY}`;
-      const horizontalStartPercent = (bottomY / (bottomY + bookSizePx)) * 100;
+      const horizontalStartPercent = (bottomY / (bottomY + bookSize)) * 100;
 
       pathDataRef.current = { path, bottomY, horizontalStartPercent };
 
@@ -267,17 +264,11 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     };
 
     updateOffsetPath();
-
-    const ro = new ResizeObserver(updateOffsetPath);
-    ro.observe(bookEl);
-
     window.addEventListener("resize", updateOffsetPath);
-
     return () => {
-      ro.disconnect();
       window.removeEventListener("resize", updateOffsetPath);
     };
-  }, [bookRef, open]);
+  }, [bookSize, open]);
 
   //distribute the icons
   useEffect(() => {
