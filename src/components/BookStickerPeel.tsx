@@ -49,7 +49,7 @@ export default function BookStickerPeel({
     if (teaseTimeoutRef.current) clearTimeout(teaseTimeoutRef.current);
     teaseTimeoutRef.current = setTimeout(() => {
       if (!isOpen) setTease(true);
-    }, 5000);
+    }, 3000);
 
     return () => {
       if (teaseTimeoutRef.current) clearTimeout(teaseTimeoutRef.current);

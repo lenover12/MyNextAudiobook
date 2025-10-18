@@ -14,9 +14,13 @@ export function useFitText(
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!ref.current) return;
-
+    if (!text || maxHeight === 0 || maxWidth === 0) {
+      setIsReady(false);
+      return;
+    }
+    
     const el = ref.current;
+    if (!el) return;
 
     let size = maxSize;
     setIsReady(false);

@@ -468,7 +468,6 @@ function App() {
             <BookImageWrapper
               key={bookId ?? `placeholder-${i}`}
               book={book}
-              bookSize={bookSize}
               className={className}
               offset={offset}
               y={y}
