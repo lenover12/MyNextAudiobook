@@ -521,6 +521,7 @@ function App() {
                       author={book.authors?.[0]}
                       socialsOptions={options.socialsOptions}
                       bookRef={bookImageWrapperRef}
+                      bookImage={book.itunesImageUrl ?? undefined}
                     />
                   )
                 )}
