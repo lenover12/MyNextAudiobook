@@ -34,7 +34,7 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
       <li key="twitter">
         <a
           href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
-            `I found: “${title}”${author ? " by " + author : ""}, while judging books by their cover\n${image}`
+            `I found: “${title}”${author ? " by " + author : ""}, while judging books by their cover`
           )}&url=${encodeURIComponent(url)}`}
           target="_blank"
           rel="noopener noreferrer"
