@@ -11,12 +11,16 @@ interface Props {
   author?: string;
   socialsOptions?: Record<string, boolean>;
   bookRef?: React.RefObject<HTMLDivElement | null>;
+  bookImage?: string;
 }
 
-export default function ShareDropdownButton({ title, url, author, socialsOptions, bookRef }: Props) {
+export default function ShareDropdownButton({ title, url, author, socialsOptions, bookRef, bookImage }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const instagramRef = useRef<SVGSVGElement | null>(null);
+
+  const fallbackImage = "https://mynextaudiobook.com/preview.png";
+  const image = bookImage || fallbackImage;
   
   const getGoodreadsUrl = (title: string, author?: string) => {
     const query = author ? `${title} ${author}` : title;
@@ -29,7 +33,9 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     twitter: (
       <li key="twitter">
         <a
-          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`}
+          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+            `I found: “${title}”${author ? " by " + author : ""}, while judging books by their cover\n${image}`
+          )}&url=${encodeURIComponent(url)}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("share_clicked", { platform: "twitterx" })}
@@ -67,7 +73,11 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     linkedin: (
       <li key="linkedin">
         <a
-          href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`}
+          href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+            url
+          )}&title=${encodeURIComponent(
+            `A great way to fill downtime, I found “${title}”${author ? " by " + author : ""}, while judging books by their cover`
+          )}&summary=${encodeURIComponent("Try window shopping audiobooks, and judge them by their cover.")}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("share_clicked", { platform: "linkedin" })}
@@ -125,7 +135,13 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     pinterest: (
       <li key="pinterest">
         <a
-          href={`https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&media=&description=${encodeURIComponent(title)}`}
+          href={`https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(
+            url
+          )}&media=${encodeURIComponent(
+            image
+          )}&description=${encodeURIComponent(
+            `I found: “${title}”${author ? " by " + author : ""}, while judging books by their cover`
+          )}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("share_clicked", { platform: "pinterest" })}
@@ -144,7 +160,9 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     whatsapp: (
       <li key="whatsapp">
         <a
-          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title)}%20${encodeURIComponent(url)}`}
+          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+            `I found: “${title}”${author ? " by " + author : ""}, while judging books by their cover, check it out: ${url}`
+          )}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("share_clicked", { platform: "whatsapp" })}
@@ -163,7 +181,11 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     telegram: (
       <li key="telegram">
         <a
-          href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`}
+          href={`https://t.me/share/url?url=${encodeURIComponent(
+            url
+          )}&text=${encodeURIComponent(
+            `I found “${title}”${author ? " by " + author : ""}, while judging books by their cover`
+          )}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackEvent("share_clicked", { platform: "telegram" })}
