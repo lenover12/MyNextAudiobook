@@ -30,17 +30,24 @@ export async function fetchRandom(options?: FetchOptions, source: Source = 'itun
   if (!primaryBook) return null;
 
   const searchTerm = `${primaryBook.title} ${primaryBook.authors?.[0] ?? ''}`;
-  const secondaryResults = source === 'itunes'
+  const secondaryResultsRaw = source === 'itunes'
     ? await searchAudimetaBooks(searchTerm)
     : await searchItunesBooks(searchTerm);
 
-  const bestMatch = secondaryResults.find(b => compareBooksFuzzy(primaryBook, b));
+  const secondaryResults = Array.isArray(secondaryResultsRaw) ? secondaryResultsRaw : [];
+
+  let bestMatch;
+  try {
+    bestMatch = secondaryResults.find(b => compareBooksFuzzy(primaryBook, b));
+  } catch (e) {
+    return primaryBook;
+  }
 
   if (!bestMatch || typeof bestMatch !== 'object') return primaryBook;
 
-  return bestMatch
-    ? (source === 'itunes' ? mergeAudiobookDTOs(primaryBook, bestMatch) : mergeAudiobookDTOs(bestMatch, primaryBook))
-    : primaryBook;
+  return source === 'itunes'
+    ? mergeAudiobookDTOs(primaryBook, bestMatch)
+    : mergeAudiobookDTOs(bestMatch, primaryBook);
 }
 
 export async function fetchBookByIds(params: { itunesId?: string | null; asin?: string | null }): Promise<AudiobookDTO | null> {

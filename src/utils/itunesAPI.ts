@@ -141,14 +141,17 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
       }
 
       const data = await response.json();
-      const results = data.results
+      const resultsArray = Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []);
+      if (!Array.isArray(resultsArray)) {
+        console.warn('itunes: unexpected search response shape, treating as empty', data);
+      }
+      const results = (resultsArray || [])
         .filter((item: any) => {
-          if (!item.previewUrl) return false;
+          if (!item?.previewUrl) return false;
           if (!options?.genres || options.genres.length === 0) return true;
           return options.genres.includes(item.primaryGenreName as Genre);
         })
         .map((item: any) => mapItunesToDTO(item));
-
 
       if (results.length > 0) {
         return results[Math.floor(Math.random() * results.length)];
@@ -172,7 +175,8 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
   const res = await fetch(url);
   if (!res.ok) return [];
   const json = await res.json();
-  return json.results
+  const resultsArray = Array.isArray(json?.results) ? json.results : [];
+  return resultsArray
     .filter((item: any) => item.previewUrl)
     .map(mapItunesToDTO);
 }
