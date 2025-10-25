@@ -3,14 +3,13 @@ import { pruneString } from './pruneString';
 import type { AudiobookDTO } from '../dto/audiobookDTO';
 import type { Genre } from "../dto/genres";
 import { getCountryCode } from "./getGeo";
+import { loadOptions } from "../utils/optionsStorage";
+import { iTunesStoreMap } from '../dto/countries';
 
 export interface FetchOptions {
   term?: string;
   genres?: Genre[];
   authorHint?: string;
-  // limit?: number;
-  // country?: string;
-  // lang?: string;
   allowExplicit?: boolean;
   allowFallback?: boolean;
 }
@@ -123,11 +122,12 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
       const limit = Math.min(25, 200 - offset);
       const explicitParam = options?.allowExplicit ? 'yes' : 'no';
       
-      const country = await getCountryCode();
+      const opts = loadOptions();
+      const country = opts.countryCode ?? (await getCountryCode());
+      const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";
       const url = `https://itunes.apple.com/search?term=${encodeURIComponent(
         term
-      )}&media=audiobook&limit=${limit}&explicit=${explicitParam}&country=${country}`;
-
+      )}&media=audiobook&limit=${limit}&explicit=${explicitParam}&country=${storeCountry}`;
       const response = await fetch(url);
 
       if (!response.ok){
@@ -171,7 +171,10 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
-  const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=audiobook&limit=25&explicit=yes`;
+  const opts = loadOptions();
+  const country = opts.countryCode ?? (await getCountryCode());
+  const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";
+  const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=audiobook&limit=25&explicit=yes&country=${storeCountry}`;
   const res = await fetch(url);
   if (!res.ok) return [];
   const json = await res.json();

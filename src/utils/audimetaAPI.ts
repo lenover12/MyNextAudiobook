@@ -3,9 +3,9 @@ import type { FetchOptions } from './itunesAPI';
 import type { AudiobookDTO } from '../dto/audiobookDTO';
 import { getCountryCode } from './getGeo';
 import { loadOptions } from './optionsStorage';
+import { audimetaRegionMap } from '../dto/countries';
 
 const BASE_URL = 'https://audimeta.de/search';
-const supportedRegions = ['us', 'ca', 'uk', 'au', 'fr', 'de', 'jp', 'it', 'in', 'es', 'br'];
 
 let audimetaDownUntil: number | null = null;
 const API_TIMEOUT = 2 * 60 * 1000; //2 minutes
@@ -40,8 +40,9 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
   // const offset = Math.floor(Math.random() * 200);
   const limit = 50;
 
-  const userCountryCode = (await getCountryCode()).toLowerCase();
-  const region = supportedRegions.includes(userCountryCode) ? userCountryCode : 'us';
+  const opts = loadOptions();
+  const countryc = opts.countryCode ?? (await getCountryCode());
+  const region = audimetaRegionMap[countryc.toLowerCase()] ?? "us";
 
   const term = await getSearchTerm(options);
 
@@ -149,9 +150,10 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
     return [];
   }
 
-  const userCountryCode = (await getCountryCode()).toLowerCase();
-  const region = supportedRegions.includes(userCountryCode) ? userCountryCode : 'us';
-
+  const opts = loadOptions();
+  const countryc = opts.countryCode ?? (await getCountryCode());
+  const region = audimetaRegionMap[countryc.toLowerCase()] ?? "us";
+  
   const url = `https://audimeta.de/search?keywords=${encodeURIComponent(query)}&region=${region}&limit=50&page=0&products_sort_by=Relevance&cache=true`;
   try {
     const controller = new AbortController();

@@ -7,7 +7,12 @@ type Source = 'audimeta' | 'itunes';
 
 
 function normalize(str: string): string {
-  return str.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return str
+    ?.trim()
+    .toLowerCase()
+    .normalize("NFKD")  //proper unicode normalization
+    .replace(/[\p{Diacritic}]/gu, '') //strip diacritics but keep characters
+    .replace(/[^\p{L}\p{N}]+/gu, ''); //keep letters/numbers in ANY language
 }
 
 
