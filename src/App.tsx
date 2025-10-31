@@ -37,6 +37,7 @@ import { t } from "./utils/translations";
 
 
 import { animated } from '@react-spring/web';
+import { refreshCountryIfChanged } from "./utils/getGeo";
 
 function App() {
   const { options } = useOptions();
@@ -174,6 +175,9 @@ function App() {
     document.addEventListener("dragstart", handler);
     return () => document.removeEventListener("dragstart", handler);
   }, []);
+
+  //update country on page load
+  useEffect(() => { refreshCountryIfChanged(); }, []);
 
   const [lastBookId, setLastBookId] = useState<string | null>(null);
 
