@@ -2,9 +2,9 @@ import { getSearchTerm } from './getSearchTerm';
 import { pruneString } from './pruneString';
 import type { AudiobookDTO } from '../dto/audiobookDTO';
 import type { Genre } from "../dto/genres";
-import { getCountryCode } from "./getGeo";
-import { loadOptions } from "../utils/optionsStorage";
-import { iTunesStoreMap } from '../dto/countries';
+// import { getCountryCode } from "./getGeo";
+// import { loadOptions } from "../utils/optionsStorage";
+// import { iTunesStoreMap } from '../dto/countries';
 
 export interface FetchOptions {
   term?: string;
@@ -122,9 +122,10 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
       const limit = Math.min(25, 200 - offset);
       const explicitParam = options?.allowExplicit ? 'yes' : 'no';
       
-      const opts = loadOptions();
-      const country = opts.countryCode ?? (await getCountryCode());
-      const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";
+      // const opts = loadOptions();
+      // const country = opts.countryCode ?? (await getCountryCode());
+      // const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";
+      const storeCountry = "us";
       const url = `https://itunes.apple.com/search?term=${encodeURIComponent(
         term
       )}&media=audiobook&limit=${limit}&explicit=${explicitParam}&country=${storeCountry}`;
@@ -171,9 +172,10 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
-  const opts = loadOptions();
-  const country = opts.countryCode ?? (await getCountryCode());
-  const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";
+  // const opts = loadOptions();
+  // const country = opts.countryCode ?? (await getCountryCode());
+  // const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";
+  const storeCountry = "us";
   const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=audiobook&limit=25&explicit=yes&country=${storeCountry}`;
   const res = await fetch(url);
   if (!res.ok) return [];
