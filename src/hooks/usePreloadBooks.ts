@@ -3,6 +3,7 @@ import { fetchRandom } from "../utils/audiobookAPI";
 import type { AudiobookDTO } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 import { isAudiMetaDown } from "../utils/audimetaAPI";
+import { popCachedBook } from "../utils/cacheStorage";
 
 function preloadMedia(book: AudiobookDTO) {
   console.log(book);
@@ -103,10 +104,42 @@ export function usePreloadBooks(
   //fetch a book if there's no book at the current index
   useEffect(() => {
     const bookAtCurrentIndex = booksRef.current[indexRef.current];
+    const nextBook = booksRef.current[indexRef.current + 1];
+
     if (!bookAtCurrentIndex) {
       preload(1);
+      return;
     }
-  }, [preload]);
+
+    if (!nextBook && !isPreloadingRef.current) {
+      (async () => {
+        try {
+          const lang = (fetchOptions as any)?.language ?? "unknown";
+          const cached = await popCachedBook(lang);
+          if (cached) {
+            console.log("[Cache] Instant fill from cache:", cached.title);
+
+            //insert cached book as next
+            setBooks(prev => {
+              const updated = [...prev];
+              updated.splice(indexRef.current + 1, 0, cached);
+              booksRef.current = updated;
+              return updated;
+            });
+
+            //preload still runs
+            preload(1);
+          } else {
+            //empty cache
+            preload(1);
+          }
+        } catch (err) {
+          console.warn("Cache fill failed:", err);
+          preload(1);
+        }
+      })();
+    }
+  }, [preload, fetchOptions]);
 
   useEffect(() => {
     const forwardCount = booksRef.current.length - indexRef.current - 1;
