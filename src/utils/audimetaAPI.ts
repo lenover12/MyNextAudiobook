@@ -30,11 +30,11 @@ function safeParseArray(payload: any): any[] {
 }
 
 
-export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
+export async function fetchRandomBatch(options?: FetchOptions): Promise<AudiobookDTO[]> {
   //skip if audimeta is down
   if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
     console.warn("AudiMeta marked as down, skipping audible data.");
-    return null;
+    return [];
   }
 
   // const offset = Math.floor(Math.random() * 200);
@@ -63,7 +63,9 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
     const timeout = setTimeout(() => controller.abort(), API_WAIT_TIME);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
+
     if (!res.ok) throw new Error(`Audimeta error: ${res.status}`);
+
     const json = await res.json();
     let items = safeParseArray(json);
     let filtered = (items || []).filter((item: any) => item && item.isListenable && item.imageUrl);
@@ -75,14 +77,15 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
         item.language.toLowerCase().startsWith(languageCode.toLowerCase())
       );
     }
-    if (!filtered || filtered.length === 0) return null;
+    if (!filtered || filtered.length === 0) return [];
 
-    const random = filtered[Math.floor(Math.random() * filtered.length)];
-    return mapAudimetaToDTO(random);
+    // const random = filtered[Math.floor(Math.random() * filtered.length)];
+    // return mapAudimetaToDTO(random);
+    return filtered.map(mapAudimetaToDTO);
   } catch (e) {
-    console.error('Failed to fetch from Audimeta (fetchRandom)', e);
+    console.error('Failed to fetch from Audimeta (fetchRandomBatch)', e);
     audimetaDownUntil = Date.now() + API_TIMEOUT
-    return null;
+    return [];
   }
 }
 

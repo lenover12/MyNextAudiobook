@@ -10,4 +10,5 @@ export type BookDBEntry = {
   genre: string | null;
   thumbnailData?: string | null;
   timestamp: number;
+  language?: string;
 };

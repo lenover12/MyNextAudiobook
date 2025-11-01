@@ -99,7 +99,9 @@ async function getFallbackBook(genres?: string[]): Promise<AudiobookDTO & { _fal
   };
 }
 
-export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO | null> {
+export async function fetchRandomBatch(options?: FetchOptions): Promise<AudiobookDTO[]> {
+  let results: AudiobookDTO[] = [];
+  
   let maxRetries: number;
   if (options?.allowFallback) {
     maxRetries = options?.genres && options.genres.length > 0 ? 7 : 5;
@@ -116,6 +118,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
 
       if (attempt >= PRUNE_RETRY_THRESHOLD) {
         term = pruneString(term);
+        //TODO: check this is working
       }
       
       const offset = Math.floor(Math.random() * 200);
@@ -146,7 +149,7 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
       if (!Array.isArray(resultsArray)) {
         console.warn('itunes: unexpected search response shape, treating as empty', data);
       }
-      const results = (resultsArray || [])
+      const filtered = (resultsArray || [])
         .filter((item: any) => {
           if (!item?.previewUrl) return false;
           if (!options?.genres || options.genres.length === 0) return true;
@@ -154,21 +157,28 @@ export async function fetchRandom(options?: FetchOptions): Promise<AudiobookDTO 
         })
         .map((item: any) => mapItunesToDTO(item));
 
-      if (results.length > 0) {
-        return results[Math.floor(Math.random() * results.length)];
+      if (filtered.length > 0) {
+        // return filtered[Math.floor(Math.random() * filtered.length)];
+        results = filtered;
+        break;
       }
     } catch (e) {
       console.error(`Error on attempt ${attempt}:`, e);
       await delay(500 * Math.pow(1.5, attempt));
     }
   }
-  console.log("FALLBACK")
 
-  if (options?.allowFallback) {
-    return await getFallbackBook(options.genres);
+  if (results.length > 0) {
+    return results;
   }
 
-  return null;
+  console.log("FALLBACK")
+  if (options?.allowFallback) {
+    const fallbackBook = await getFallbackBook(options.genres);
+    return [fallbackBook];
+  }
+
+  return [];
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
