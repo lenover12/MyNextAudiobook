@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { fetchRandom } from "../utils/audiobookAPI";
 import type { AudiobookDTO } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
-import { isAudiMetaDown } from "../utils/audimetaAPI";
+import { shouldSkipAudiMetaRequest } from "../utils/audimetaAPI";
 import { popCachedBook } from "../utils/cacheStorage";
 
 function preloadMedia(book: AudiobookDTO) {
@@ -82,7 +82,7 @@ export function usePreloadBooks(
           (
             !mustHaveAudible ||
             book.audiblePageUrl != null ||
-            isAudiMetaDown() //relax restriction if AudiMeta is unreachable
+            shouldSkipAudiMetaRequest() //relax restriction if AudiMeta is unreachable
           )
         ) {
           newBooks.push(book);
