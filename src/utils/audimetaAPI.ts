@@ -21,6 +21,49 @@ function isAudiMetaRateLimited(): boolean {
   return audimetaRateLimitedUntil != null && Date.now() < audimetaRateLimitedUntil;
 }
 
+function shouldSkipAudiMetaRequest(): boolean {
+  if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
+    console.warn("AudiMeta marked as down, skipping request.");
+    return true;
+  }
+  if (audimetaRateLimitedUntil && Date.now() < audimetaRateLimitedUntil) {
+    console.warn("AudiMeta temporarily rate-limited, skipping request.");
+    return true;
+  }
+  return false;
+}
+
+function isAudiMetaResponseValid(payload: any): boolean {
+  if (!payload || typeof payload !== "object") return true;
+
+  if (
+    payload.status === 404 ||
+    payload.name === "NotFoundException" ||
+    payload.code === "E_NOT_FOUND"
+  ) {
+    console.warn(`[AudiMeta] Not found: ${payload.message ?? "Unknown reason"}`);
+    return false;
+  }
+
+  if (payload.status === 429 || payload.code === "E_RATE_LIMIT") {
+    console.warn(`[AudiMeta] Rate limit hit`);
+    return false;
+  }
+
+  return true;
+}
+
+function handleRateLimitResponse(res: Response): boolean {
+  if (res.status === 429) {
+    const retryAfter = res.headers.get("Retry-After");
+    const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
+    audimetaRateLimitedUntil = Date.now() + waitMs;
+    console.warn(`[AudiMeta] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
+    return true;
+  }
+  return false;
+}
+
 function safeParseArray(payload: any): any[] {
   if (!payload) return [];
   if (Array.isArray(payload)) return payload;
@@ -37,16 +80,9 @@ function safeParseArray(payload: any): any[] {
 
 
 export async function fetchRandomBatch(options?: FetchOptions): Promise<AudiobookDTO[]> {
-  //skip if audimeta is down
-  if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
-    console.warn("AudiMeta marked as down, skipping audible data.");
-    return [];
-  }
-  //skip if ratelimited
-  if (isAudiMetaRateLimited()) {
-    console.warn("AudiMeta temporarily rate-limited, skipping requests.");
-    return [];
-  }
+  //skip if audimeta is down or rate-limited
+  if (shouldSkipAudiMetaRequest()) return [];
+
   // const offset = Math.floor(Math.random() * 200);
   const limit = 50;
 
@@ -74,17 +110,14 @@ export async function fetchRandomBatch(options?: FetchOptions): Promise<Audioboo
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
 
-    if (res.status === 429) {
-      const retryAfter = res.headers.get("Retry-After");
-      const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
-      audimetaRateLimitedUntil = Date.now() + waitMs;
-      console.warn(`[AudiMeta] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
-      return [];
-    }
+    if (handleRateLimitResponse(res)) return [];
 
     if (!res.ok) throw new Error(`Audimeta error: ${res.status}`);
 
     const json = await res.json();
+    
+    if (!isAudiMetaResponseValid(json)) return [];
+
     let items = safeParseArray(json);
     let filtered = (items || []).filter((item: any) => item && item.isListenable && item.imageUrl);
 
@@ -167,15 +200,8 @@ export function mapAudimetaToDTO(item: any): AudiobookDTO {
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
-  //skip if audimeta is down
-  if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
-    return [];
-  }
-  //skip if ratelimited
-  if (isAudiMetaRateLimited()) {
-    console.warn("AudiMeta temporarily rate-limited, skipping requests.");
-    return [];
-  }
+  //skip if audimeta is down or rate-limited
+  if (shouldSkipAudiMetaRequest()) return [];
 
   const opts = loadOptions();
   const countryc = opts.countryCode ?? (await getCountryCode());
@@ -187,15 +213,14 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
     const timeout = setTimeout(() => controller.abort(), API_WAIT_TIME);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
-    if (res.status === 429) {
-      const retryAfter = res.headers.get("Retry-After");
-      const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
-      audimetaRateLimitedUntil = Date.now() + waitMs;
-      console.warn(`[AudiMeta] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
-      return [];
-    }
+
+    if (handleRateLimitResponse(res)) return [];
+    
     if (!res.ok) throw new Error(`AudiMeta error: ${res.status}`);
     const json = await res.json();
+    
+    if (!isAudiMetaResponseValid(json)) return [];
+    
     const items = safeParseArray(json);
 
     const filtered = (items || [])
@@ -211,36 +236,32 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
 }
 
 export async function fetchByAsin(asin: string): Promise<AudiobookDTO | null> {
-  //skip if audimeta is down
-  if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
-    return null;
-  }
-  //skip if ratelimited
-  if (isAudiMetaRateLimited()) {
-    console.warn("AudiMeta temporarily rate-limited, skipping requests.");
-    return null;
-  }
+  //skip if audimeta is down or rate-limited
+  if (shouldSkipAudiMetaRequest()) return null;
   
-  const url = `https://audimeta.de/book/${encodeURIComponent(asin)}`;
+  const opts = loadOptions();
+  const countryc = opts.countryCode ?? (await getCountryCode());
+  const region = audimetaRegionMap[countryc.toLowerCase()] ?? "us";
+  
+  const url = `https://audimeta.de/book/${encodeURIComponent(asin)}?region=${region}`;
 
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), API_WAIT_TIME);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
-    if (res.status === 429) {
-      const retryAfter = res.headers.get("Retry-After");
-      const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
-      audimetaRateLimitedUntil = Date.now() + waitMs;
-      console.warn(`[AudiMeta] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
-      return null;
-    }
+
+    if (handleRateLimitResponse(res)) return null;
+
     if (!res.ok) {
       console.error(`Audimeta error: ${res.status}`);
       return null;
     }
 
     const item = await res.json();
+    
+    if (!isAudiMetaResponseValid(item)) return null;
+
     if (!item || !item.asin) {
       return null;
     }
