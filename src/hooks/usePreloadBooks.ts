@@ -40,6 +40,7 @@ export function usePreloadBooks(
   const isPreloadingRef = useRef(false);
   const booksRef = useRef<AudiobookDTO[]>([]);
   const indexRef = useRef(0);
+  const isCacheFillingRef = useRef(false);
 
   useEffect(() => {
     if (seed && books.length === 0) {
@@ -99,6 +100,30 @@ export function usePreloadBooks(
       isPreloadingRef.current = false;
       setIsFetching(false);
     }
+  }, [fetchOptions, mustHaveAudible, preloadAhead]);
+
+  const fillFromCache = useCallback(async () => {
+    if (isCacheFillingRef.current) return;
+    
+    isCacheFillingRef.current = true;
+    try {
+      const lang = (fetchOptions as any)?.language ?? "unknown";
+      const cached = await popCachedBook(lang);
+      if (cached) {
+        console.log("[Cache] Instant fill from cache:", cached.title);
+
+        setBooks(prev => {
+          const updated = [...prev];
+          updated.splice(indexRef.current + 1, 0, cached);
+          booksRef.current = updated;
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.warn("Cache fill failed:", err);
+    } finally {
+      isCacheFillingRef.current = false;
+    }
   }, [fetchOptions]);
 
   //fetch a book if there's no book at the current index
@@ -111,35 +136,14 @@ export function usePreloadBooks(
       return;
     }
 
-    if (!nextBook && !isPreloadingRef.current) {
-      (async () => {
-        try {
-          const lang = (fetchOptions as any)?.language ?? "unknown";
-          const cached = await popCachedBook(lang);
-          if (cached) {
-            console.log("[Cache] Instant fill from cache:", cached.title);
-
-            //insert cached book as next
-            setBooks(prev => {
-              const updated = [...prev];
-              updated.splice(indexRef.current + 1, 0, cached);
-              booksRef.current = updated;
-              return updated;
-            });
-
-            //preload still runs
-            preload(1);
-          } else {
-            //empty cache
-            preload(1);
-          }
-        } catch (err) {
-          console.warn("Cache fill failed:", err);
-          preload(1);
-        }
-      })();
+    if (!nextBook) {
+      fillFromCache();
+      
+      if (!isPreloadingRef.current) {
+        preload(1);
+      }
     }
-  }, [preload, fetchOptions]);
+  }, [currentIndex, books.length, preload, fillFromCache]);
 
   useEffect(() => {
     const forwardCount = booksRef.current.length - indexRef.current - 1;
@@ -147,7 +151,7 @@ export function usePreloadBooks(
     if (needed > 0) {
       preload(needed + 1);
     }
-  }, [preload]);
+  }, [preload, preloadAhead]);
 
   useEffect(() => {
     const forwardCount = books.length - currentIndex - 1;
@@ -156,7 +160,7 @@ export function usePreloadBooks(
     if (needed > 0 && !isPreloadingRef.current) {
       preload(needed);
     }
-  }, [books, currentIndex, preload]);
+  }, [books, currentIndex, preload, preloadAhead]);
 
   const next = useCallback(() => {
     if (currentIndex < books.length - 1) {
