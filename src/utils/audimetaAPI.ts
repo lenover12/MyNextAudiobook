@@ -8,11 +8,17 @@ import { audimetaRegionMap } from '../dto/countries';
 const BASE_URL = 'https://audimeta.de/search';
 
 let audimetaDownUntil: number | null = null;
+let audimetaRateLimitedUntil: number | null = null;
 const API_TIMEOUT = 2 * 60 * 1000; //2 minutes
 const API_WAIT_TIME = 18000; //18 seconds
+const DEFAULT_RATE_LIMIT_WAIT = 60 * 1000; //1 minute
 
 export function isAudiMetaDown(): boolean {
   return audimetaDownUntil != null && Date.now() < audimetaDownUntil;
+}
+
+function isAudiMetaRateLimited(): boolean {
+  return audimetaRateLimitedUntil != null && Date.now() < audimetaRateLimitedUntil;
 }
 
 function safeParseArray(payload: any): any[] {
@@ -36,7 +42,11 @@ export async function fetchRandomBatch(options?: FetchOptions): Promise<Audioboo
     console.warn("AudiMeta marked as down, skipping audible data.");
     return [];
   }
-
+  //skip if ratelimited
+  if (isAudiMetaRateLimited()) {
+    console.warn("AudiMeta temporarily rate-limited, skipping requests.");
+    return [];
+  }
   // const offset = Math.floor(Math.random() * 200);
   const limit = 50;
 
@@ -63,6 +73,14 @@ export async function fetchRandomBatch(options?: FetchOptions): Promise<Audioboo
     const timeout = setTimeout(() => controller.abort(), API_WAIT_TIME);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
+
+    if (res.status === 429) {
+      const retryAfter = res.headers.get("Retry-After");
+      const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
+      audimetaRateLimitedUntil = Date.now() + waitMs;
+      console.warn(`[AudiMeta] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
+      return [];
+    }
 
     if (!res.ok) throw new Error(`Audimeta error: ${res.status}`);
 
@@ -149,7 +167,13 @@ export function mapAudimetaToDTO(item: any): AudiobookDTO {
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
+  //skip if audimeta is down
   if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
+    return [];
+  }
+  //skip if ratelimited
+  if (isAudiMetaRateLimited()) {
+    console.warn("AudiMeta temporarily rate-limited, skipping requests.");
     return [];
   }
 
@@ -163,6 +187,13 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
     const timeout = setTimeout(() => controller.abort(), API_WAIT_TIME);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
+    if (res.status === 429) {
+      const retryAfter = res.headers.get("Retry-After");
+      const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
+      audimetaRateLimitedUntil = Date.now() + waitMs;
+      console.warn(`[AudiMeta] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
+      return [];
+    }
     if (!res.ok) throw new Error(`AudiMeta error: ${res.status}`);
     const json = await res.json();
     const items = safeParseArray(json);
@@ -180,7 +211,13 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
 }
 
 export async function fetchByAsin(asin: string): Promise<AudiobookDTO | null> {
+  //skip if audimeta is down
   if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
+    return null;
+  }
+  //skip if ratelimited
+  if (isAudiMetaRateLimited()) {
+    console.warn("AudiMeta temporarily rate-limited, skipping requests.");
     return null;
   }
   
@@ -191,6 +228,13 @@ export async function fetchByAsin(asin: string): Promise<AudiobookDTO | null> {
     const timeout = setTimeout(() => controller.abort(), API_WAIT_TIME);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
+    if (res.status === 429) {
+      const retryAfter = res.headers.get("Retry-After");
+      const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
+      audimetaRateLimitedUntil = Date.now() + waitMs;
+      console.warn(`[AudiMeta] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
+      return null;
+    }
     if (!res.ok) {
       console.error(`Audimeta error: ${res.status}`);
       return null;
