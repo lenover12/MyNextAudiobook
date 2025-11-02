@@ -34,7 +34,8 @@ import { bootstrapAnalytics } from "./utils/consent";
 import CookieConsentModal from "./components/CookieConsentModal";
 import type { LanguageCode } from "./dto/languages";
 import { t } from "./utils/translations";
-
+//todo
+import { seedFallbackBooksIfEmpty } from "./utils/cacheStorage";
 
 import { animated } from '@react-spring/web';
 import { refreshCountryIfChanged } from "./utils/getGeo";
@@ -178,6 +179,9 @@ function App() {
 
   //update country on page load
   useEffect(() => { refreshCountryIfChanged(); }, []);
+
+  //seed cached books on page load
+  useEffect(() => { seedFallbackBooksIfEmpty(); }, []);
 
   const [lastBookId, setLastBookId] = useState<string | null>(null);
 
