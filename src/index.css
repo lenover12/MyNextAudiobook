@@ -403,7 +403,7 @@ body {
 }
 
 .description-reveal-text {
-  padding: 0 calc(var(--book-size) * 0.07);
+  padding: 0 calc(var(--book-size) * 0.12);
   padding-top: calc(var(--book-size) * 0.41);
   padding-bottom: calc(var(--book-size) * 0.05);
   box-sizing: border-box;
@@ -419,9 +419,9 @@ body {
   height: calc(var(--book-size) * 0.9);
 
   font-family: 'Times New Roman', Times, serif;
-  font-size: 1rem; /* roughly 12pt */
-  line-height: 2.07;
-  margin-bottom: 0;
+  font-size: calc(var(--book-size) * 0.04); /* roughly 12pt */
+  line-height: 1.8;
+  margin-bottom: calc(var(--ui-padding) * 1);
 }
 
 .description-reveal-text * {
@@ -436,6 +436,51 @@ body {
 .description-reveal-text ol {
   padding-left: 1.2em;
 }
+
+.description-reveal-button {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  animation: floatY 2.5s ease-in-out infinite;
+  font-size: calc(var(--book-size) * 0.10);
+  color: black;
+}
+
+.description-reveal-up-button {
+  top: 40%;
+}
+
+
+.description-reveal-down-button {
+  bottom: 0;
+}
+
+@keyframes floatY {
+  0%, 100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -10px);
+  }
+}
+
+.book-current {
+  pointer-events: none;
+}
+
+
+/* TODO: share links need spaces between link (twitterx)
+TODO: align audible affiliate text with button */
+
 
 .book-info-column {
   margin-top: var(--redirect-badge-y-start);
