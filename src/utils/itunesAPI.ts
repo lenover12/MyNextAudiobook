@@ -6,6 +6,28 @@ import type { Genre } from "../dto/genres";
 // import { loadOptions } from "../utils/optionsStorage";
 // import { iTunesStoreMap } from '../dto/countries';
 
+let itunesRateLimitedUntil: number | null = null;
+const DEFAULT_RATE_LIMIT_WAIT = 60 * 1000; // 1 minute
+
+export function shouldSkipItunesRequest(): boolean {
+  if (itunesRateLimitedUntil && Date.now() < itunesRateLimitedUntil) {
+    console.warn("iTunes temporarily rate-limited, skipping request.");
+    return true;
+  }
+  return false;
+}
+
+function handleRateLimitResponse(res: Response): boolean {
+  if (res.status === 429) {
+    const retryAfter = res.headers.get("Retry-After");
+    const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : DEFAULT_RATE_LIMIT_WAIT;
+    itunesRateLimitedUntil = Date.now() + waitMs;
+    console.warn(`[iTunes] Rate limited. Waiting for ${(waitMs / 1000).toFixed(1)}s`);
+    return true;
+  }
+  return false;
+}
+
 export interface FetchOptions {
   term?: string;
   genres?: Genre[];
@@ -67,6 +89,7 @@ function mapItunesToDTO(item: any): AudiobookDTO {
 
 let cachedFallbackBooks: FallbackBooksByGenre | null = null;
 
+//TODO move this
 async function getFallbackBook(genres?: string[]): Promise<AudiobookDTO & { _fallback: true }> {
   if (!cachedFallbackBooks) {
     const { default: rawBooks } = await import('../assets/fallbackBooks.json');
@@ -100,6 +123,8 @@ async function getFallbackBook(genres?: string[]): Promise<AudiobookDTO & { _fal
 }
 
 export async function fetchRandomBatch(options?: FetchOptions): Promise<AudiobookDTO[]> {
+  if (shouldSkipItunesRequest()) return [];
+
   let results: AudiobookDTO[] = [];
   
   let maxRetries: number;
@@ -133,6 +158,7 @@ export async function fetchRandomBatch(options?: FetchOptions): Promise<Audioboo
         term
       )}&media=audiobook&limit=${limit}&explicit=${explicitParam}&country=${storeCountry}`;
       const response = await fetch(url);
+      if (handleRateLimitResponse(response)) return [];
 
       if (!response.ok){
         if (response.status === 403) {
@@ -182,12 +208,15 @@ export async function fetchRandomBatch(options?: FetchOptions): Promise<Audioboo
 }
 
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
+  if (shouldSkipItunesRequest()) return [];
+
   // const opts = loadOptions();
   // const country = opts.countryCode ?? (await getCountryCode());
   // const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";
   const storeCountry = "us";
   const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=audiobook&limit=25&explicit=yes&country=${storeCountry}`;
   const res = await fetch(url);
+  if (handleRateLimitResponse(res)) return [];
   if (!res.ok) return [];
   const json = await res.json();
   const resultsArray = Array.isArray(json?.results) ? json.results : [];
@@ -197,9 +226,12 @@ export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
 }
 
 export async function fetchByItunesId(itunesId: string): Promise<AudiobookDTO | null> {
+  if (shouldSkipItunesRequest()) return null;
+
   try {
     const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(itunesId)}`;
     const res = await fetch(url);
+    if (handleRateLimitResponse(res)) return null;
 
     if (!res.ok) {
       console.error(`fetchByItunesId failed: HTTP ${res.status}`);
