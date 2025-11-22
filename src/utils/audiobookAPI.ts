@@ -1,6 +1,6 @@
 import type { FetchOptions } from './itunesAPI';
 import { fetchRandomBatch as fetchItunesRandomBatch, searchBooks as searchItunesBooks, fetchByItunesId } from './itunesAPI';
-import { fetchRandomBatch as fetchAudimetaRandomBatch, searchBooks as searchAudimetaBooks, fetchByAsin } from './audimetaAPI';
+import { fetchRandomBatch as fetchAudimetaRandomBatch, searchBooks as searchAudimetaBooks, fetchByAsin, shouldSkipAudiMetaRequest } from './audimetaAPI';
 import { mergeAudiobookDTOs, type AudiobookDTO } from '../dto/audiobookDTO';
 import { addCacheEntry } from "../utils/cacheStorage";
 
@@ -8,7 +8,8 @@ type Source = 'audimeta' | 'itunes';
 const FUZZY_THE_BACKLOG = true;
 const NUM_CACHE_TO_FUZ = 1
 const ITUNES_FIRST = false;
-
+let audimetaWaitoutUntil: number = 0;
+const WAITOUT_AUDIMETA = 1000 * 60 * 1; //1 minutes
 
 function normalize(str: string): string {
   return str
@@ -37,8 +38,16 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
       ? await fetchItunesRandomBatch(options)
       : await fetchAudimetaRandomBatch(options);
 
+  //if audimeta marked down/rate-limited, force itunes
+  if (!ITUNES_FIRST && source === 'audimeta') {
+    if (Date.now() < audimetaWaitoutUntil || shouldSkipAudiMetaRequest()) {
+      source = 'itunes';
+    }
+  }
+
   if ((!batch || batch.length === 0) && source === 'audimeta') {
     console.warn("[AudiobookAPI] Audimeta unavailable, falling back to iTunes.");
+    audimetaWaitoutUntil = Date.now() + WAITOUT_AUDIMETA;
     return await fetchRandom(options, 'itunes');
   }
 
@@ -75,7 +84,8 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
 
   //retrieve rich data for every book (shown and cached)
   if (FUZZY_THE_BACKLOG) {
-    const allMerged = await Promise.allSettled([primaryBook, ...batch].map(fuzzyMerge));
+    const subset = [primaryBook, ...batch.slice(0, NUM_CACHE_TO_FUZ)];
+    const allMerged = await Promise.allSettled(subset.map(fuzzyMerge));
     const mergedBooks = allMerged
       .map(r => r.status === 'fulfilled' ? r.value : null)
       .filter((b): b is AudiobookDTO => !!b);

@@ -210,6 +210,8 @@ export async function fetchRandomBatch(options?: FetchOptions): Promise<Audioboo
 export async function searchBooks(query: string): Promise<AudiobookDTO[]> {
   if (shouldSkipItunesRequest()) return [];
 
+  console.log("searching for book")
+
   // const opts = loadOptions();
   // const country = opts.countryCode ?? (await getCountryCode());
   // const storeCountry = iTunesStoreMap[country.toLowerCase()] ?? "us";

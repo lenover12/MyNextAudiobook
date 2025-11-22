@@ -64,7 +64,14 @@ export function usePreloadBooks(
     const forwardCount = existingBooks.length - indexRef.current - 1;
     const needed = preloadAhead - forwardCount;
 
-    if (needed <= 0 || isPreloadingRef.current) return;
+    if (isPreloadingRef.current) {
+      console.log("[Preload] Skipping — already fetching.");
+      return;
+    }
+
+    if (needed <= 0) {
+      return;
+    }
 
     isPreloadingRef.current = true;
     setIsFetching(true);
@@ -143,24 +150,16 @@ export function usePreloadBooks(
         preload(1);
       }
     }
-  }, [currentIndex, books.length, preload, fillFromCache]);
+  }, [currentIndex, preload, fillFromCache]);
 
   useEffect(() => {
     const forwardCount = booksRef.current.length - indexRef.current - 1;
     const needed = preloadAhead - forwardCount;
-    if (needed > 0) {
+    // if (needed > 0) {
+    if (needed > 0 && !isPreloadingRef.current) {
       preload(needed + 1);
     }
-  }, [preload, preloadAhead]);
-
-  useEffect(() => {
-    const forwardCount = books.length - currentIndex - 1;
-    const needed = preloadAhead - forwardCount;
-
-    if (needed > 0 && !isPreloadingRef.current) {
-      preload(needed);
-    }
-  }, [books, currentIndex, preload, preloadAhead]);
+  }, [preloadAhead]);
 
   const next = useCallback(() => {
     if (currentIndex < books.length - 1) {
