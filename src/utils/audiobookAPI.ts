@@ -7,7 +7,7 @@ import { addCacheEntry } from "../utils/cacheStorage";
 type Source = 'audimeta' | 'itunes';
 const FUZZY_THE_BACKLOG = true;
 const NUM_CACHE_TO_FUZ = 1
-const ITUNES_FIRST = false;
+const ITUNES_FIRST = true;
 let audimetaWaitoutUntil: number = 0;
 const WAITOUT_AUDIMETA = 1000 * 60 * 1; //1 minutes
 

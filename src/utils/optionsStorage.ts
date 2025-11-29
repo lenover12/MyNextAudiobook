@@ -52,7 +52,7 @@ export const defaultOptions: Options = {
     "Arts & Entertainment" ,"Biographies & Memoirs" ,"Business & Personal Finance" ,"Children & Teens" ,"Classics" ,"Comedy" ,"Drama & Poetry" ,"Fiction" ,"History" ,"Mysteries & Thrillers" ,"Nonfiction" ,"Romance" ,"Sci-Fi & Fantasy" ,"Science & Nature" ,"Self-Development" ,"Sports & Outdoors" , "Travel & Adventure"
   ],
   mustHaveAudible: false,
-  preloadAhead: 1,
+  preloadAhead: 5,
   enableCookies: false,
 };
 

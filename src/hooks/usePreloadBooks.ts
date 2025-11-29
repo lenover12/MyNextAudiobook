@@ -159,7 +159,7 @@ export function usePreloadBooks(
     if (needed > 0 && !isPreloadingRef.current) {
       preload(needed + 1);
     }
-  }, [preloadAhead]);
+  }, [books.length, currentIndex, preloadAhead, preload]);
 
   const next = useCallback(() => {
     if (currentIndex < books.length - 1) {
