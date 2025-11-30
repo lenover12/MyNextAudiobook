@@ -42,6 +42,9 @@ export function usePreloadBooks(
   const indexRef = useRef(0);
   const isCacheFillingRef = useRef(false);
 
+  const lastScrollTimeRef = useRef(Date.now());
+  const SCROLL_SPEED_THRESHOLD = 20000;
+
   useEffect(() => {
     if (seed && books.length === 0) {
       console.log("[usePreloadBooks] Seeding initial book:", seed);
@@ -92,7 +95,7 @@ export function usePreloadBooks(
             shouldSkipAudiMetaRequest() //relax restriction if AudiMeta is unreachable
           )
         ) {
-          newBooks.push(book);
+          newBooks.push({ ...book, __fromCache: false });
           preloadMedia(book);
           console.log("Fetched:", book.title);
         }
@@ -109,13 +112,24 @@ export function usePreloadBooks(
     }
   }, [fetchOptions, mustHaveAudible, preloadAhead]);
 
-  const fillFromCache = useCallback(async () => {
+  const fillFromCache = useCallback(
+    async ({ used = false }: { used?:boolean } = {}) => {
     if (isCacheFillingRef.current) return;
     
     isCacheFillingRef.current = true;
     try {
       const lang = (fetchOptions as any)?.language ?? "unknown";
-      const cached = await popCachedBook(lang);
+      
+      //build list of IDs currently visible/loaded
+      const currentIds = new Set(
+        booksRef.current
+          .map(b => (b.asin ?? b.itunesId))
+          .filter((id): id is string | number => id != null)
+          .map(id => id.toString())
+      );
+
+      const cached = await popCachedBook(lang, used, currentIds);
+
       if (cached) {
         console.log("[Cache] Instant fill from cache:", cached.title);
 
@@ -125,6 +139,7 @@ export function usePreloadBooks(
           booksRef.current = updated;
           return updated;
         });
+        return cached;
       }
     } catch (err) {
       console.warn("Cache fill failed:", err);
@@ -133,24 +148,33 @@ export function usePreloadBooks(
     }
   }, [fetchOptions]);
 
-  //fetch a book if there's no book at the current index
+  // //fetch a book if there's no book at the current index
+  // useEffect(() => {
+  //   const bookAtCurrentIndex = booksRef.current[indexRef.current];
+  //   const nextBook = booksRef.current[indexRef.current + 1];
+
+  //   if (!bookAtCurrentIndex) {
+  //     preload(1);
+  //     return;
+  //   }
+
+  //   if (!nextBook) {
+  //     fillFromCache();
+      
+  //     if (!isPreloadingRef.current) {
+  //       preload(1);
+  //     }
+  //   }
+  // }, [currentIndex, preload, fillFromCache]);
+
+  //fetch a book if there's no book at the current index (initial bootstrap / safety net)
   useEffect(() => {
     const bookAtCurrentIndex = booksRef.current[indexRef.current];
-    const nextBook = booksRef.current[indexRef.current + 1];
 
-    if (!bookAtCurrentIndex) {
+    if (!bookAtCurrentIndex && !isPreloadingRef.current) {
       preload(1);
-      return;
     }
-
-    if (!nextBook) {
-      fillFromCache();
-      
-      if (!isPreloadingRef.current) {
-        preload(1);
-      }
-    }
-  }, [currentIndex, preload, fillFromCache]);
+  }, [currentIndex, preload]);
 
   useEffect(() => {
     const forwardCount = booksRef.current.length - indexRef.current - 1;
@@ -173,6 +197,43 @@ export function usePreloadBooks(
     }
   }, [currentIndex]);
 
+  const smartNext = useCallback(async () => {
+    const now = Date.now();
+    const isFast = now - lastScrollTimeRef.current < SCROLL_SPEED_THRESHOLD;
+
+    const hasNext = currentIndex < booksRef.current.length - 1;
+
+    //fast scrolling serve used=true when we need cache
+    if (isFast) {
+      if (hasNext) {
+        setCurrentIndex((i) => i + 1);
+        return;
+      }
+      const usedBook = await fillFromCache({ used: true });
+      if (usedBook) {
+        console.log("[fast scroll] served usedbook from cache:", usedBook.title);
+        await preload(1);
+        setCurrentIndex((i) => i + 1);
+        lastScrollTimeRef.current = Date.now();
+        return;
+      }
+    }
+
+    //slow scrolling serve used=false when we need cache
+    if (hasNext) {
+      setCurrentIndex((i) => i + 1);
+      return
+    }
+    const unusedBook = await fillFromCache({ used: false });
+    if (unusedBook) {
+      console.log("[slow scroll] served unusedbook from cache:", unusedBook.title);
+      await preload(1);
+      setCurrentIndex((i) => i + 1);
+      lastScrollTimeRef.current = Date.now();
+    }
+  }, [fillFromCache, preload, currentIndex]);
+  // }, [fetchOptions, fillFromCache, preload, currentIndex]);
+
   const currentBook = books[currentIndex] ?? null;
 
   return {
@@ -182,6 +243,7 @@ export function usePreloadBooks(
     isFetching,
     next,
     previous,
+    smartNext,
     jumpTo: (index: number) => setCurrentIndex(index),
     insertNext: (book: AudiobookDTO) => {
       setBooks(prev => {

@@ -1,6 +1,7 @@
 import { openDB } from "idb";
 import type { BookDBEntry } from "../dto/bookDB";
 import type { AudiobookDTO } from "../dto/audiobookDTO";
+import { loadOptions } from "./optionsStorage";
 
 const DB_NAME = "mynextaudiobook-cache";
 const STORE_NAME = "books";
@@ -48,6 +49,7 @@ export async function seedFallbackBooksIfEmpty() {
           itunesId: b.itunesId ?? null,
         },
       },
+      lastUsedAt: null,
     }));
 
   for (const entry of entries) {
@@ -87,33 +89,115 @@ export async function addCacheEntry(book: AudiobookDTO, lang: string) {
         itunesId: book.itunesId ?? null,
       },
     },
+    lastUsedAt: null,
   };
 
   await db.put(STORE_NAME, entry);
 }
 
-export async function popCachedBook(lang: string, genre?: string) {
+export async function popCachedBook(
+  lang: string,
+  used: boolean = false,
+  currentIds: Set<string> = new Set()
+) {
+  const MIN_USED_BEFORE_REUSE = 40;
+  const { enabledGenres } = loadOptions();
+  
   const db = await getDB();
   const tx = db.transaction(STORE_NAME, "readwrite");
   const store = tx.store;
 
   const all = await store.getAll();
-  const unused = all.filter((b: any) => !b.used && (!genre || b.genre === genre));
-  if (unused.length === 0) return null;
 
-  const preferred = unused.find((b: any) => b.languages?.[lang]);
-  const selected = preferred ?? unused[Math.floor(Math.random() * unused.length)];
+  //prevent duplicates and skip any book already in sliding window
+  function isDuplicate(b: any) {
+    const id = (b.asin ?? b.itunesId)?.toString();
+    if (!id) return false;
+    return currentIds.has(id);
+  }
 
-  selected.used = true;
-  await store.put(selected);
+  const totalUsed = all.filter(b => b.used === true).length;
+  const totalUnused = all.filter(b => b.used === false).length;
 
-  const langIds = selected.languages?.[lang];
-  return {
-    ...selected,
-    asin: langIds?.asin ?? selected.asin,
-    itunesId: langIds?.itunesId ?? selected.itunesId,
+  console.log(
+    `%c[Cache] popCachedBook request used=${used} → usedCount=${totalUsed}, unusedCount=${totalUnused}`,
+    "color:#e67e22;font-weight:bold"
+  );
+
+  const allowUsed = used && totalUsed >= MIN_USED_BEFORE_REUSE;
+
+  function finalize(selected: any) {
+    if (!allowUsed) {
+      selected.used = true;
+      selected.lastUsedAt = Date.now();
+      store.put(selected);
+    }
+    if (allowUsed) {
+      selected.lastUsedAt = Date.now();
+      store.put(selected);
+    }
+    const langIds = selected.languages?.[lang];
+    return {
+      ...selected,
+      asin: langIds?.asin ?? selected.asin,
+      itunesId: langIds?.itunesId ?? selected.itunesId,
+      __fromCache: true
+    };
+  }
+
+  const pick = (list: any[]) => {
+    if (list.length === 0) return null;
+    
+    //filter duplicates by asin/itunesId
+    const filtered = list.filter(b => !isDuplicate(b));
+    if (filtered.length === 0) return null;
+
+    //pick oldest used book
+    if (allowUsed) {
+      const sorted = [...filtered].sort((a, b) => {
+        const ta = a.lastUsedAt ?? 0;
+        const tb = b.lastUsedAt ?? 0;
+        return ta - tb;
+      });
+      return sorted[0];
+    }
+    const preferred = filtered.find(b => b.languages?.[lang]);
+    return preferred ?? filtered[Math.floor(Math.random() * filtered.length)];
   };
+
+  //cached books by language and genre list choice with fallbacks
+  //genre + lang
+  let candidates = all.filter(b =>
+    (allowUsed ? b.used : !b.used) &&
+    enabledGenres.includes(b.genre) &&
+    b.languages?.[lang]
+  );
+  let selected = pick(candidates);
+  if (selected) return finalize(selected);
+  //genre only
+  candidates = all.filter(b =>
+    (allowUsed ? b.used : !b.used) &&
+    enabledGenres.includes(b.genre)
+  );
+  selected = pick(candidates);
+  if (selected) return finalize(selected);
+  //lang only
+  candidates = all.filter(b =>
+    (allowUsed ? b.used : !b.used) &&
+    b.languages?.[lang]
+  );
+  selected = pick(candidates);
+  if (selected) return finalize(selected);
+  //any match (last fallback)
+  candidates = all.filter(b =>
+    (allowUsed ? b.used : !b.used)
+  );
+  selected = pick(candidates);
+  if (selected) return finalize(selected);
+
+  return null;
 }
+
 
 export async function clearCache() {
   const db = await getDB();
