@@ -507,6 +507,7 @@ function App() {
                       itunesImageUrl: book.itunesImageUrl ?? null,
                       genre: book.genre ?? null,
                       timestamp: Date.now(),
+                      lastUsedAt: null,
                     }}
                   />
                 )}

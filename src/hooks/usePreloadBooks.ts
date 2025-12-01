@@ -134,8 +134,7 @@ export function usePreloadBooks(
         console.log("[Cache] Instant fill from cache:", cached.title);
 
         setBooks(prev => {
-          const updated = [...prev];
-          updated.splice(indexRef.current + 1, 0, cached);
+          const updated = [...prev, cached];
           booksRef.current = updated;
           return updated;
         });
@@ -197,42 +196,71 @@ export function usePreloadBooks(
     }
   }, [currentIndex]);
 
-  const smartNext = useCallback(async () => {
-    const now = Date.now();
-    const isFast = now - lastScrollTimeRef.current < SCROLL_SPEED_THRESHOLD;
+  // const smartNext = useCallback(async () => {
+  //   const now = Date.now();
+  //   const isFast = now - lastScrollTimeRef.current < SCROLL_SPEED_THRESHOLD;
 
-    const hasNext = currentIndex < booksRef.current.length - 1;
+  //   const hasNext = currentIndex < booksRef.current.length - 1;
 
-    //fast scrolling serve used=true when we need cache
-    if (isFast) {
-      if (hasNext) {
-        setCurrentIndex((i) => i + 1);
-        return;
-      }
-      const usedBook = await fillFromCache({ used: true });
-      if (usedBook) {
-        console.log("[fast scroll] served usedbook from cache:", usedBook.title);
-        await preload(1);
-        setCurrentIndex((i) => i + 1);
-        lastScrollTimeRef.current = Date.now();
-        return;
-      }
-    }
+  //   //fast scrolling serve used=true when we need cache
+  //   if (isFast) {
+  //     if (hasNext) {
+  //       setCurrentIndex((i) => i + 1);
+  //       return;
+  //     }
+  //     const usedBook = await fillFromCache({ used: true });
+  //     if (usedBook) {
+  //       console.log("[fast scroll] served usedbook from cache:", usedBook.title);
+  //       await preload(1);
+  //       setCurrentIndex((i) => i + 1);
+  //       lastScrollTimeRef.current = Date.now();
+  //       return;
+  //     }
+  //   }
 
-    //slow scrolling serve used=false when we need cache
-    if (hasNext) {
+  //   //slow scrolling serve used=false when we need cache
+  //   if (hasNext) {
+  //     setCurrentIndex((i) => i + 1);
+  //     return
+  //   }
+  //   const unusedBook = await fillFromCache({ used: false });
+  //   if (unusedBook) {
+  //     console.log("[slow scroll] served unusedbook from cache:", unusedBook.title);
+  //     await preload(1);
+  //     setCurrentIndex((i) => i + 1);
+  //     lastScrollTimeRef.current = now;
+  //   }
+  // }, [fillFromCache, preload, currentIndex]);
+  // // }, [fetchOptions, fillFromCache, preload, currentIndex]);
+
+const smartNext = useCallback(async () => {
+  const now = Date.now();
+  const isFast = now - lastScrollTimeRef.current < SCROLL_SPEED_THRESHOLD;
+  const hasNext = currentIndex < booksRef.current.length - 1;
+
+  //if we have the next book already then just scroll to it
+  if (hasNext) {
+    setCurrentIndex((i) => i + 1);
+    return;
+  }
+
+  //determine if we use "used" books from cache based on scroll speed
+  const cachedBook = await fillFromCache({ used: isFast });
+  
+  if (cachedBook) {
+    const scrollType = isFast ? "fast" : "slow";
+    const bookType = isFast ? "used" : "unused";
+    console.log(`[${scrollType} scroll] served ${bookType} book from cache:`, cachedBook.title);
+    
+    //wait one more frame to ensure React has rendered
+    requestAnimationFrame(() => {
       setCurrentIndex((i) => i + 1);
-      return
-    }
-    const unusedBook = await fillFromCache({ used: false });
-    if (unusedBook) {
-      console.log("[slow scroll] served unusedbook from cache:", unusedBook.title);
-      await preload(1);
-      setCurrentIndex((i) => i + 1);
-      lastScrollTimeRef.current = Date.now();
-    }
-  }, [fillFromCache, preload, currentIndex]);
-  // }, [fetchOptions, fillFromCache, preload, currentIndex]);
+      preload(1);
+    });
+    
+    lastScrollTimeRef.current = now;
+  }
+}, [fillFromCache, preload, currentIndex]);
 
   const currentBook = books[currentIndex] ?? null;
 
