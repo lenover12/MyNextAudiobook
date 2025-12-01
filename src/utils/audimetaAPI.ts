@@ -13,15 +13,7 @@ const API_TIMEOUT = 2 * 60 * 1000; //2 minutes
 const API_WAIT_TIME = 18000; //18 seconds
 const DEFAULT_RATE_LIMIT_WAIT = 60 * 1000; //1 minute
 
-export function isAudiMetaDown(): boolean {
-  return audimetaDownUntil != null && Date.now() < audimetaDownUntil;
-}
-
-function isAudiMetaRateLimited(): boolean {
-  return audimetaRateLimitedUntil != null && Date.now() < audimetaRateLimitedUntil;
-}
-
-function shouldSkipAudiMetaRequest(): boolean {
+export function shouldSkipAudiMetaRequest(): boolean {
   if (audimetaDownUntil && Date.now() < audimetaDownUntil) {
     console.warn("AudiMeta marked as down, skipping request.");
     return true;

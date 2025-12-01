@@ -11,4 +11,5 @@ export type BookDBEntry = {
   thumbnailData?: string | null;
   timestamp: number;
   language?: string;
+  lastUsedAt?: Date | null;
 };

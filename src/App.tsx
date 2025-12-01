@@ -77,6 +77,7 @@ function App() {
     previous,
     insertNext,
     jumpTo,
+    smartNext,
   } = usePreloadBooks({
     genres: options.enabledGenres as Genre[],
     allowExplicit: options.allowExplicit,
@@ -200,7 +201,7 @@ function App() {
     if (menuActive) return;
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     isPausedRef.current = audioRef.current?.paused ?? true;
-    next();
+    smartNext();
   };
   
   const onScrollPrevious = () => {
@@ -506,6 +507,7 @@ function App() {
                       itunesImageUrl: book.itunesImageUrl ?? null,
                       genre: book.genre ?? null,
                       timestamp: Date.now(),
+                      lastUsedAt: null,
                     }}
                   />
                 )}

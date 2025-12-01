@@ -33,6 +33,7 @@ export interface AudiobookDTO {
   region: string | null;
   regions: string[] | null;
   _fallback: boolean;
+  __fromCache?: boolean;
 }
 
 export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookDTO {
