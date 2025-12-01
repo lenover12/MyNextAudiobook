@@ -73,7 +73,6 @@ function App() {
     books,
     currentBook: book,
     currentIndex,
-    next,
     previous,
     insertNext,
     jumpTo,

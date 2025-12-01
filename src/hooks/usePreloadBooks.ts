@@ -165,11 +165,11 @@ export function usePreloadBooks(
     }
   }, [books.length, currentIndex, preloadAhead, preload]);
 
-  const next = useCallback(() => {
-    if (currentIndex < books.length - 1) {
-      setCurrentIndex(i => i + 1);
-    }
-  }, [currentIndex, books.length]);
+  // const next = useCallback(() => {
+  //   if (currentIndex < books.length - 1) {
+  //     setCurrentIndex(i => i + 1);
+  //   }
+  // }, [currentIndex, books.length]);
 
   const previous = useCallback(() => {
     if (currentIndex > 0) {
@@ -213,7 +213,6 @@ export function usePreloadBooks(
     currentBook,
     currentIndex,
     isFetching,
-    next,
     previous,
     smartNext,
     jumpTo: (index: number) => setCurrentIndex(index),
