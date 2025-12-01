@@ -147,25 +147,6 @@ export function usePreloadBooks(
     }
   }, [fetchOptions]);
 
-  // //fetch a book if there's no book at the current index
-  // useEffect(() => {
-  //   const bookAtCurrentIndex = booksRef.current[indexRef.current];
-  //   const nextBook = booksRef.current[indexRef.current + 1];
-
-  //   if (!bookAtCurrentIndex) {
-  //     preload(1);
-  //     return;
-  //   }
-
-  //   if (!nextBook) {
-  //     fillFromCache();
-      
-  //     if (!isPreloadingRef.current) {
-  //       preload(1);
-  //     }
-  //   }
-  // }, [currentIndex, preload, fillFromCache]);
-
   //fetch a book if there's no book at the current index (initial bootstrap / safety net)
   useEffect(() => {
     const bookAtCurrentIndex = booksRef.current[indexRef.current];
@@ -196,71 +177,34 @@ export function usePreloadBooks(
     }
   }, [currentIndex]);
 
-  // const smartNext = useCallback(async () => {
-  //   const now = Date.now();
-  //   const isFast = now - lastScrollTimeRef.current < SCROLL_SPEED_THRESHOLD;
+  const smartNext = useCallback(async () => {
+    const now = Date.now();
+    const isFast = now - lastScrollTimeRef.current < SCROLL_SPEED_THRESHOLD;
+    const hasNext = currentIndex < booksRef.current.length - 1;
 
-  //   const hasNext = currentIndex < booksRef.current.length - 1;
-
-  //   //fast scrolling serve used=true when we need cache
-  //   if (isFast) {
-  //     if (hasNext) {
-  //       setCurrentIndex((i) => i + 1);
-  //       return;
-  //     }
-  //     const usedBook = await fillFromCache({ used: true });
-  //     if (usedBook) {
-  //       console.log("[fast scroll] served usedbook from cache:", usedBook.title);
-  //       await preload(1);
-  //       setCurrentIndex((i) => i + 1);
-  //       lastScrollTimeRef.current = Date.now();
-  //       return;
-  //     }
-  //   }
-
-  //   //slow scrolling serve used=false when we need cache
-  //   if (hasNext) {
-  //     setCurrentIndex((i) => i + 1);
-  //     return
-  //   }
-  //   const unusedBook = await fillFromCache({ used: false });
-  //   if (unusedBook) {
-  //     console.log("[slow scroll] served unusedbook from cache:", unusedBook.title);
-  //     await preload(1);
-  //     setCurrentIndex((i) => i + 1);
-  //     lastScrollTimeRef.current = now;
-  //   }
-  // }, [fillFromCache, preload, currentIndex]);
-  // // }, [fetchOptions, fillFromCache, preload, currentIndex]);
-
-const smartNext = useCallback(async () => {
-  const now = Date.now();
-  const isFast = now - lastScrollTimeRef.current < SCROLL_SPEED_THRESHOLD;
-  const hasNext = currentIndex < booksRef.current.length - 1;
-
-  //if we have the next book already then just scroll to it
-  if (hasNext) {
-    setCurrentIndex((i) => i + 1);
-    return;
-  }
-
-  //determine if we use "used" books from cache based on scroll speed
-  const cachedBook = await fillFromCache({ used: isFast });
-  
-  if (cachedBook) {
-    const scrollType = isFast ? "fast" : "slow";
-    const bookType = isFast ? "used" : "unused";
-    console.log(`[${scrollType} scroll] served ${bookType} book from cache:`, cachedBook.title);
-    
-    //wait one more frame to ensure React has rendered
-    requestAnimationFrame(() => {
+    //if we have the next book already then just scroll to it
+    if (hasNext) {
       setCurrentIndex((i) => i + 1);
-      preload(1);
-    });
+      return;
+    }
+
+    //determine if we use "used" books from cache based on scroll speed
+    const cachedBook = await fillFromCache({ used: isFast });
     
-    lastScrollTimeRef.current = now;
-  }
-}, [fillFromCache, preload, currentIndex]);
+    if (cachedBook) {
+      const scrollType = isFast ? "fast" : "slow";
+      const bookType = isFast ? "used" : "unused";
+      console.log(`[${scrollType} scroll] served ${bookType} book from cache:`, cachedBook.title);
+      
+      //wait one more frame to ensure React has rendered
+      requestAnimationFrame(() => {
+        setCurrentIndex((i) => i + 1);
+        preload(1);
+      });
+      
+      lastScrollTimeRef.current = now;
+    }
+  }, [fillFromCache, preload, currentIndex]);
 
   const currentBook = books[currentIndex] ?? null;
 
