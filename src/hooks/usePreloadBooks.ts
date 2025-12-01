@@ -43,7 +43,7 @@ export function usePreloadBooks(
   const isCacheFillingRef = useRef(false);
 
   const lastScrollTimeRef = useRef(Date.now());
-  const SCROLL_SPEED_THRESHOLD = 20000;
+  const SCROLL_SPEED_THRESHOLD = 800;
 
   useEffect(() => {
     if (seed && books.length === 0) {
