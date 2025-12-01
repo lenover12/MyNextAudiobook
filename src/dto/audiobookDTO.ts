@@ -7,8 +7,8 @@ export interface AudiobookDTO {
   subtitle: string | null;
   censored_title: string | null;
   
-  authors: string[];
-  narrators: string[];
+  authors: string[] | null;
+  narrators: string[] | null;
   publisher: string | null;
   
   audiblePageUrl: string | null;
@@ -33,11 +33,16 @@ export interface AudiobookDTO {
   region: string | null;
   regions: string[] | null;
   _fallback: boolean;
+  __fromCache?: boolean;
 }
 
 export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookDTO {
-  const mergeStringArray = (arr1: string[] = [], arr2: string[] = []) =>
-    [...new Set([...arr1, ...arr2])];
+  
+  const mergeStringArray = (
+    arr1: string[] = [],
+    arr2: string[] = []
+  ): string[] =>
+    [...new Set([...(arr1 ?? []), ...(arr2 ?? [])])];
 
   const mergeSeriesList = (
     list1: { name: string; position: string | null }[] = [],
@@ -45,8 +50,8 @@ export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookD
   ): { name: string; position: string | null }[] => {
     const merged: { [name: string]: string | null } = {};
 
-    for (const s of list1) merged[s.name] = s.position;
-    for (const s of list2) {
+    for (const s of (list1 ?? [])) merged[s.name] = s.position;
+    for (const s of (list2 ?? [])) {
       if (!(s.name in merged)) merged[s.name] = s.position;
     }
 
@@ -62,8 +67,8 @@ export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookD
     subtitle: a.subtitle ?? b.subtitle,
     censored_title: a.censored_title ?? b.censored_title,
 
-    authors: mergeStringArray(a.authors, b.authors),
-    narrators: mergeStringArray(a.narrators, b.narrators),
+    authors: mergeStringArray(a.authors ?? [], b.authors ?? []),
+    narrators: mergeStringArray(a.narrators ?? [], b.narrators ?? []),
     publisher: a.publisher ?? b.publisher,
 
     audiblePageUrl: a.audiblePageUrl ?? b.audiblePageUrl,
@@ -75,7 +80,7 @@ export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookD
     description: a.description ?? b.description,
     summary: a.summary ?? b.summary,
 
-    genre: a.genre ?? b.genre, // <== pick from first source if available
+    genre: a.genre ?? b.genre,
     genres: mergeStringArray(a.genres ?? [], b.genres ?? []),
 
     seriesList: mergeSeriesList(a.seriesList ?? [], b.seriesList ?? []),
@@ -89,7 +94,7 @@ export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookD
     language: a.language ?? b.language,
     explicit: a.explicit ?? b.explicit,
     region: a.region ?? b.region,
-    regions: a.regions ?? b.regions,
+    regions: mergeStringArray(a.regions ?? [], b.regions ?? []),
 
     _fallback: a._fallback && b._fallback,
   };

@@ -34,9 +34,11 @@ import { bootstrapAnalytics } from "./utils/consent";
 import CookieConsentModal from "./components/CookieConsentModal";
 import type { LanguageCode } from "./dto/languages";
 import { t } from "./utils/translations";
-
+//todo
+import { seedFallbackBooksIfEmpty } from "./utils/cacheStorage";
 
 import { animated } from '@react-spring/web';
+import { refreshCountryIfChanged } from "./utils/getGeo";
 
 function App() {
   const { options } = useOptions();
@@ -71,10 +73,10 @@ function App() {
     books,
     currentBook: book,
     currentIndex,
-    next,
     previous,
     insertNext,
     jumpTo,
+    smartNext,
   } = usePreloadBooks({
     genres: options.enabledGenres as Genre[],
     allowExplicit: options.allowExplicit,
@@ -175,6 +177,12 @@ function App() {
     return () => document.removeEventListener("dragstart", handler);
   }, []);
 
+  //update country on page load
+  useEffect(() => { refreshCountryIfChanged(); }, []);
+
+  //seed cached books on page load
+  useEffect(() => { seedFallbackBooksIfEmpty(); }, []);
+
   const [lastBookId, setLastBookId] = useState<string | null>(null);
 
   //active menu's to ignore scroll/swipe events
@@ -192,7 +200,7 @@ function App() {
     if (menuActive) return;
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     isPausedRef.current = audioRef.current?.paused ?? true;
-    next();
+    smartNext();
   };
   
   const onScrollPrevious = () => {
@@ -498,6 +506,7 @@ function App() {
                       itunesImageUrl: book.itunesImageUrl ?? null,
                       genre: book.genre ?? null,
                       timestamp: Date.now(),
+                      lastUsedAt: null,
                     }}
                   />
                 )}

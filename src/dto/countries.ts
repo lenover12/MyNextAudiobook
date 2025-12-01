@@ -85,3 +85,36 @@ export function mapCountryToAudibleRegion(isoCode: string): CountryCode {
 
   return "us";
 }
+
+export const iTunesStoreMap: Record<string, string> = {
+  us: "us",
+  uk: "gb",
+  au: "au",
+  ca: "ca",
+  fr: "fr",
+  de: "de",
+  es: "es",
+  it: "it",
+  in: "in",
+  kr: "us",
+  jp: "jp",
+  cn: "us",
+  br: "us"
+};
+
+
+export const audimetaRegionMap: Record<string, string> = {
+  us: "us",
+  uk: "uk",
+  au: "au",
+  ca: "ca",
+  fr: "fr",
+  de: "de",
+  es: "es",
+  it: "it",
+  in: "in",
+  kr: "us",
+  jp: "jp",
+  cn: "us",
+  br: "br"
+};

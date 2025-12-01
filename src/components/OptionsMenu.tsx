@@ -4,7 +4,7 @@ import type { Options } from "../utils/optionsStorage";
 import { useHistory } from "../hooks/useHistory";
 import { useFavourites } from "../hooks/useFavourites";
 import { genreOptions } from "../dto/genres";
-import { countryOptions, type CountryCode } from "../dto/countries";
+// import { type CountryCode } from "../dto/countries";
 import { languageOptions, type LanguageCode } from "../dto/languages";
 import { t } from "../utils/translations";
 import { trackEvent } from "../utils/analytics";
@@ -150,12 +150,12 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
     }));
   };
 
-  const setCountry = (value: string) => {
-    setOptions((prev) => ({
-      ...prev,
-      countryCode: (value || undefined) as CountryCode | undefined,
-    }));
-  };
+  // const setCountry = (value: string) => {
+  //   setOptions((prev) => ({
+  //     ...prev,
+  //     countryCode: (value || undefined) as CountryCode | undefined,
+  //   }));
+  // };
 
   const setLanguage = (value: string) => {
     setOptions((prev) => ({
@@ -261,7 +261,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                               </div>
                             </label>
                           ))}
-                          {section.label === "General" && (
+                          {/* {section.label === "General" && (
                             <div className="options-submenu-item">
                               <span className="options-label">{t(lang, "label.country")}</span>
                               <select
@@ -276,7 +276,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
                                 ))}
                               </select>
                             </div>
-                          )}
+                          )} */}
                           {section.label === "General" && (
                             <div className="options-submenu-item">
                               <span className="options-label">{t(lang, "label.language")}</span>
