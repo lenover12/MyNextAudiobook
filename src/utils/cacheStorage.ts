@@ -119,12 +119,12 @@ export async function popCachedBook(
   const totalUsed = all.filter(b => b.used === true).length;
   const totalUnused = all.filter(b => b.used === false).length;
 
+  const allowUsed = used && totalUsed >= MIN_USED_BEFORE_REUSE;
+
   console.log(
-    `%c[Cache] popCachedBook request used=${used} → usedCount=${totalUsed}, unusedCount=${totalUnused}`,
+    `%c[Cache] popCachedBook request used=${used}, allowUsed=${allowUsed} → usedCount=${totalUsed}/${MIN_USED_BEFORE_REUSE}, unusedCount=${totalUnused}`,
     "color:#e67e22;font-weight:bold"
   );
-
-  const allowUsed = used && totalUsed >= MIN_USED_BEFORE_REUSE;
 
   function finalize(selected: any) {
     if (!allowUsed) {
