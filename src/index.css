@@ -1032,7 +1032,7 @@ h2.urbanist-bold {
 .library-menu .library-box.active {
   transform: translate(-50%, -50%);
   max-height: 80vh;
-  max-width: clamp(40vw, 50vw, 70vw);
+  max-width: clamp(40vw, 70vw, 100vw);
 }
 
 .library-menu .library-item {
@@ -1068,7 +1068,7 @@ h2.urbanist-bold {
 }
 
 .library-menu .library-tab.active {
-  border-color: #406891;
+  border-color: #914040;
   color: #fff;
 }
 
