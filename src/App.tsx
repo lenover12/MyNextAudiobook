@@ -591,6 +591,19 @@ function App() {
                     </animated.div>
                   )}
                 </div>
+                <p
+                  className="affiliate-disclaimer"
+                  style={{
+                    transition: qrVisible
+                    ? 'opacity 0.6s ease'
+                    : 'opacity 0.1s ease-out',
+                    opacity: qrVisible ? 1 : 0,
+                    visibility: qrVisible ? 'visible' : 'hidden',
+                    willChange: 'opacity',
+                  }}
+                >
+                  {t(lang, "affiliate.disclaimer")}
+                </p>
                 <animated.div
                   className={`book-title ${titleShifted ? "shifted" : ""}`}
                   ref={bookTitleRef}
@@ -630,19 +643,6 @@ function App() {
                 )}
               </div>
             </div>
-            <p
-              className="affiliate-disclaimer"
-              style={{
-                transition: badgeVisible
-                ? 'opacity 0.6s ease'
-                : 'opacity 0.1s ease-out',
-                opacity: badgeVisible ? 1 : 0,
-                visibility: badgeVisible ? 'visible' : 'hidden',
-                willChange: 'opacity',
-              }}
-            >
-              {t(lang, "affiliate.disclaimer")}
-            </p>
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
             )}
