@@ -20,7 +20,7 @@
   --ui-radius: calc(var(--ui-scale) * 1.2);
 
   /* tutorial */
-  --gesture-box-size: calc(0.16 * var(--book-size));
+  --indicator-box-size: calc(0.16 * var(--book-size));
 
   /* light dark theme default*/
   --background: #111;
@@ -1394,181 +1394,186 @@ h2.urbanist-bold {
   }
 }
 
-.tutorial-overlay {
-  position: fixed;
-  top: calc(40dvh + var(--book-size) / 6);
-  left: 50%;
-  transform: translate(
-    calc(-50% - (var(--book-size) * 0.625)),
-    -50%
-  );
 
-  width: calc(var(--book-size) / 4);
-  /* height: calc(var(--book-size) / 2); */
-  height: auto;
-  object-fit: contain;
-
-  z-index: 1;
-
-  pointer-events: none;
-  user-select: none;
-
-  opacity: 0.4;
-  transition: opacity 0.6s ease;
-}
-
-.tutorial-overlay.hidden {
-  opacity: 0;
-}
-
-
-
-
-
-/* SWIPE INDICATOR */
+/* SWIPE & CLICK INDICATOR */
+/* .indicator-container { */
 .swipe-indicator-container {
   position: fixed;
-  width: var(--gesture-box-size);
-  height: var(--gesture-box-size);
-  z-index: 1;
-
+  width: var(--indicator-box-size);
+  height: var(--indicator-box-size);
+  
   top: 50%;
   left: 50%;
+  
+  z-index: 1;
+
   transform: translate(-50%, -50%) translateX(calc(var(--book-size) * 0.6)) translateY(calc(var(--book-size) * 0.5));
 }
 
-/* @media (orientation: landscape) {
-  .swipe-indicator-container {
-    transform: translate(-50%, -50%) translateX(calc(var(--book-size) * 0.8)) translateY(calc(var(--book-size) * 0.156));
-  }
+.click-indicator-container {
+  position: absolute;
+  width: var(--book-size);
+  height: var(--book-size);
+
+  top: calc(calc(var(--book-size) * 0.2) + var(--book-image-y-start));
+  left: calc(50% - calc(var(--book-size) * 0.5));
+
+  z-index: 1;
 }
-@media (orientation: portrait) {
-  .swipe-indicator-container {
-    transform: translate(-50%, -50%) translateX(calc(var(--book-size) * 0.6)) translateY(calc(var(--book-size) * 0.5))
-  }
-} */
 
-
-.swipe-indicator-container,
-.swipe-indicator-container * {
+.indicator-container,
+.indicator-container * {
   pointer-events: none;
 	user-select: none;
   -webkit-user-select: none;
 }
 
-.swipe-indicator {
-  transform: rotate(-90deg);
-  transform-origin: center center;
-  display: inline-block;
+.indicator {
 	position: relative;
+  display: inline-block;
+  transform-origin: center center;
 }
 
-.gesture-box {
-  width: var(--gesture-box-size);
-  height: var(--gesture-box-size);
+.swipe-indicator {
+  transform: rotate(-90deg);
+}
+
+.click-indicator {
+  width: calc(0.5 * var(--book-size));
+  height: calc(0.5 * var(--book-size));
+  left: 25%;
+  top: 25%;
+}
+
+.indicator-box {
 	opacity: 1;
 	transition: 300ms;
   overflow: visible;
 }
 
-.tap-dot {
-	/* height: 48px;
-	width: 100px; */
-  height: calc(0.48 * var(--gesture-box-size));
-  width: calc(1.00 * var(--gesture-box-size));
-  /* height: 300px; */
-  /* width:4000px; */
+.indicator-box#click-indicator-box {
+  width: calc(0.5 * var(--book-size));
+  height: calc(0.5 * var(--book-size));
+}
+.indicator-box#swipe-indicator-box {
+  width: var(--indicator-box-size);
+  height: var(--indicator-box-size);
+}
+
+.indicator-dot.swipe-dot {
   position: absolute;
-  /* left: 0; */
-  /* top: 50%; */
+  height: calc(0.48 * var(--indicator-box-size));
+  width: calc(1.00 * var(--indicator-box-size));
+	opacity: 1;
 
   top: 0;
-  left: calc(-0.40 * var(--gesture-box-size));
+  left: calc(-0.40 * var(--indicator-box-size));
 
-  /* top: calc(0.65 * var(--gesture-box-size)); */
-  /* transform: translate(-50%, calc(0.6 * var(--gesture-box-size))); */
-  /* transform: translate(-50%, -100%); */
-  /* transform: translate(calc(-0.23 * var(--gesture-box-size)), calc(-0.57 * var(--gesture-box-size))); */
 	border-radius: 100px;
 	background-color: rgba(255, 255, 255, 0.216);
-	z-index: -1;
-	animation: tapDot 2.0s infinite;
-	opacity: 1;
-  /* transform: translate(-50%, 10%); */
+	animation: swipeDot 2.0s infinite;
   transform: translateY(-50%);
 }
 
-@keyframes tapDot {
-	100% {
-		height: 5%;
-		width: 35%;
-    /* height: calc(0.05 * var(--gesture-box-size));
-    width: calc(0.35 * var(--gesture-box-size)); */
-		/* transform: translateY(0); */
-    /* transform: translate(50%); */
-    /* transform: translate(-50%, -140%); */
-    
-    
-    /* transform: translate(calc(0.05 * var(--gesture-box-size)), calc(-0.57 * var(--gesture-box-size))); */
-		
-    left: calc(0.10 * var(--gesture-box-size));
-    top: 0;
-    
+@keyframes swipeDot {
+  0% {
+    height: 100%;
+    width: 100%;
     opacity: 0;
-	}
-
-	50% {
-		height: 25%;
-		width: 25%;
-    /* height: calc(0.25 * var(--gesture-box-size));
-    width: calc(0.25 * var(--gesture-box-size)); */
-		opacity: 0;
-		/* transform: translate(-250%); */
-		/* transform: translateY(0); */
-    /* transform: translate(-50%, -70%); */
     
-    
-    /* transform: translate(calc(-0.23 * var(--gesture-box-size)), calc(-0.57 * var(--gesture-box-size))); */
-	
-    left: calc(-0.40 * var(--gesture-box-size));
     top: 0;
+    left: calc(-0.65 * var(--indicator-box-size));
   }
-	
-	51% {
-		opacity: 1;
-	}
-
-	0% {
+  
+	50% {
+    height: 25%;
+		width: 25%;
 		opacity: 0;
-		height: 100%;
-		width: 100%;
-    /* height: calc(1.00 * var(--gesture-box-size));
-    width: calc(1.00 * var(--gesture-box-size)); */
-  
-  
-    /* transform: translate(-50%, -20%); */
-  
-    /* transform: translate(calc(-0.23 * var(--gesture-box-size)), calc(-0.57 * var(--gesture-box-size))); */
-	  
-    left: calc(-0.65 * var(--gesture-box-size));
+    
     top: 0;
+    left: calc(-0.40 * var(--indicator-box-size));
+  }
+  
+  51% {
+    opacity: 1;
+  }
+  
+  100% {
+    height: 5%;
+    width: 35%;
+    opacity: 0;
+    
+    top: 0;
+    left: calc(0.10 * var(--indicator-box-size));
   }
 }
 
-#tap-hand {
+.indicator-dot.click-dot {
+  position: absolute;
+  height: calc(0.5 * calc(0.12 * var(--book-size)));
+  width: calc(0.5 * calc(0.12 * var(--book-size)));
+  opacity: 1;
+
+  top: 0;
+  left: calc(0.23 * calc(0.5 * var(--book-size)));
+
+	border-radius: 1000px;
+  border-style: double;
+  border-width: calc(0.15 * calc(0.5 * var(--book-size)));
+  border-color: rgba(255, 255, 255, 0.777);
+  filter:
+    drop-shadow(0 0 20px rgba(0, 0, 0, 0.6))
+    drop-shadow(0 0 40px rgba(0, 0, 0, 0.35));
+  
+	animation: clickDot 2.0s infinite;
+  transform: translateY(-50%);
+}
+
+@keyframes clickDot {
+  0% {
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    
+    top: 0;
+    left: calc(-0.23 * calc(0.5 * var(--book-size)));
+  }
+  
+	50% {
+    height: 12%;
+		width: 12%;
+		opacity: 0;
+    
+    top: 0;
+    left: calc(0.23 * calc(0.5 * var(--book-size)));
+    }
+    
+  51% {
+    opacity: 1;
+  }
+  
+  100% {
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    
+    top: 0;
+    left: calc(-0.23 * calc(0.5 * var(--book-size)));
+  }
+}
+
+.indicator-hand {
 	position: absolute;
-	transform: rotate(30deg);
   transform-origin: center center;
-	animation: handMove 2.0s infinite;
+}
+
+#swipe-hand {
+  transform: rotate(30deg);
+	animation: handSwipe 2.0s infinite;
   fill: rgba(255, 255, 255, 0.216);
 }
 
-.tap-dot,
-#tap-hand {
-  will-change: transform, opacity;
-}
-
-@keyframes handMove {
+@keyframes handSwipe {
 	0% {
 		transform: rotate(30deg);
 	}
@@ -1580,4 +1585,36 @@ h2.urbanist-bold {
 	100% {
 		transform: rotate(30deg);
 	}
+}
+
+#click-hand {
+  transform: translateY(0%) scale(1);
+	animation: handClick 2.0s infinite;
+  width: calc(0.5 * var(--book-size));
+  height: calc(0.5 * var(--book-size));
+  fill: rgba(255, 255, 255, 0.777);
+  filter:
+  drop-shadow(0 0 20px rgba(0, 0, 0, 0.6))
+  drop-shadow(0 0 40px rgba(0, 0, 0, 0.35))
+  drop-shadow(0 0 8px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes handClick {
+  45% {
+    transform: translateY(0%) scale(1);
+	}
+
+	55% {
+    transform: translateY(-10%) scale(0.9);
+	}
+
+	65% {
+    transform: translateY(0%) scale(1);
+	}
+}
+
+.indicator-dot.swipe-dot,
+.indicator-dot.click-dot,
+.indicator-hand {
+  will-change: transform, opacity;
 }

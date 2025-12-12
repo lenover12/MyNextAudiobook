@@ -13,6 +13,7 @@ import { useLoadingStates } from "./hooks/useLoadingStates";
 import audibleBadge from "./assets/badge/audible.png";
 import { BookImageWrapper } from "./components/BookImageWrapper";
 import SwipeIndicator from "./components/SwipeIndicator";
+import ClickIndicator from "./components/ClickIndicator";
 import { QRCodeCard } from "./components/QRCode";
 import { canUseNavigator } from "./utils/shareSocials";
 import ShareNavigatorButton from "./components/ShareNavigatorButton";
@@ -52,8 +53,8 @@ function App() {
   const lang: LanguageCode = options.languageCode ?? "en";
 
   //tutorial
-  const hasClickedBookCover = options.hasClickedBookCover ?? true;;
-  // const hasScrolled
+  const hasClickedBookCover = options.hasClickedBookCover ?? true;
+  const hasScrolledBook = options.hasScrolledBook ?? true;
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -206,6 +207,14 @@ function App() {
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     isPausedRef.current = audioRef.current?.paused ?? true;
     smartNext();
+
+    //update options
+    if (!options.hasScrolledBook) {
+      setOptions(prev => ({
+        ...prev,
+        hasScrolledBook: true
+      }));
+    }
   };
   
   const onScrollPrevious = () => {
@@ -283,6 +292,8 @@ function App() {
         }
       }, FADE_OUT_DURATION);
     }
+
+    //update options
     if (!options.hasClickedBookCover) {
       setOptions(prev => ({
         ...prev,
@@ -467,7 +478,8 @@ function App() {
         active={libraryActive} 
         setActive={setLibraryActive} 
         onSelectBook={handleLibrarySelect}/>
-      <SwipeIndicator visible={!options.hasClickedBookCover} />
+      <SwipeIndicator visible={!options.hasScrolledBook} />
+      <ClickIndicator visible={!options.hasClickedBookCover} />
       <animated.div
         className="book-swipe-layer"
         style={{
