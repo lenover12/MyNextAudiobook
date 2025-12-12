@@ -12,6 +12,7 @@ import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
 import audibleBadge from "./assets/badge/audible.png";
 import { BookImageWrapper } from "./components/BookImageWrapper";
+import SwipeIndicator from "./components/SwipeIndicator";
 import { QRCodeCard } from "./components/QRCode";
 import { canUseNavigator } from "./utils/shareSocials";
 import ShareNavigatorButton from "./components/ShareNavigatorButton";
@@ -41,7 +42,7 @@ import { animated } from '@react-spring/web';
 import { refreshCountryIfChanged } from "./utils/getGeo";
 
 function App() {
-  const { options } = useOptions();
+  const { options, setOptions } = useOptions();
   const { addEntry: addHistory } = useHistory();
 
   const analyticsId = "G-Q45Y5F2WB0"
@@ -49,6 +50,10 @@ function App() {
 
   //localisation
   const lang: LanguageCode = options.languageCode ?? "en";
+
+  //tutorial
+  const hasClickedBookCover = options.hasClickedBookCover ?? true;;
+  // const hasScrolled
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -277,7 +282,13 @@ function App() {
           pulseEl?.classList.remove("fade-out-glow");
         }
       }, FADE_OUT_DURATION);
-    }    
+    }
+    if (!options.hasClickedBookCover) {
+      setOptions(prev => ({
+        ...prev,
+        hasClickedBookCover: true
+      }));
+    }
   };
 
   //loading image state per book
@@ -456,6 +467,7 @@ function App() {
         active={libraryActive} 
         setActive={setLibraryActive} 
         onSelectBook={handleLibrarySelect}/>
+      <SwipeIndicator visible={!options.hasClickedBookCover} />
       <animated.div
         className="book-swipe-layer"
         style={{

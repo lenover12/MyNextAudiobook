@@ -23,6 +23,8 @@ export type Options = {
   mustHaveAudible: boolean;
   preloadAhead: number;
   enableCookies: boolean;
+  hasClickedBookCover?: boolean;
+  hasScrolledBook?: boolean;
 };
 
 const STORAGE_KEY = "mynextaudiobook-options";
@@ -54,6 +56,8 @@ export const defaultOptions: Options = {
   mustHaveAudible: false,
   preloadAhead: 5,
   enableCookies: false,
+  hasClickedBookCover: false,
+  hasScrolledBook: false,
 };
 
 export function loadOptions(): Options {
