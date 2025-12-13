@@ -21,6 +21,7 @@
 
   /* tutorial */
   --indicator-box-size: calc(0.16 * var(--book-size));
+  --indicator-fade-in: 600ms;
 
   /* light dark theme default*/
   --background: #111;
@@ -1438,6 +1439,15 @@ h2.urbanist-bold {
   transform: rotate(-90deg);
 }
 
+.indicator {
+  opacity: 0;
+  transition: opacity var(--indicator-fade-in) ease;
+}
+
+.indicator.visible {
+  opacity: 1;
+}
+
 .click-indicator {
   width: calc(0.5 * var(--book-size));
   height: calc(0.5 * var(--book-size));
@@ -1464,14 +1474,13 @@ h2.urbanist-bold {
   position: absolute;
   height: calc(0.48 * var(--indicator-box-size));
   width: calc(1.00 * var(--indicator-box-size));
-	opacity: 1;
+	opacity: 0;
 
   top: 0;
   left: calc(-0.40 * var(--indicator-box-size));
 
 	border-radius: 100px;
 	background-color: rgba(255, 255, 255, 0.216);
-	animation: swipeDot 2.0s infinite;
   transform: translateY(-50%);
 }
 
@@ -1512,7 +1521,7 @@ h2.urbanist-bold {
   position: absolute;
   height: calc(0.5 * calc(0.12 * var(--book-size)));
   width: calc(0.5 * calc(0.12 * var(--book-size)));
-  opacity: 1;
+  opacity: 0;
 
   top: 0;
   left: calc(0.23 * calc(0.5 * var(--book-size)));
@@ -1525,7 +1534,6 @@ h2.urbanist-bold {
     drop-shadow(0 0 20px rgba(0, 0, 0, 0.6))
     drop-shadow(0 0 40px rgba(0, 0, 0, 0.35));
   
-	animation: clickDot 2.0s infinite;
   transform: translateY(-50%);
 }
 
@@ -1569,7 +1577,6 @@ h2.urbanist-bold {
 
 #swipe-hand {
   transform: rotate(30deg);
-	animation: handSwipe 2.0s infinite;
   fill: rgba(255, 255, 255, 0.216);
 }
 
@@ -1589,7 +1596,6 @@ h2.urbanist-bold {
 
 #click-hand {
   transform: translateY(0%) scale(1);
-	animation: handClick 2.0s infinite;
   width: calc(0.5 * var(--book-size));
   height: calc(0.5 * var(--book-size));
   fill: rgba(255, 255, 255, 0.777);
@@ -1617,4 +1623,29 @@ h2.urbanist-bold {
 .indicator-dot.click-dot,
 .indicator-hand {
   will-change: transform, opacity;
+}
+
+.indicator-dot,
+.indicator-hand {
+  animation: none;
+}
+
+.indicator.visible .indicator-dot.click-dot {
+  animation: clickDot 2s infinite;
+  animation-delay: var(--indicator-fade-in);
+}
+
+.indicator.visible #click-hand {
+  animation: handClick 2s infinite;
+  animation-delay: var(--indicator-fade-in);
+}
+
+.indicator.visible .indicator-dot.swipe-dot {
+  animation: swipeDot 2s infinite;
+  animation-delay: var(--indicator-fade-in);
+}
+
+.indicator.visible #swipe-hand {
+  animation: handSwipe 2s infinite;
+  animation-delay: var(--indicator-fade-in);
 }

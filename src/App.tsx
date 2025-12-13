@@ -53,8 +53,38 @@ function App() {
   const lang: LanguageCode = options.languageCode ?? "en";
 
   //tutorial
+  const SHOW_TUTORIAL_DELAY = 12_000; //40 seconds
+  const [allowSwipeHint, setAllowSwipeHint] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const [allowClickHint, setAllowClickHint] = useState(false);
+  const [showClickHint, setShowClickHint] = useState(false);
   const hasClickedBookCover = options.hasClickedBookCover ?? false;
   const hasScrolledBook = options.hasScrolledBook ?? false;
+  useEffect(() => {
+    if (hasScrolledBook) return;
+
+    const t = setTimeout(() => {
+      setAllowSwipeHint(true);
+      requestAnimationFrame(() => {
+        setShowSwipeHint(true);
+      });
+    }, (SHOW_TUTORIAL_DELAY));
+
+    return () => clearTimeout(t);
+  }, [hasScrolledBook]);
+
+  useEffect(() => {
+    if (hasClickedBookCover) return;
+
+    const t = setTimeout(() => {
+      setAllowClickHint(true);
+      requestAnimationFrame(() => {
+        setShowClickHint(true);
+      });
+    }, SHOW_TUTORIAL_DELAY * 1.5);
+
+    return () => clearTimeout(t);
+  }, [hasClickedBookCover]);
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -478,8 +508,12 @@ function App() {
         active={libraryActive} 
         setActive={setLibraryActive} 
         onSelectBook={handleLibrarySelect}/>
-      {!hasScrolledBook && <SwipeIndicator />}
-      {!hasClickedBookCover && <ClickIndicator />}
+        {allowSwipeHint && (
+          <SwipeIndicator visible={showSwipeHint && !hasScrolledBook} />
+        )}
+        {allowClickHint && (
+          <ClickIndicator visible={showClickHint && !hasClickedBookCover} />
+        )}
       <animated.div
         className="book-swipe-layer"
         style={{
