@@ -2,10 +2,10 @@ type Props = {
   visible: boolean;
 };
 
-export default function ClickIndicator({ visible }: Props) {
+export default function ClickIndicator() {
   return (
     <div className={`indicator-container click-indicator-container`}>
-      <div className={`indicator click-indicator ${visible ? "visible" : "hidden"}`}>
+      <div className={`indicator click-indicator`}>
         <div className="indicator-box" id="click-indicator-box">
           <div className="indicator-dot click-dot"></div>
           <svg

@@ -53,8 +53,8 @@ function App() {
   const lang: LanguageCode = options.languageCode ?? "en";
 
   //tutorial
-  const hasClickedBookCover = options.hasClickedBookCover ?? true;
-  const hasScrolledBook = options.hasScrolledBook ?? true;
+  const hasClickedBookCover = options.hasClickedBookCover ?? false;
+  const hasScrolledBook = options.hasScrolledBook ?? false;
 
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
@@ -478,8 +478,8 @@ function App() {
         active={libraryActive} 
         setActive={setLibraryActive} 
         onSelectBook={handleLibrarySelect}/>
-      <SwipeIndicator visible={!options.hasScrolledBook} />
-      <ClickIndicator visible={!options.hasClickedBookCover} />
+      {!hasScrolledBook && <SwipeIndicator />}
+      {!hasClickedBookCover && <ClickIndicator />}
       <animated.div
         className="book-swipe-layer"
         style={{

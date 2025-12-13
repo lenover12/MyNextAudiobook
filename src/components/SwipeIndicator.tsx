@@ -3,10 +3,10 @@ type Props = {
     visible: boolean;
 };
 
-export default function SwipeIndicator({ visible }: Props) {
+export default function SwipeIndicator() {
     return (
         <div className={`indicator-container swipe-indicator-container`}>
-            <div className={`indicator swipe-indicator ${visible ? "visible" : "hidden"}`}>
+            <div className={`indicator swipe-indicator`}>
                 <div className="indicator-box" id="swipe-indicator-box">
                     <div className="indicator-dot swipe-dot"></div>
                     <svg
