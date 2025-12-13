@@ -1,7 +1,3 @@
-type Props = {
-  visible: boolean;
-};
-
 export default function ClickIndicator() {
   return (
     <div className={`indicator-container click-indicator-container`}>

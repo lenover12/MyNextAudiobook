@@ -1,8 +1,3 @@
-
-type Props = {
-    visible: boolean;
-};
-
 export default function SwipeIndicator() {
     return (
         <div className={`indicator-container swipe-indicator-container`}>
