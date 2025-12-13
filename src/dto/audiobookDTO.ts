@@ -33,10 +33,13 @@ export interface AudiobookDTO {
   region: string | null;
   regions: string[] | null;
   _fallback: boolean;
-  __fromCache?: boolean;
+  __fromCache?: boolean; //from chache storage
+  __isPlaceholder?: boolean; //loading image on first page visit
 }
 
 export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookDTO {
+  if (a.__isPlaceholder && !b.__isPlaceholder) return { ...b, __isPlaceholder: false };
+  if (b.__isPlaceholder && !a.__isPlaceholder) return { ...a, __isPlaceholder: false };
   
   const mergeStringArray = (
     arr1: string[] = [],
@@ -97,5 +100,7 @@ export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookD
     regions: mergeStringArray(a.regions ?? [], b.regions ?? []),
 
     _fallback: a._fallback && b._fallback,
+    __fromCache: a.__fromCache || b.__fromCache,
+    __isPlaceholder: a.__isPlaceholder && b.__isPlaceholder,
   };
 }

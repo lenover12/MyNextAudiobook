@@ -93,7 +93,6 @@ function App() {
   
   // The seed/shared book
   const [seedBook, setSeedBook] = useState<AudiobookDTO | null>(null);
-  
   // Fetch the shared book ONCE on page load
   useEffect(() => {
     if (sharedItunesId || sharedAsin) {
@@ -121,7 +120,7 @@ function App() {
     preloadAhead: options.preloadAhead,
     seed: seedBook ?? null,
   });
- 
+
   //Update the URL whenever the current book changes
   useEffect(() => {
     if (!book) return;
@@ -157,8 +156,8 @@ function App() {
   //add fetched book to history
   useEffect(() => {
     if (!book) return;
-
-   addHistory(audiobookDTOToDbEntry(book));
+    if (book.__isPlaceholder) return;
+    addHistory(audiobookDTOToDbEntry(book));
   }, [book, addHistory]);
 
 
