@@ -9,6 +9,7 @@ export type Options = {
   useQRCode: boolean;
   allowNavigatorShare: boolean;
   socialsOptions: {
+    copy: boolean;
     twitter: boolean;
     facebook: boolean;
     linkedin: boolean;
@@ -40,6 +41,7 @@ export const defaultOptions: Options = {
   useQRCode: true,
   allowNavigatorShare: false,
   socialsOptions: {
+    copy: true,
     twitter: true,
     facebook: true,
     linkedin: true,
