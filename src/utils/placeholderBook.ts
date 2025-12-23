@@ -1,5 +1,4 @@
 import type { AudiobookDTO } from "../dto/audiobookDTO";
-import { getRandomLoadingImage } from "./loadingImages";
 
 export const PLACEHOLDER_BOOK: AudiobookDTO = {
     __isPlaceholder: true,
@@ -13,7 +12,7 @@ export const PLACEHOLDER_BOOK: AudiobookDTO = {
 
     audiblePageUrl: null,
     audioPreviewUrl: null,
-    itunesImageUrl: getRandomLoadingImage(),
+    itunesImageUrl: null,
     
     __fromCache: false,
 

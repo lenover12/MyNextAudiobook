@@ -333,11 +333,20 @@ function App() {
 
   //loading image state per book
   useEffect(() => {
-    const id = book?.itunesId?.toString();
+    //__initial_placeholder__ used for first book only
+    const id = (currentIndex === 0 && !book?.__isPlaceholder)
+      ? "__initial_placeholder__" //first book retains placeholdder
+      : book?.__isPlaceholder 
+        ? "__initial_placeholder__" 
+        : book?.itunesId?.toString() ?? null;
+    
+    console.log('Init loading state for:', id, 'isPlaceholder:', book?.__isPlaceholder, 'currentIndex:', currentIndex);
+    
     if (id && !loadingStates[id]) {
+      console.log('Initializing loading state fuse or:', id);
       initLoadingState(id);
     }
-  }, [book, loadingStates, initLoadingState]);
+  }, [book, loadingStates, initLoadingState, currentIndex]);
 
   //autoplay new audio on change if already playing
   useEffect(() => {
@@ -358,7 +367,10 @@ function App() {
   }, [book]);
 
   //canvas image
-  const currentId = book?.itunesId?.toString();
+  const currentId = book?.__isPlaceholder 
+    ? "__initial_placeholder__" 
+    : book?.itunesId?.toString();
+    
   const currentState = currentId ? loadingStates[currentId] : undefined;
 
   const canvasImage =
@@ -376,14 +388,6 @@ function App() {
     }
   }, [imageColour]);
   
-  useEffect(() => {
-    const id = book?.itunesId?.toString();
-    if (id && !loadingStates[id]) {
-      initLoadingState(id);
-    }
-  }, [book, loadingStates, initLoadingState]);
-
-
   //book title height
   useEffect(() => {
     if (!bookTitleRef.current) return;
@@ -523,13 +527,26 @@ function App() {
       >
         {bookTriplet.map(({ book, className, offset }, i) => {
           const isCurrent = className === "book-current";
-          const bookId = book?.itunesId?.toString() ?? null;
+          
+          //check currentIndex is 0 and this is the current book, then use __initial_placeholder__ as ID
+          const isInitialBook = isCurrent && currentIndex === 0;
+          
+          const bookId = isInitialBook
+            ? "__initial_placeholder__"
+            : book?.__isPlaceholder 
+              ? "__initial_placeholder__" 
+              : book?.itunesId?.toString() ?? null;
+              
           const loadingState = bookId ? loadingStates[bookId] : null;
+
+          // console.log('Rendering book:', book?.title, 'bookId:', bookId, 'currentIndex:', currentIndex, 'isInitialBook:', isInitialBook);
+
 
           return (
             <BookImageWrapper
               key={bookId ?? `placeholder-${i}`}
               book={book}
+              bookId={bookId}
               className={className}
               offset={offset}
               y={y}
