@@ -15,6 +15,7 @@ type LoadingState = {
 
 type Props = {
   book: Book | null;
+  bookId: string | null;
   className: string;
   offset: string;
   y: any;
@@ -32,6 +33,7 @@ type Props = {
 
 export function BookImageWrapper({
   book,
+  bookId,
   className,
   offset,
   y,
@@ -46,7 +48,6 @@ export function BookImageWrapper({
   bookImageWrapperRef,
   children,
 }: Props) {
-  const bookId = book?.itunesId?.toString() ?? null;
 
   const dragY = y.get();
   const isSwipingUp = dragY < 0;

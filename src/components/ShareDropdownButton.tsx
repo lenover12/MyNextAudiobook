@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, type JSX } from "react";
 import { getCssVarInPx } from "../utils/getCssVarInPx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy } from "@fortawesome/free-regular-svg-icons";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { faXTwitter, faFacebook, faLinkedin, faGoodreads, faInstagram, faPinterest, faWhatsapp, faTelegram } from "@fortawesome/free-brands-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
 import { trackEvent } from "../utils/analytics";
@@ -22,6 +24,32 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
   const fallbackImage = "https://mynextaudiobook.com/preview.png";
   const image = bookImage || fallbackImage;
   
+  const [copied, setCopied] = useState(false);
+  async function copyToClipboard(text: string): Promise<boolean> {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+
+      // Fallback (older iOS / Safari)
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return success;
+    } catch {
+      return false;
+    }
+  }
+
   const getGoodreadsUrl = (title: string, author?: string) => {
     const query = author ? `${title} ${author}` : title;
     return `https://www.goodreads.com/search?utf8=✓&q=${encodeURIComponent(
@@ -30,6 +58,36 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
   };
 
   const socialButtonsMap: Record<string, JSX.Element> = {
+    copy: (
+      <li key="copy">
+        <a
+          href="#"
+          onClick={async (e) => {
+            e.preventDefault();
+
+            const success = await copyToClipboard(url);
+            trackEvent("share_clicked", { platform: "copy" });
+
+            if (success) {
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }
+          }}
+          aria-label="Copy link"
+        >
+          <FontAwesomeIcon
+            icon={copied ? faCheck : faCopy}
+            aria-hidden="true"
+            style={{
+              color: copied ? "#4ade80" : "rgb(255, 255, 255)",
+              filter: "drop-shadow(2px 2px 2px rgb(0, 0, 0))",
+              transition: "color 0.2s ease, transform 0.2s ease",
+              transform: copied ? "scale(1.1)" : "scale(1)",
+            }}
+          />
+        </a>
+      </li>
+    ),
     twitter: (
       <li key="twitter">
         <a
@@ -250,12 +308,12 @@ export default function ShareDropdownButton({ title, url, author, socialsOptions
     const updateOffsetPath = () => {
       const bookSizePx = getCssVarInPx(bookEl, "--book-size");
       const startX = bookSizePx * 0.1;
-      const startY = 0;
+      const startY = bookSizePx * 0.02;
       const bottomY = bookSizePx / 1.4;
       const horizontalEndX = startX - bookSizePx;
       const horizontalEndY = bottomY;
       
-      const controlX = (startX + startX) / 1.5;
+      const controlX = (startX + startX) / 1.35;
       const controlY = 0;
       
       const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${startX} ${bottomY} L ${horizontalEndX} ${horizontalEndY}`;

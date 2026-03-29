@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { fetchRandom } from "../utils/audiobookAPI";
-import type { AudiobookDTO } from "../dto/audiobookDTO";
+import { type AudiobookDTO, mergeAudiobookDTOs } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 import { shouldSkipAudiMetaRequest } from "../utils/audimetaAPI";
 import { popCachedBook } from "../utils/cacheStorage";
+import { PLACEHOLDER_BOOK } from "../utils/placeholderBook";
 
 function preloadMedia(book: AudiobookDTO) {
   console.log(book);
@@ -33,7 +34,7 @@ export function usePreloadBooks(
     ...fetchOptions
   } = options;
 
-  const [books, setBooks] = useState<AudiobookDTO[]>([]);
+  const [books, setBooks] = useState<AudiobookDTO[]>([PLACEHOLDER_BOOK]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
@@ -62,8 +63,33 @@ export function usePreloadBooks(
     indexRef.current = currentIndex;
   }, [currentIndex]);
 
+  useEffect(() => {
+    if (!seed) return;
+
+    const first = booksRef.current[0];
+    if (!first?.__isPlaceholder) return;
+
+    console.log("[usePreloadBooks] Upgrading placeholder with seed");
+
+    setBooks(prev => {
+      const upgraded = mergeAudiobookDTOs(first, {
+        ...seed,
+        __isPlaceholder: false,
+      });
+      const next = [...prev];
+      next[0] = upgraded;
+      booksRef.current = next;
+      return next;
+    });
+
+    setCurrentIndex(0);
+  }, [seed]);
+
+
   const preload = useCallback(async (count: number) => {
-    const existingBooks = booksRef.current;
+    const existingBooks = booksRef.current.filter(
+      b => !b.__isPlaceholder
+    );
     const forwardCount = existingBooks.length - indexRef.current - 1;
     const needed = preloadAhead - forwardCount;
 
@@ -95,6 +121,29 @@ export function usePreloadBooks(
             shouldSkipAudiMetaRequest() //relax restriction if AudiMeta is unreachable
           )
         ) {
+          //replace placeholder loading book on 1st page load
+          const first = booksRef.current[0];
+
+          if (first?.__isPlaceholder && indexRef.current === 0) {
+            console.log("[Preload] Upgrading placeholder with first fetched book");
+
+            setBooks(prev => {
+              const upgraded = mergeAudiobookDTOs(first, {
+                ...book,
+                __isPlaceholder: false,
+              });
+
+              const next = [...prev];
+              next[0] = upgraded;
+              booksRef.current = next;
+              return next;
+            });
+
+            preloadMedia(book);
+            console.log("Fetched [replacing loading placeholder]:", book.title);
+            return;
+          }
+
           newBooks.push({ ...book, __fromCache: false });
           preloadMedia(book);
           console.log("Fetched:", book.title);

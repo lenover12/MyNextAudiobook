@@ -12,6 +12,8 @@ import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
 import audibleBadge from "./assets/badge/audible.png";
 import { BookImageWrapper } from "./components/BookImageWrapper";
+import SwipeIndicator from "./components/SwipeIndicator";
+import ClickIndicator from "./components/ClickIndicator";
 import { QRCodeCard } from "./components/QRCode";
 import { canUseNavigator } from "./utils/shareSocials";
 import ShareNavigatorButton from "./components/ShareNavigatorButton";
@@ -41,7 +43,7 @@ import { animated } from '@react-spring/web';
 import { refreshCountryIfChanged } from "./utils/getGeo";
 
 function App() {
-  const { options } = useOptions();
+  const { options, setOptions } = useOptions();
   const { addEntry: addHistory } = useHistory();
 
   const analyticsId = "G-Q45Y5F2WB0"
@@ -50,6 +52,40 @@ function App() {
   //localisation
   const lang: LanguageCode = options.languageCode ?? "en";
 
+  //tutorial
+  const SHOW_TUTORIAL_DELAY = 12_000; //40 seconds
+  const [allowSwipeHint, setAllowSwipeHint] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const [allowClickHint, setAllowClickHint] = useState(false);
+  const [showClickHint, setShowClickHint] = useState(false);
+  const hasClickedBookCover = options.hasClickedBookCover ?? false;
+  const hasScrolledBook = options.hasScrolledBook ?? false;
+  useEffect(() => {
+    if (hasScrolledBook) return;
+
+    const t = setTimeout(() => {
+      setAllowSwipeHint(true);
+      requestAnimationFrame(() => {
+        setShowSwipeHint(true);
+      });
+    }, (SHOW_TUTORIAL_DELAY));
+
+    return () => clearTimeout(t);
+  }, [hasScrolledBook]);
+
+  useEffect(() => {
+    if (hasClickedBookCover) return;
+
+    const t = setTimeout(() => {
+      setAllowClickHint(true);
+      requestAnimationFrame(() => {
+        setShowClickHint(true);
+      });
+    }, SHOW_TUTORIAL_DELAY * 1.5);
+
+    return () => clearTimeout(t);
+  }, [hasClickedBookCover]);
+
   //load page with a book itunesId &| asin in the domain then it will be the first book
   const query = useQueryParams();
   const sharedItunesId = query.get("i");
@@ -57,7 +93,6 @@ function App() {
   
   // The seed/shared book
   const [seedBook, setSeedBook] = useState<AudiobookDTO | null>(null);
-  
   // Fetch the shared book ONCE on page load
   useEffect(() => {
     if (sharedItunesId || sharedAsin) {
@@ -85,7 +120,7 @@ function App() {
     preloadAhead: options.preloadAhead,
     seed: seedBook ?? null,
   });
- 
+
   //Update the URL whenever the current book changes
   useEffect(() => {
     if (!book) return;
@@ -121,8 +156,8 @@ function App() {
   //add fetched book to history
   useEffect(() => {
     if (!book) return;
-
-   addHistory(audiobookDTOToDbEntry(book));
+    if (book.__isPlaceholder) return;
+    addHistory(audiobookDTOToDbEntry(book));
   }, [book, addHistory]);
 
 
@@ -201,6 +236,14 @@ function App() {
     if (book?.itunesId) setLastBookId(book.itunesId.toString());
     isPausedRef.current = audioRef.current?.paused ?? true;
     smartNext();
+
+    //update options
+    if (!options.hasScrolledBook) {
+      setOptions(prev => ({
+        ...prev,
+        hasScrolledBook: true
+      }));
+    }
   };
   
   const onScrollPrevious = () => {
@@ -277,16 +320,33 @@ function App() {
           pulseEl?.classList.remove("fade-out-glow");
         }
       }, FADE_OUT_DURATION);
-    }    
+    }
+
+    //update options
+    if (!options.hasClickedBookCover) {
+      setOptions(prev => ({
+        ...prev,
+        hasClickedBookCover: true
+      }));
+    }
   };
 
   //loading image state per book
   useEffect(() => {
-    const id = book?.itunesId?.toString();
+    //__initial_placeholder__ used for first book only
+    const id = (currentIndex === 0 && !book?.__isPlaceholder)
+      ? "__initial_placeholder__" //first book retains placeholdder
+      : book?.__isPlaceholder 
+        ? "__initial_placeholder__" 
+        : book?.itunesId?.toString() ?? null;
+    
+    console.log('Init loading state for:', id, 'isPlaceholder:', book?.__isPlaceholder, 'currentIndex:', currentIndex);
+    
     if (id && !loadingStates[id]) {
+      console.log('Initializing loading state fuse or:', id);
       initLoadingState(id);
     }
-  }, [book, loadingStates, initLoadingState]);
+  }, [book, loadingStates, initLoadingState, currentIndex]);
 
   //autoplay new audio on change if already playing
   useEffect(() => {
@@ -307,7 +367,10 @@ function App() {
   }, [book]);
 
   //canvas image
-  const currentId = book?.itunesId?.toString();
+  const currentId = book?.__isPlaceholder 
+    ? "__initial_placeholder__" 
+    : book?.itunesId?.toString();
+    
   const currentState = currentId ? loadingStates[currentId] : undefined;
 
   const canvasImage =
@@ -325,14 +388,6 @@ function App() {
     }
   }, [imageColour]);
   
-  useEffect(() => {
-    const id = book?.itunesId?.toString();
-    if (id && !loadingStates[id]) {
-      initLoadingState(id);
-    }
-  }, [book, loadingStates, initLoadingState]);
-
-
   //book title height
   useEffect(() => {
     if (!bookTitleRef.current) return;
@@ -456,6 +511,12 @@ function App() {
         active={libraryActive} 
         setActive={setLibraryActive} 
         onSelectBook={handleLibrarySelect}/>
+        {allowSwipeHint && (
+          <SwipeIndicator visible={showSwipeHint && !hasScrolledBook} />
+        )}
+        {allowClickHint && (
+          <ClickIndicator visible={showClickHint && !hasClickedBookCover} />
+        )}
       <animated.div
         className="book-swipe-layer"
         style={{
@@ -466,13 +527,26 @@ function App() {
       >
         {bookTriplet.map(({ book, className, offset }, i) => {
           const isCurrent = className === "book-current";
-          const bookId = book?.itunesId?.toString() ?? null;
+          
+          //check currentIndex is 0 and this is the current book, then use __initial_placeholder__ as ID
+          const isInitialBook = isCurrent && currentIndex === 0;
+          
+          const bookId = isInitialBook
+            ? "__initial_placeholder__"
+            : book?.__isPlaceholder 
+              ? "__initial_placeholder__" 
+              : book?.itunesId?.toString() ?? null;
+              
           const loadingState = bookId ? loadingStates[bookId] : null;
+
+          // console.log('Rendering book:', book?.title, 'bookId:', bookId, 'currentIndex:', currentIndex, 'isInitialBook:', isInitialBook);
+
 
           return (
             <BookImageWrapper
               key={bookId ?? `placeholder-${i}`}
               book={book}
+              bookId={bookId}
               className={className}
               offset={offset}
               y={y}
@@ -591,6 +665,19 @@ function App() {
                     </animated.div>
                   )}
                 </div>
+                <p
+                  className="affiliate-disclaimer"
+                  style={{
+                    transition: qrVisible
+                    ? 'opacity 0.6s ease'
+                    : 'opacity 0.1s ease-out',
+                    opacity: qrVisible ? 1 : 0,
+                    visibility: qrVisible ? 'visible' : 'hidden',
+                    willChange: 'opacity',
+                  }}
+                >
+                  {t(lang, "affiliate.disclaimer")}
+                </p>
                 <animated.div
                   className={`book-title ${titleShifted ? "shifted" : ""}`}
                   ref={bookTitleRef}
@@ -630,19 +717,6 @@ function App() {
                 )}
               </div>
             </div>
-            <p
-              className="affiliate-disclaimer"
-              style={{
-                transition: badgeVisible
-                ? 'opacity 0.6s ease'
-                : 'opacity 0.1s ease-out',
-                opacity: badgeVisible ? 1 : 0,
-                visibility: badgeVisible ? 'visible' : 'hidden',
-                willChange: 'opacity',
-              }}
-            >
-              {t(lang, "affiliate.disclaimer")}
-            </p>
             {book.audioPreviewUrl && (
               <audio ref={audioRef} src={book.audioPreviewUrl}></audio>
             )}

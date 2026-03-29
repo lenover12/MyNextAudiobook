@@ -146,6 +146,9 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
 export async function fetchBookByIds(params: { itunesId?: string | null; asin?: string | null }): Promise<AudiobookDTO | null> {
   const { itunesId, asin } = params;
 
+  if (!itunesId && !asin) return null;
+  if (itunesId === "-1") return null; //could cause issues if changing reliance on itunes later
+
   if (!itunesId && !asin) {
     throw new Error("fetchBookByIds: must provide at least one of itunesId or asin");
   }

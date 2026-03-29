@@ -19,6 +19,10 @@
   --ui-padding: calc(var(--ui-scale) * 1.2);
   --ui-radius: calc(var(--ui-scale) * 1.2);
 
+  /* tutorial */
+  --indicator-box-size: calc(0.16 * var(--book-size));
+  --indicator-fade-in: 600ms;
+
   /* light dark theme default*/
   --background: #111;
   --text-color: white;
@@ -376,6 +380,9 @@ h2.urbanist-bold {
   left: calc(var(--book-size) * -0.52);
   transform: rotate(270deg);
   text-align: right;
+
+  pointer-events: none;
+  user-select: none;
 }
 
 
@@ -1032,7 +1039,7 @@ h2.urbanist-bold {
 .library-menu .library-box.active {
   transform: translate(-50%, -50%);
   max-height: 80vh;
-  max-width: clamp(40vw, 50vw, 70vw);
+  max-width: clamp(40vw, 70vw, 100vw);
 }
 
 .library-menu .library-item {
@@ -1068,7 +1075,7 @@ h2.urbanist-bold {
 }
 
 .library-menu .library-tab.active {
-  border-color: #406891;
+  border-color: #914040;
   color: #fff;
 }
 
@@ -1354,51 +1361,13 @@ h2.urbanist-bold {
   background: linear-gradient(to top, rgba(87, 87, 87, 0.45), rgba(0,0,0,0));
 }
 
-/* .gradient-overlay.gradient-top {
-  top: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0));
-} */
-
-/* .gradient-overlay.gradient-light.gradient-top {
-  background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0));
-} */
-
-/* @media screen and (min-height: 400px) {
-  .affiliate-disclaimer {
-    position:relative;
-    width: var(--book-size);
-    text-align: center;
-    font-size: clamp(0.4rem, calc(var(--ui-scale) * 0.35), 0.8rem);
-    color: #888;
-    margin: 0.5rem 0 0;
-    line-height: 1.4;
-    margin-inline: auto;
-    pointer-events: none;
-    user-select: none;
-  }
-}
-@media screen and (max-height: 399px) {
-  .affiliate-disclaimer {
-    position: fixed;
-    bottom: calc(var(--ui-scale) * 0.2);
-    text-align: center;
-    font-size: clamp(0.35rem, calc(var(--ui-scale) * 0.35), 0.4rem);
-    color: #888;
-    margin: 0.5rem 0 0;
-    line-height: 1.4;
-    margin-inline: auto;
-    pointer-events: none;
-    user-select: none;
-  }
-} */
-
 .affiliate-disclaimer {
   display: block;
   position: relative;
-  width: var(--book-size);
   text-align: center;
-  font-size: clamp(0.4rem, calc(var(--ui-scale) * 0.35), 0.8rem);
-  color: #666;
+  font-size: clamp(0.28rem, calc(var(--ui-scale) * 0.35), 0.8rem);
+  color: #888;
+  text-shadow: 0px 0px 0.8rem black;
   margin: calc(var(--ui-scale) * 0.05);
   line-height: 1.4;
   pointer-events: none;
@@ -1415,11 +1384,268 @@ h2.urbanist-bold {
   visibility: visible;
 }
 
-@media screen and (max-height: 399px) {
+@media screen and (max-height: 405px) {
   .affiliate-disclaimer {
-    position: fixed;
-    bottom: calc(var(--ui-scale) * 0.2);
+    position: absolute;
+    bottom: 0;
     font-size: clamp(0.35rem, calc(var(--ui-scale) * 0.35), 0.4rem);
-    width: 100%;
+    width: calc(var(--book-size) * 1.5);
+    top: 97vh;
+    transform: translateY(-100%) translateX(-20%);
   }
+}
+
+
+/* SWIPE & CLICK INDICATOR */
+/* .indicator-container { */
+.swipe-indicator-container {
+  position: fixed;
+  width: var(--indicator-box-size);
+  height: var(--indicator-box-size);
+  
+  top: 50%;
+  left: 50%;
+  
+  z-index: 1;
+
+  transform: translate(-50%, -50%) translateX(calc(var(--book-size) * 0.6)) translateY(calc(var(--book-size) * 0.5));
+}
+
+.click-indicator-container {
+  position: absolute;
+  width: var(--book-size);
+  height: var(--book-size);
+
+  top: calc(calc(var(--book-size) * 0.2) + var(--book-image-y-start));
+  left: calc(50% - calc(var(--book-size) * 0.5));
+
+  z-index: 1;
+}
+
+.indicator-container,
+.indicator-container * {
+  pointer-events: none;
+	user-select: none;
+  -webkit-user-select: none;
+}
+
+.indicator {
+	position: relative;
+  display: inline-block;
+  transform-origin: center center;
+}
+
+.swipe-indicator {
+  transform: rotate(-90deg);
+}
+
+.indicator {
+  opacity: 0;
+  transition: opacity var(--indicator-fade-in) ease;
+}
+
+.indicator.visible {
+  opacity: 1;
+}
+
+.click-indicator {
+  width: calc(0.5 * var(--book-size));
+  height: calc(0.5 * var(--book-size));
+  left: 25%;
+  top: 25%;
+}
+
+.indicator-box {
+	opacity: 1;
+	transition: 300ms;
+  overflow: visible;
+}
+
+.indicator-box#click-indicator-box {
+  width: calc(0.5 * var(--book-size));
+  height: calc(0.5 * var(--book-size));
+}
+.indicator-box#swipe-indicator-box {
+  width: var(--indicator-box-size);
+  height: var(--indicator-box-size);
+}
+
+.indicator-dot.swipe-dot {
+  position: absolute;
+  height: calc(0.48 * var(--indicator-box-size));
+  width: calc(1.00 * var(--indicator-box-size));
+	opacity: 0;
+
+  top: 0;
+  left: calc(-0.40 * var(--indicator-box-size));
+
+	border-radius: 100px;
+	background-color: rgba(255, 255, 255, 0.216);
+  transform: translateY(-50%);
+}
+
+@keyframes swipeDot {
+  0% {
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    
+    top: 0;
+    left: calc(-0.65 * var(--indicator-box-size));
+  }
+  
+	50% {
+    height: 25%;
+		width: 25%;
+		opacity: 0;
+    
+    top: 0;
+    left: calc(-0.40 * var(--indicator-box-size));
+  }
+  
+  51% {
+    opacity: 1;
+  }
+  
+  100% {
+    height: 5%;
+    width: 35%;
+    opacity: 0;
+    
+    top: 0;
+    left: calc(0.10 * var(--indicator-box-size));
+  }
+}
+
+.indicator-dot.click-dot {
+  position: absolute;
+  height: calc(0.5 * calc(0.12 * var(--book-size)));
+  width: calc(0.5 * calc(0.12 * var(--book-size)));
+  opacity: 0;
+
+  top: 0;
+  left: calc(0.23 * calc(0.5 * var(--book-size)));
+
+	border-radius: 1000px;
+  border-style: double;
+  border-width: calc(0.15 * calc(0.5 * var(--book-size)));
+  border-color: rgba(255, 255, 255, 0.777);
+  filter:
+    drop-shadow(0 0 20px rgba(0, 0, 0, 0.6))
+    drop-shadow(0 0 40px rgba(0, 0, 0, 0.35));
+  
+  transform: translateY(-50%);
+}
+
+@keyframes clickDot {
+  0% {
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    
+    top: 0;
+    left: calc(-0.23 * calc(0.5 * var(--book-size)));
+  }
+  
+	50% {
+    height: 12%;
+		width: 12%;
+		opacity: 0;
+    
+    top: 0;
+    left: calc(0.23 * calc(0.5 * var(--book-size)));
+    }
+    
+  51% {
+    opacity: 1;
+  }
+  
+  100% {
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    
+    top: 0;
+    left: calc(-0.23 * calc(0.5 * var(--book-size)));
+  }
+}
+
+.indicator-hand {
+	position: absolute;
+  transform-origin: center center;
+}
+
+#swipe-hand {
+  transform: rotate(30deg);
+  fill: rgba(255, 255, 255, 0.216);
+}
+
+@keyframes handSwipe {
+	0% {
+		transform: rotate(30deg);
+	}
+
+	50% {
+		transform: translate(-60%, -10%) rotate(-30deg) scale(0.9);
+	}
+
+	100% {
+		transform: rotate(30deg);
+	}
+}
+
+#click-hand {
+  transform: translateY(0%) scale(1);
+  width: calc(0.5 * var(--book-size));
+  height: calc(0.5 * var(--book-size));
+  fill: rgba(255, 255, 255, 0.777);
+  filter:
+  drop-shadow(0 0 20px rgba(0, 0, 0, 0.6))
+  drop-shadow(0 0 40px rgba(0, 0, 0, 0.35))
+  drop-shadow(0 0 8px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes handClick {
+  45% {
+    transform: translateY(0%) scale(1);
+	}
+
+	55% {
+    transform: translateY(-10%) scale(0.9);
+	}
+
+	65% {
+    transform: translateY(0%) scale(1);
+	}
+}
+
+.indicator-dot.swipe-dot,
+.indicator-dot.click-dot,
+.indicator-hand {
+  will-change: transform, opacity;
+}
+
+.indicator-dot,
+.indicator-hand {
+  animation: none;
+}
+
+.indicator.visible .indicator-dot.click-dot {
+  animation: clickDot 2s infinite;
+  animation-delay: var(--indicator-fade-in);
+}
+
+.indicator.visible #click-hand {
+  animation: handClick 2s infinite;
+  animation-delay: var(--indicator-fade-in);
+}
+
+.indicator.visible .indicator-dot.swipe-dot {
+  animation: swipeDot 2s infinite;
+  animation-delay: var(--indicator-fade-in);
+}
+
+.indicator.visible #swipe-hand {
+  animation: handSwipe 2s infinite;
+  animation-delay: var(--indicator-fade-in);
 }
