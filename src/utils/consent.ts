@@ -1,5 +1,7 @@
 export type ConsentChoice = "accepted_all" | "necessary_only";
 
+const BYPASS_CONSENT = true; // set to false to re-enable the consent modal
+
 const STORAGE_KEY = "mynextaudiobook-consent";
 
 export function getStoredConsent(): ConsentChoice | null {
@@ -78,7 +80,7 @@ export function setConsentFromToggle(enabled: boolean, analyticsId: string) {
 
 export function bootstrapAnalytics(analyticsId: string) {
   initConsentModeDefault();
-  const choice = getStoredConsent();
+  const choice = BYPASS_CONSENT ? "accepted_all" : getStoredConsent();
   if (choice) {
     applyConsent(choice);
     if (choice === "accepted_all") loadGA(analyticsId);
@@ -86,5 +88,6 @@ export function bootstrapAnalytics(analyticsId: string) {
 }
 
 export function needsConsent(): boolean {
+  if (BYPASS_CONSENT) return false;
   return !getStoredConsent();
 }
