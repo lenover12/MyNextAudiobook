@@ -31,12 +31,26 @@ export function compareBooksFuzzy(a: AudiobookDTO, b: AudiobookDTO): boolean {
     || (titleA === titleB && authorA === authorB);
 }
 
+//search Audible for a match and merge with the given iTunes book.
+//returns null if no match found or Audible is unavailable.
+export async function enrichBookWithAudible(book: AudiobookDTO): Promise<AudiobookDTO | null> {
+  if (shouldSkipAudibleRequest()) return null;
+  try {
+    const searchTerm = `${book.title} ${book.authors?.[0] ?? ''}`;
+    const results = await searchAudibleBooks(searchTerm);
+    if (!Array.isArray(results) || results.length === 0) return null;
+    const bestMatch = results.find(b => compareBooksFuzzy(book, b));
+    if (!bestMatch) return null;
+    return mergeAudiobookDTOs(book, bestMatch);
+  } catch {
+    return null;
+  }
+}
 
 export async function fetchRandom(options?: FetchOptions, source: Source = (ITUNES_FIRST ? 'itunes' : 'audible')): Promise<AudiobookDTO | null> {
-  const batch = source
-    === 'itunes'
-      ? await fetchItunesRandomBatch(options)
-      : await fetchAudibleRandomBatch(options);
+  const batch = source === 'itunes'
+    ? await fetchItunesRandomBatch(options)
+    : await fetchAudibleRandomBatch(options);
 
   //if audible marked down/rate-limited, force itunes
   if (!ITUNES_FIRST && source === 'audible') {
@@ -54,51 +68,55 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
   if (!batch || batch.length === 0) return null;
 
   const mainIndex = Math.floor(Math.random() * batch.length);
-  let primaryBook = batch.splice(mainIndex, 1)[0];
+  const primaryBook = batch.splice(mainIndex, 1)[0];
   if (!primaryBook) return null;
 
-  //helps the fuz
-  async function fuzzyMerge(book: AudiobookDTO): Promise<AudiobookDTO | null> {
+  if (source === 'itunes') {
+    //return iTunes book immediately — caller handles Audible enrichment in background
+    if (FUZZY_THE_BACKLOG) {
+      const extras = batch.slice(0, NUM_CACHE_TO_FUZ);
+      void (async () => {
+        for (const extra of extras) {
+          try {
+            await addCacheEntry(extra, extra.language ?? "unknown");
+            console.log("Cache stored: " + extra.title);
+          } catch (err) {
+            console.warn("Cache add failed:", err);
+          }
+        }
+      })();
+    }
+    return primaryBook;
+  }
+
+  //source === 'audible': need to fuzzy-merge with iTunes before returning
+  async function fuzzyMergeWithItunes(book: AudiobookDTO): Promise<AudiobookDTO | null> {
     try {
       const searchTerm = `${book.title} ${book.authors?.[0] ?? ''}`;
-      const secondaryResultsRaw = source === 'itunes'
-        ? await searchAudibleBooks(searchTerm)
-        : await searchItunesBooks(searchTerm);
-
-      const secondaryResults = Array.isArray(secondaryResultsRaw) ? secondaryResultsRaw : [];
-      const bestMatch = secondaryResults.find(b => compareBooksFuzzy(book, b));
-
-      if (bestMatch && typeof bestMatch === 'object') {
-        return source === 'itunes'
-          ? mergeAudiobookDTOs(book, bestMatch)
-          : mergeAudiobookDTOs(bestMatch, book);
-      }
-
-      if (source === 'audible') return null;
-
-      return book;
+      const results = await searchItunesBooks(searchTerm);
+      const arr = Array.isArray(results) ? results : [];
+      const bestMatch = arr.find(b => compareBooksFuzzy(book, b));
+      if (bestMatch) return mergeAudiobookDTOs(bestMatch, book);
+      return null;
     } catch {
-      return source === 'audible' ? null : book;
+      return null;
     }
   }
 
-  //retrieve rich data for every book (shown and cached)
   if (FUZZY_THE_BACKLOG) {
     const subset = [primaryBook, ...batch.slice(0, NUM_CACHE_TO_FUZ)];
-    const allMerged = await Promise.allSettled(subset.map(fuzzyMerge));
+    const allMerged = await Promise.allSettled(subset.map(fuzzyMergeWithItunes));
     const mergedBooks = allMerged
       .map(r => r.status === 'fulfilled' ? r.value : null)
       .filter((b): b is AudiobookDTO => !!b);
 
-    if (source === 'audible' && mergedBooks.length === 0) return null;
+    if (mergedBooks.length === 0) return null;
 
     const enriched = mergedBooks.find(b => b.asin && b.itunesId);
-    primaryBook = enriched ?? mergedBooks[0] ?? primaryBook;
+    const result = enriched ?? mergedBooks[0] ?? primaryBook;
 
-    //return an enriched book immediately
     void (async () => {
-      //cache the rest
-      const extras = mergedBooks.filter(b => b !== primaryBook).slice(0, NUM_CACHE_TO_FUZ);
+      const extras = mergedBooks.filter(b => b !== result).slice(0, NUM_CACHE_TO_FUZ);
       for (const extra of extras) {
         try {
           await addCacheEntry(extra, extra.language ?? "unknown");
@@ -109,38 +127,10 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
       }
     })();
 
-    return primaryBook;
+    return result;
   }
 
-  //retrieve rich data for shown book only, cache the rest
-  const mergedPrimaryBook = await fuzzyMerge(primaryBook);
-  if (source === 'audible' && !mergedPrimaryBook) {
-    for (const candidate of batch) {
-      const m = await fuzzyMerge(candidate);
-      if (m) {
-        primaryBook = m;
-        void (async () => {
-          const extras: AudiobookDTO[] = [];
-          for (const rest of batch) {
-            if (extras.length >= NUM_CACHE_TO_FUZ) break;
-            const mm = await fuzzyMerge(rest);
-            if (mm && mm !== primaryBook) extras.push(mm);
-          }
-          for (const extra of extras) {
-            try {
-              await addCacheEntry(extra, extra.language ?? "unknown");
-            } catch (err) {
-              console.warn("Cache add failed:", err);
-            }
-          }
-        })();
-        return primaryBook;
-      }
-    }
-    return null;
-  }
-  primaryBook = mergedPrimaryBook ?? primaryBook;
-  return primaryBook ?? null;
+  return await fuzzyMergeWithItunes(primaryBook) ?? null;
 }
 
 export async function fetchBookByIds(params: { itunesId?: string | null; asin?: string | null }): Promise<AudiobookDTO | null> {

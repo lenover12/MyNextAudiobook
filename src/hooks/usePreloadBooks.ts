@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { fetchRandom } from "../utils/audiobookAPI";
+import { fetchRandom, enrichBookWithAudible } from "../utils/audiobookAPI";
 import { type AudiobookDTO, mergeAudiobookDTOs } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
 import { shouldSkipAudibleRequest } from "../utils/audibleAPI";
@@ -86,6 +86,19 @@ export function usePreloadBooks(
   }, [seed]);
 
 
+  const enrichInBackground = useCallback(async (book: AudiobookDTO) => {
+    const enriched = await enrichBookWithAudible(book);
+    if (!enriched) return;
+    setBooks(prev => {
+      const idx = prev.findIndex(b => b.itunesId === book.itunesId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next[idx] = enriched;
+      booksRef.current = next;
+      return next;
+    });
+  }, []);
+
   const preload = useCallback(async (count: number) => {
     const existingBooks = booksRef.current.filter(
       b => !b.__isPlaceholder
@@ -116,40 +129,57 @@ export function usePreloadBooks(
           book &&
           book.itunesId !== null &&
           !newBooks.some(b => b.itunesId === book.itunesId) &&
-          !existingBooks.some(b => b.itunesId === book.itunesId) &&
-          (
-            !mustHaveAudible ||
-            book.audiblePageUrl != null ||
-            shouldSkipAudibleRequest() //relax restriction if Audible is unreachable
-          )
+          !existingBooks.some(b => b.itunesId === book.itunesId)
         ) {
-          //replace placeholder loading book on 1st page load
-          const first = booksRef.current[0];
-
-          if (first?.__isPlaceholder && indexRef.current === 0) {
-            console.log("[Preload] Upgrading placeholder with first fetched book");
-
-            setBooks(prev => {
-              const upgraded = mergeAudiobookDTOs(first, {
-                ...book,
-                __isPlaceholder: false,
+          if (mustHaveAudible && !shouldSkipAudibleRequest()) {
+            //await enrichment to confirm an Audible match exists
+            const enriched = await enrichBookWithAudible(book);
+            if (!enriched?.audiblePageUrl) {
+              consecutiveFailures++;
+              if (consecutiveFailures >= MAX_FAILURES) break;
+              continue;
+            }
+            const first = booksRef.current[0];
+            if (first?.__isPlaceholder && indexRef.current === 0) {
+              console.log("[Preload] Upgrading placeholder with first fetched book");
+              setBooks(prev => {
+                const upgraded = mergeAudiobookDTOs(first, { ...enriched, __isPlaceholder: false });
+                const next = [...prev];
+                next[0] = upgraded;
+                booksRef.current = next;
+                return next;
               });
-
-              const next = [...prev];
-              next[0] = upgraded;
-              booksRef.current = next;
-              return next;
-            });
-
+              preloadMedia(enriched);
+              console.log("Fetched [replacing loading placeholder]:", enriched.title);
+              return;
+            }
+            consecutiveFailures = 0;
+            newBooks.push({ ...enriched, __fromCache: false });
+            preloadMedia(enriched);
+            console.log("Fetched:", enriched.title);
+          } else {
+            //replace placeholder loading book on 1st page load
+            const first = booksRef.current[0];
+            if (first?.__isPlaceholder && indexRef.current === 0) {
+              console.log("[Preload] Upgrading placeholder with first fetched book");
+              setBooks(prev => {
+                const upgraded = mergeAudiobookDTOs(first, { ...book, __isPlaceholder: false });
+                const next = [...prev];
+                next[0] = upgraded;
+                booksRef.current = next;
+                return next;
+              });
+              preloadMedia(book);
+              console.log("Fetched [replacing loading placeholder]:", book.title);
+              void enrichInBackground(book);
+              return;
+            }
+            consecutiveFailures = 0;
+            newBooks.push({ ...book, __fromCache: false });
             preloadMedia(book);
-            console.log("Fetched [replacing loading placeholder]:", book.title);
-            return;
+            console.log("Fetched:", book.title);
+            void enrichInBackground(book);
           }
-
-          consecutiveFailures = 0;
-          newBooks.push({ ...book, __fromCache: false });
-          preloadMedia(book);
-          console.log("Fetched:", book.title);
         } else {
           consecutiveFailures++;
           if (consecutiveFailures >= MAX_FAILURES) break;
@@ -165,7 +195,7 @@ export function usePreloadBooks(
       isPreloadingRef.current = false;
       setIsFetching(false);
     }
-  }, [fetchOptions, mustHaveAudible, preloadAhead]);
+  }, [fetchOptions, mustHaveAudible, preloadAhead, enrichInBackground]);
 
   const fillFromCache = useCallback(
     async ({ used = false }: { used?:boolean } = {}) => {
