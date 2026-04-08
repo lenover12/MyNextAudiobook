@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { fetchRandom } from "../utils/audiobookAPI";
 import { type AudiobookDTO, mergeAudiobookDTOs } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
-import { shouldSkipAudiMetaRequest } from "../utils/audimetaAPI";
+import { shouldSkipAudibleRequest } from "../utils/audibleAPI";
 import { popCachedBook } from "../utils/cacheStorage";
 import { PLACEHOLDER_BOOK } from "../utils/placeholderBook";
 
@@ -107,6 +107,8 @@ export function usePreloadBooks(
 
     try {
       const newBooks: AudiobookDTO[] = [];
+      let consecutiveFailures = 0;
+      const MAX_FAILURES = 3;
 
       while (newBooks.length < Math.min(count, needed)) {
         const book = await fetchRandom(fetchOptions);
@@ -118,7 +120,7 @@ export function usePreloadBooks(
           (
             !mustHaveAudible ||
             book.audiblePageUrl != null ||
-            shouldSkipAudiMetaRequest() //relax restriction if AudiMeta is unreachable
+            shouldSkipAudibleRequest() //relax restriction if Audible is unreachable
           )
         ) {
           //replace placeholder loading book on 1st page load
@@ -144,9 +146,13 @@ export function usePreloadBooks(
             return;
           }
 
+          consecutiveFailures = 0;
           newBooks.push({ ...book, __fromCache: false });
           preloadMedia(book);
           console.log("Fetched:", book.title);
+        } else {
+          consecutiveFailures++;
+          if (consecutiveFailures >= MAX_FAILURES) break;
         }
       }
 

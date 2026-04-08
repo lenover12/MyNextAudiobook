@@ -1,15 +1,15 @@
 import type { FetchOptions } from './itunesAPI';
 import { fetchRandomBatch as fetchItunesRandomBatch, searchBooks as searchItunesBooks, fetchByItunesId } from './itunesAPI';
-import { fetchRandomBatch as fetchAudimetaRandomBatch, searchBooks as searchAudimetaBooks, fetchByAsin, shouldSkipAudiMetaRequest } from './audimetaAPI';
+import { fetchRandomBatch as fetchAudibleRandomBatch, searchBooks as searchAudibleBooks, fetchByAsin, shouldSkipAudibleRequest } from './audibleAPI';
 import { mergeAudiobookDTOs, type AudiobookDTO } from '../dto/audiobookDTO';
 import { addCacheEntry } from "../utils/cacheStorage";
 
-type Source = 'audimeta' | 'itunes';
+type Source = 'audible' | 'itunes';
 const FUZZY_THE_BACKLOG = true;
 const NUM_CACHE_TO_FUZ = 1
 const ITUNES_FIRST = true;
-let audimetaWaitoutUntil: number = 0;
-const WAITOUT_AUDIMETA = 1000 * 60 * 1; //1 minutes
+let audibleWaitoutUntil: number = 0;
+const WAITOUT_AUDIBLE = 1000 * 60 * 1; //1 minutes
 
 function normalize(str: string): string {
   return str
@@ -32,22 +32,22 @@ export function compareBooksFuzzy(a: AudiobookDTO, b: AudiobookDTO): boolean {
 }
 
 
-export async function fetchRandom(options?: FetchOptions, source: Source = (ITUNES_FIRST ? 'itunes' : 'audimeta')): Promise<AudiobookDTO | null> {
+export async function fetchRandom(options?: FetchOptions, source: Source = (ITUNES_FIRST ? 'itunes' : 'audible')): Promise<AudiobookDTO | null> {
   const batch = source
     === 'itunes'
       ? await fetchItunesRandomBatch(options)
-      : await fetchAudimetaRandomBatch(options);
+      : await fetchAudibleRandomBatch(options);
 
-  //if audimeta marked down/rate-limited, force itunes
-  if (!ITUNES_FIRST && source === 'audimeta') {
-    if (Date.now() < audimetaWaitoutUntil || shouldSkipAudiMetaRequest()) {
+  //if audible marked down/rate-limited, force itunes
+  if (!ITUNES_FIRST && source === 'audible') {
+    if (Date.now() < audibleWaitoutUntil || shouldSkipAudibleRequest()) {
       source = 'itunes';
     }
   }
 
-  if ((!batch || batch.length === 0) && source === 'audimeta') {
-    console.warn("[AudiobookAPI] Audimeta unavailable, falling back to iTunes.");
-    audimetaWaitoutUntil = Date.now() + WAITOUT_AUDIMETA;
+  if ((!batch || batch.length === 0) && source === 'audible') {
+    console.warn("[AudiobookAPI] Audible unavailable, falling back to iTunes.");
+    audibleWaitoutUntil = Date.now() + WAITOUT_AUDIBLE;
     return await fetchRandom(options, 'itunes');
   }
 
@@ -62,7 +62,7 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
     try {
       const searchTerm = `${book.title} ${book.authors?.[0] ?? ''}`;
       const secondaryResultsRaw = source === 'itunes'
-        ? await searchAudimetaBooks(searchTerm)
+        ? await searchAudibleBooks(searchTerm)
         : await searchItunesBooks(searchTerm);
 
       const secondaryResults = Array.isArray(secondaryResultsRaw) ? secondaryResultsRaw : [];
@@ -74,11 +74,11 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
           : mergeAudiobookDTOs(bestMatch, book);
       }
 
-      if (source === 'audimeta') return null;
+      if (source === 'audible') return null;
 
       return book;
     } catch {
-      return source === 'audimeta' ? null : book;
+      return source === 'audible' ? null : book;
     }
   }
 
@@ -90,7 +90,7 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
       .map(r => r.status === 'fulfilled' ? r.value : null)
       .filter((b): b is AudiobookDTO => !!b);
 
-    if (source === 'audimeta' && mergedBooks.length === 0) return null;
+    if (source === 'audible' && mergedBooks.length === 0) return null;
 
     const enriched = mergedBooks.find(b => b.asin && b.itunesId);
     primaryBook = enriched ?? mergedBooks[0] ?? primaryBook;
@@ -114,7 +114,7 @@ export async function fetchRandom(options?: FetchOptions, source: Source = (ITUN
 
   //retrieve rich data for shown book only, cache the rest
   const mergedPrimaryBook = await fuzzyMerge(primaryBook);
-  if (source === 'audimeta' && !mergedPrimaryBook) {
+  if (source === 'audible' && !mergedPrimaryBook) {
     for (const candidate of batch) {
       const m = await fuzzyMerge(candidate);
       if (m) {
@@ -153,14 +153,14 @@ export async function fetchBookByIds(params: { itunesId?: string | null; asin?: 
     throw new Error("fetchBookByIds: must provide at least one of itunesId or asin");
   }
 
-  const [itunesBook, audimetaBook] = await Promise.all([
+  const [itunesBook, audibleBook] = await Promise.all([
     itunesId ? fetchByItunesId(itunesId) : Promise.resolve(null),
     asin ? fetchByAsin(asin) : Promise.resolve(null),
   ]);
 
-  if (itunesBook && audimetaBook) {
-    return mergeAudiobookDTOs(itunesBook, audimetaBook);
+  if (itunesBook && audibleBook) {
+    return mergeAudiobookDTOs(itunesBook, audibleBook);
   }
 
-  return itunesBook ?? audimetaBook ?? null;
+  return itunesBook ?? audibleBook ?? null;
 }
