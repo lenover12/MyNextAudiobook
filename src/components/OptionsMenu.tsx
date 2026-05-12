@@ -21,6 +21,7 @@ const optionLabels: Record<string, string> = {
   allowNavigatorShare: "label.allowNavigatorShare",
   bookIdsInDomain: "label.bookIdsInDomain",
   mustHaveAudible: "label.mustHaveAudible",
+  pauseOnHide: "label.pauseOnHide",
   countryCode: "label.country",
   languageCode: "label.language",
   twitter: "label.twitter",
@@ -72,6 +73,7 @@ export default function OptionsMenu({ active, setActive, analyticsId }: OptionsM
         // "allowNavigatorShare", (if viable)
         "bookIdsInDomain",
         "mustHaveAudible",
+        "pauseOnHide",
       ] as const,
     },
     {

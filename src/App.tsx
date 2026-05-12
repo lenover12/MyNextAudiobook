@@ -401,6 +401,32 @@ function App() {
     }
   }, [book]);
 
+  //pause audio when the tab/app is hidden (e.g. minimise on mobile)
+  useEffect(() => {
+    if (!options.pauseOnHide) return;
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) return;
+      const audio = audioRef.current;
+      if (!audio || audio.paused) return;
+
+      audio.pause();
+      isPausedRef.current = true;
+
+      const pulseEl = bookImageWrapperRef.current?.querySelector(".css-pulse") as HTMLElement | null;
+      pulseEl?.classList.remove("fade-out-glow");
+      if (pulseEl) void pulseEl.offsetWidth;
+      pulseEl?.classList.add("fade-out-glow");
+      setTimeout(() => {
+        setCssPulseVisible(false);
+        pulseEl?.classList.remove("fade-out-glow");
+      }, FADE_OUT_DURATION);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [options.pauseOnHide]);
+
   //canvas image
   const currentId = book?.__isPlaceholder
     ? "__initial_placeholder__"
