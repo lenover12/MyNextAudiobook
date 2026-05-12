@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { fetchRandom, enrichBookWithAudible } from "../utils/audiobookAPI";
 import { type AudiobookDTO, mergeAudiobookDTOs } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
@@ -6,17 +6,47 @@ import { shouldSkipAudibleRequest } from "../utils/audibleAPI";
 import { popCachedBook } from "../utils/cacheStorage";
 import { PLACEHOLDER_BOOK } from "../utils/placeholderBook";
 
+// Module-level caches with one entry per URL
+const audioCache = new Map<string, HTMLAudioElement>();
+const imageCache = new Map<string, HTMLImageElement>();
+
 function preloadMedia(book: AudiobookDTO) {
-  console.log(book);
-  if (book.itunesImageUrl) {
+  if (book.itunesImageUrl && !imageCache.has(book.itunesImageUrl)) {
     const img = new Image();
     img.src = book.itunesImageUrl;
+    imageCache.set(book.itunesImageUrl, img);
   }
 
-  if (book.audioPreviewUrl) {
+  if (book.audioPreviewUrl && !audioCache.has(book.audioPreviewUrl)) {
     const audio = new Audio();
     audio.preload = "auto";
     audio.src = book.audioPreviewUrl;
+    audioCache.set(book.audioPreviewUrl, audio);
+  }
+}
+
+function evictMedia(books: AudiobookDTO[], keepStart: number, keepEnd: number) {
+  const keepImages = new Set<string>();
+  const keepAudio = new Set<string>();
+
+  for (let i = keepStart; i <= keepEnd; i++) {
+    const b = books[i];
+    if (!b) continue;
+    if (b.itunesImageUrl) keepImages.add(b.itunesImageUrl);
+    if (b.audioPreviewUrl) keepAudio.add(b.audioPreviewUrl);
+  }
+
+  for (const [url, audio] of audioCache) {
+    if (!keepAudio.has(url)) {
+      audio.src = "";
+      audioCache.delete(url);
+    }
+  }
+
+  for (const [url] of imageCache) {
+    if (!keepImages.has(url)) {
+      imageCache.delete(url);
+    }
   }
 }
 
@@ -33,6 +63,14 @@ export function usePreloadBooks(
     mustHaveAudible,
     ...fetchOptions
   } = options;
+
+  const genresKey = fetchOptions.genres?.join(',') ?? '';
+  const fetchOptionsMemo = useMemo(
+    () => ({ ...fetchOptions }),
+    //genres is an array so we serialize it; all other fields are primitives
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+    [fetchOptions.term, fetchOptions.authorHint, fetchOptions.allowExplicit, fetchOptions.allowFallback, genresKey]
+  );
 
   const [books, setBooks] = useState<AudiobookDTO[]>([PLACEHOLDER_BOOK]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,6 +100,12 @@ export function usePreloadBooks(
   useEffect(() => {
     indexRef.current = currentIndex;
   }, [currentIndex]);
+
+  useEffect(() => {
+    const keepStart = Math.max(0, currentIndex - 1);
+    const keepEnd = currentIndex + preloadAhead;
+    evictMedia(booksRef.current, keepStart, keepEnd);
+  }, [currentIndex, preloadAhead]);
 
   useEffect(() => {
     if (!seed) return;
@@ -124,7 +168,7 @@ export function usePreloadBooks(
       const MAX_FAILURES = 3;
 
       while (newBooks.length < Math.min(count, needed)) {
-        const book = await fetchRandom(fetchOptions);
+        const book = await fetchRandom(fetchOptionsMemo);
         if (
           book &&
           book.itunesId !== null &&
@@ -195,7 +239,7 @@ export function usePreloadBooks(
       isPreloadingRef.current = false;
       setIsFetching(false);
     }
-  }, [fetchOptions, mustHaveAudible, preloadAhead, enrichInBackground]);
+  }, [fetchOptionsMemo, mustHaveAudible, preloadAhead, enrichInBackground]);
 
   const fillFromCache = useCallback(
     async ({ used = false }: { used?:boolean } = {}) => {
@@ -203,7 +247,7 @@ export function usePreloadBooks(
     
     isCacheFillingRef.current = true;
     try {
-      const lang = (fetchOptions as any)?.language ?? "unknown";
+      const lang = (fetchOptionsMemo as any)?.language ?? "unknown";
       
       //build list of IDs currently visible/loaded
       const currentIds = new Set(
@@ -230,7 +274,7 @@ export function usePreloadBooks(
     } finally {
       isCacheFillingRef.current = false;
     }
-  }, [fetchOptions]);
+  }, [fetchOptionsMemo]);
 
   //fetch a book if there's no book at the current index (initial bootstrap / safety net)
   useEffect(() => {
@@ -255,6 +299,15 @@ export function usePreloadBooks(
   //     setCurrentIndex(i => i + 1);
   //   }
   // }, [currentIndex, books.length]);
+
+  const queueNext = useCallback((book: AudiobookDTO) => {
+    setBooks(prev => {
+      const updated = [...prev];
+      updated.splice(indexRef.current + 1, 0, book);
+      booksRef.current = updated;
+      return updated;
+    });
+  }, []);
 
   const previous = useCallback(() => {
     if (currentIndex > 0) {
@@ -309,6 +362,8 @@ export function usePreloadBooks(
       });
       setCurrentIndex(i => i + 1);
     },
+    //queues a book immediately after current without navigating to it
+    queueNext,
   };
 
 }

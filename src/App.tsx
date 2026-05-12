@@ -11,6 +11,14 @@ import { useGeoAffiliateLink } from "./hooks/useGeoAffiliate";
 import { BookTitle } from "./components/BookTitle";
 import { useLoadingStates } from "./hooks/useLoadingStates";
 import audibleBadge from "./assets/badge/audible.png";
+import {
+  createBmcPromoBook,
+  bmcBadge,
+  bmcQrImage,
+  BMC_URL,
+  PROMO_INTERVAL,
+  PROMO_INTERVAL_FIRST_VISIT,
+} from "./utils/bmcPromoBook";
 import { BookImageWrapper } from "./components/BookImageWrapper";
 import SwipeIndicator from "./components/SwipeIndicator";
 import ClickIndicator from "./components/ClickIndicator";
@@ -112,6 +120,7 @@ function App() {
     insertNext,
     jumpTo,
     smartNext,
+    queueNext,
   } = usePreloadBooks({
     genres: options.enabledGenres as Genre[],
     allowExplicit: options.allowExplicit,
@@ -124,7 +133,14 @@ function App() {
   //Update the URL whenever the current book changes
   useEffect(() => {
     if (!book) return;
-    
+
+    if (book.__isPr) {
+      if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+      return;
+    }
+
     if (options.bookIdsInDomain) {
       const params = new URLSearchParams();
       if (book.itunesId) params.set("i", book.itunesId.toString());
@@ -134,8 +150,7 @@ function App() {
       window.history.replaceState({}, "", newUrl);
     } else {
       if (window.location.search) {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, "", cleanUrl);
+        window.history.replaceState({}, "", window.location.pathname);
       }
     }
   }, [book, options.bookIdsInDomain]);
@@ -157,8 +172,24 @@ function App() {
   useEffect(() => {
     if (!book) return;
     if (book.__isPlaceholder) return;
+    if (book.__isPr) return;
     addHistory(audiobookDTOToDbEntry(book));
   }, [book, addHistory]);
+
+  //insert a promotional card every PROMO_INTERVAL real books.
+  //first-visit users see the first promo sooner (PROMO_INTERVAL_FIRST_VISIT)
+  const realBooksViewedRef = useRef(0);
+  const nextPromoAtRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!book || book.__isPlaceholder || book.__isPr) return;
+    realBooksViewedRef.current++;
+    const firstThreshold = hasScrolledBook ? PROMO_INTERVAL : PROMO_INTERVAL_FIRST_VISIT;
+    if (nextPromoAtRef.current === null) nextPromoAtRef.current = firstThreshold;
+    if (realBooksViewedRef.current >= nextPromoAtRef.current) {
+      nextPromoAtRef.current += PROMO_INTERVAL;
+      queueNext(createBmcPromoBook());
+    }
+  }, [book, hasScrolledBook, queueNext]);
 
 
   //canvas background effect
@@ -204,6 +235,10 @@ function App() {
 
   // QR code fade
   const [qrVisible, setQRVisible] = useState(false);
+
+  //tracks which badge/title/QR variant to display and switch during the invisible window
+  //so React never swaps elements at full opacity
+  const [isPromoDisplay, setIsPromoDisplay] = useState(false);
 
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
@@ -284,7 +319,7 @@ function App() {
   });
 
   //affiliate links
-  const audibleLink = useGeoAffiliateLink(book?.asin ?? "");
+  const audibleLink = useGeoAffiliateLink(book?.__isPr ? "" : (book?.asin ?? ""));
 
   const togglePlayPause = () => {
     const audio = audioRef.current;
@@ -366,19 +401,51 @@ function App() {
     }
   }, [book]);
 
+  //pause audio when the tab/app is hidden (e.g. minimise on mobile)
+  useEffect(() => {
+    if (!options.pauseOnHide) return;
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) return;
+      const audio = audioRef.current;
+      if (!audio || audio.paused) return;
+
+      audio.pause();
+      isPausedRef.current = true;
+
+      const pulseEl = bookImageWrapperRef.current?.querySelector(".css-pulse") as HTMLElement | null;
+      pulseEl?.classList.remove("fade-out-glow");
+      if (pulseEl) void pulseEl.offsetWidth;
+      pulseEl?.classList.add("fade-out-glow");
+      setTimeout(() => {
+        setCssPulseVisible(false);
+        pulseEl?.classList.remove("fade-out-glow");
+      }, FADE_OUT_DURATION);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [options.pauseOnHide]);
+
   //canvas image
-  const currentId = book?.__isPlaceholder 
-    ? "__initial_placeholder__" 
-    : book?.itunesId?.toString();
-    
+  const currentId = book?.__isPlaceholder
+    ? "__initial_placeholder__"
+    : book?.itunesId?.toString() ?? book?.asin;
+
   const currentState = currentId ? loadingStates[currentId] : undefined;
 
-  const canvasImage =
+  const rawCanvasImage =
     currentState?.isLoaded && book?.itunesImageUrl
       ? book.itunesImageUrl
       : currentState?.fadeIn && currentState.loadingImg
         ? currentState.loadingImg
         : '';
+
+  //keep the last valid image so the ambient canvas never drops to black
+  //during the one-render gap before the new book's loading state is initialised
+  const lastCanvasImageRef = useRef<string>('');
+  if (rawCanvasImage) lastCanvasImageRef.current = rawCanvasImage;
+  const canvasImage = rawCanvasImage || lastCanvasImageRef.current;
 
   useAmbientCanvas(canvasRef, canvasImage, !!canvasImage);
 
@@ -414,8 +481,18 @@ function App() {
 
   //book title inner book-change fade effect for scroll
   useEffect(() => {
+    if (book?.__isPr) {
+      //don't update titleText with the promo ID, just hide it so no text shows while the
+      //promo is on screen and there's no flash when the next real book arrives
+      setTitleVisible(false);
+      return;
+    }
     const newTitle = book?.title ?? '';
-    if (newTitle === titleText) return;
+    if (newTitle === titleText) {
+      //when title text didn't change, but visibility may have been suppressed, restore it
+      setTitleVisible(true);
+      return;
+    }
 
     setTitleVisible(false);
 
@@ -425,7 +502,7 @@ function App() {
     }, 600);
 
     return () => clearTimeout(timeout);
-  }, [book?.title]);
+  }, [book?.title, book?.__isPr]);
   //book title outer drag-based fade effect for swipe
   const titleOpacity = y.to((val) => {
     const abs = Math.abs(val);
@@ -460,6 +537,13 @@ function App() {
       setBadgeVisible(false);
       setQRVisible(false);
 
+      //switch promo/normal content at ~600ms while badge is still invisible
+      //this lets BookTitle mount early so the title fades in before the badge,
+      //matching the first-load sequence (title > badge > QR).
+      const promoSwitchTimeout = setTimeout(() => {
+        setIsPromoDisplay(book.__isPr ?? false);
+      }, 600);
+
       const titleShiftTimeout = setTimeout(() => {
         setTitleShifted(true);
       }, 1500);
@@ -473,6 +557,7 @@ function App() {
       }, 2400);
 
       return () => {
+        clearTimeout(promoSwitchTimeout);
         clearTimeout(titleShiftTimeout);
         clearTimeout(badgeTimeout);
         clearTimeout(qrTimeout);
@@ -481,6 +566,7 @@ function App() {
       setTitleShifted(false);
       setBadgeVisible(false);
       setQRVisible(false);
+      setIsPromoDisplay(false);
     }
   }, [book?.audiblePageUrl]);
 
@@ -533,9 +619,9 @@ function App() {
           
           const bookId = isInitialBook
             ? "__initial_placeholder__"
-            : book?.__isPlaceholder 
-              ? "__initial_placeholder__" 
-              : book?.itunesId?.toString() ?? null;
+            : book?.__isPlaceholder
+              ? "__initial_placeholder__"
+              : book?.itunesId?.toString() ?? book?.asin ?? null;
               
           const loadingState = bookId ? loadingStates[bookId] : null;
 
@@ -561,14 +647,14 @@ function App() {
               bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
             >
               <div className="genre-title-container">
-                {book && (
+                {book && !book.__isPr && (
                   <GenreLabel
                     genre={book.genre ?? null}
                   />
                 )}
               </div>
               <div className="favourite-container">
-                {book && (
+                {book && !book.__isPr && (
                   <FavouritesButton
                     book={{
                       asin: book.asin ?? null,
@@ -586,7 +672,7 @@ function App() {
                 )}
               </div>
               <div className="share-container">
-                {book && (audibleLink ?? book.audiblePageUrl) && (
+                {book && !book.__isPr && (audibleLink ?? book.audiblePageUrl) && (
                   isNavigatorShare ? (
                     <ShareNavigatorButton
                       // title={book.title}
@@ -644,52 +730,56 @@ function App() {
                     willChange: 'opacity',
                   }}
                 >
-                  {book.audiblePageUrl && audibleLink && (
-                    <animated.div
-                      style={{
-                        opacity: titleOpacity,
-                      }}
-                    >
+                  {isPromoDisplay ? (
+                    <animated.div style={{ opacity: titleOpacity }}>
+                      <a href={BMC_URL} target="_blank" rel="noopener noreferrer">
+                        <img src={bmcBadge} alt="Buy me a coffee" className="redirect-badge pr-badge" />
+                      </a>
+                    </animated.div>
+                  ) : (book.audiblePageUrl && audibleLink && (
+                    <animated.div style={{ opacity: titleOpacity }}>
                       <a
                         href={audibleLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => { if (book) trackEvent("amazon_clicked", { book_id: toBookId(book) }); }}
                       >
-                        <img
-                          src={audibleBadge}
-                          alt="Find on Audible"
-                          className="redirect-badge"
-                        />
+                        <img src={audibleBadge} alt="Find on Audible" className="redirect-badge" />
                       </a>
                     </animated.div>
-                  )}
+                  ))}
                 </div>
-                <p
-                  className="affiliate-disclaimer"
-                  style={{
-                    transition: qrVisible
-                    ? 'opacity 0.6s ease'
-                    : 'opacity 0.1s ease-out',
-                    opacity: qrVisible ? 1 : 0,
-                    visibility: qrVisible ? 'visible' : 'hidden',
-                    willChange: 'opacity',
-                  }}
-                >
-                  {t(lang, "affiliate.disclaimer")}
-                </p>
+                {!isPromoDisplay && (
+                  <p
+                    className="affiliate-disclaimer"
+                    style={{
+                      transition: qrVisible
+                      ? 'opacity 0.6s ease'
+                      : 'opacity 0.1s ease-out',
+                      opacity: qrVisible ? 1 : 0,
+                      visibility: qrVisible ? 'visible' : 'hidden',
+                      willChange: 'opacity',
+                    }}
+                  >
+                    {t(lang, "affiliate.disclaimer")}
+                  </p>
+                )}
                 <animated.div
                   className={`book-title ${titleShifted ? "shifted" : ""}`}
                   ref={bookTitleRef}
                   style={{ opacity: titleOpacity }}
                 >
-                  <BookTitle
-                    title={cleanedTitleElements}
-                    titleText={titleText}
-                    maxHeight={maxTitleHeight}
-                    maxWidth={maxTitleWidth}
-                    visible={titleVisible}
-                  />
+                  {isPromoDisplay ? (
+                    <span className="bmc-title-text"></span>
+                  ) : (
+                    <BookTitle
+                      title={cleanedTitleElements}
+                      titleText={titleText}
+                      maxHeight={maxTitleHeight}
+                      maxWidth={maxTitleWidth}
+                      visible={titleVisible}
+                    />
+                  )}
                 </animated.div>
               </div>
               <div
@@ -704,15 +794,27 @@ function App() {
                   flexBasis: showQR ? "var(--qr-basis)" : 0,
                 }}
               >
-                {audibleLink && (
+                {(isPromoDisplay || audibleLink) && (
                   <animated.div style={{ opacity: titleOpacity, width: "100%", height: "100%" }}>
-                    <QRCodeCard
-                      url={audibleLink}
-                      style={{
-                        transition: showQR ? "padding 0.6s ease" : "padding 0.1s ease-out",
-                        padding: showQR ? "calc(var(--redirect-badge-size) / 8)" : "0",
-                      }}
-                    />
+                    {isPromoDisplay ? (
+                      <img
+                        src={bmcQrImage}
+                        alt="Buy me a coffee QR code"
+                        className="bmc-qr-image"
+                        style={{
+                          transition: showQR ? "padding 0.6s ease" : "padding 0.1s ease-out",
+                          padding: showQR ? "calc(var(--redirect-badge-size) / 8)" : "0",
+                        }}
+                      />
+                    ) : (
+                      <QRCodeCard
+                        url={audibleLink}
+                        style={{
+                          transition: showQR ? "padding 0.6s ease" : "padding 0.1s ease-out",
+                          padding: showQR ? "calc(var(--redirect-badge-size) / 8)" : "0",
+                        }}
+                      />
+                    )}
                   </animated.div>
                 )}
               </div>

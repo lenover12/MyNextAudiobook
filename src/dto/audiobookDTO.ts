@@ -35,6 +35,7 @@ export interface AudiobookDTO {
   _fallback: boolean;
   __fromCache?: boolean; //from chache storage
   __isPlaceholder?: boolean; //loading image on first page visit
+  __isPr?: boolean; //promotional card
 }
 
 export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookDTO {

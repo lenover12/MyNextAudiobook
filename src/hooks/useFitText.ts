@@ -11,6 +11,9 @@ export function useFitText(
   const ref = useRef<HTMLHeadingElement>(null);
   const [fontSize, setFontSize] = useState(maxSize);
   const [isReady, setIsReady] = useState(false);
+  //only hide on the very first measurement (component mount / remount)
+  //layout-driven re-measurements (e.g. QR container appearing) must not flash the title invisible
+  const isFirstRunRef = useRef(true);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -18,7 +21,9 @@ export function useFitText(
     const el = ref.current;
 
     let size = maxSize;
-    setIsReady(false);
+    if (isFirstRunRef.current) {
+      setIsReady(false);
+    }
 
     const fits = () => {
       const withinHeight = el.scrollHeight <= maxHeight;
@@ -34,6 +39,7 @@ export function useFitText(
       }
       setFontSize(size);
       setIsReady(true);
+      isFirstRunRef.current = false;
     };
 
     requestAnimationFrame(adjustFont);

@@ -23,8 +23,8 @@ export function BookTitle({
       style={{
         fontSize: `${fontSize}rem`,
         margin: 0,
-        opacity: visible ? 1 : 0,
-        transition: visible
+        opacity: visible && isReady ? 1 : 0,
+        transition: visible && isReady
           ? "opacity 0.6s ease"
           : "opacity 0.1s ease-out",
       }}

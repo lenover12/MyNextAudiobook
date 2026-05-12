@@ -24,6 +24,7 @@ export type Options = {
   mustHaveAudible: boolean;
   preloadAhead: number;
   enableCookies: boolean;
+  pauseOnHide: boolean;
   hasClickedBookCover?: boolean;
   hasScrolledBook?: boolean;
 };
@@ -58,6 +59,7 @@ export const defaultOptions: Options = {
   mustHaveAudible: false,
   preloadAhead: 5,
   enableCookies: false,
+  pauseOnHide: true,
   hasClickedBookCover: false,
   hasScrolledBook: false,
 };
