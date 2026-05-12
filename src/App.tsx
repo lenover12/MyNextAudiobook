@@ -367,18 +367,24 @@ function App() {
   }, [book]);
 
   //canvas image
-  const currentId = book?.__isPlaceholder 
-    ? "__initial_placeholder__" 
+  const currentId = book?.__isPlaceholder
+    ? "__initial_placeholder__"
     : book?.itunesId?.toString();
-    
+
   const currentState = currentId ? loadingStates[currentId] : undefined;
 
-  const canvasImage =
+  const rawCanvasImage =
     currentState?.isLoaded && book?.itunesImageUrl
       ? book.itunesImageUrl
       : currentState?.fadeIn && currentState.loadingImg
         ? currentState.loadingImg
         : '';
+
+  //keep the last valid image so the ambient canvas never drops to black
+  //during the one-render gap before the new book's loading state is initialised
+  const lastCanvasImageRef = useRef<string>('');
+  if (rawCanvasImage) lastCanvasImageRef.current = rawCanvasImage;
+  const canvasImage = rawCanvasImage || lastCanvasImageRef.current;
 
   useAmbientCanvas(canvasRef, canvasImage, !!canvasImage);
 
