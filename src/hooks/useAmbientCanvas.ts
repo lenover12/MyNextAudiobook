@@ -37,13 +37,7 @@ export function useAmbientCanvas(
 
       img.onload = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.filter = "blur(2px)";
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        canvas.style.transform = "translateZ(0.001px)";
-        requestAnimationFrame(() => {
-          canvas.style.transform = "";
-        });
       };
     });
   }, [canvasRef, imageUrl, trigger]);
