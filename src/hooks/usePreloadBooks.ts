@@ -300,6 +300,15 @@ export function usePreloadBooks(
   //   }
   // }, [currentIndex, books.length]);
 
+  const queueNext = useCallback((book: AudiobookDTO) => {
+    setBooks(prev => {
+      const updated = [...prev];
+      updated.splice(indexRef.current + 1, 0, book);
+      booksRef.current = updated;
+      return updated;
+    });
+  }, []);
+
   const previous = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex(i => i - 1);
@@ -353,6 +362,8 @@ export function usePreloadBooks(
       });
       setCurrentIndex(i => i + 1);
     },
+    //queues a book immediately after current without navigating to it
+    queueNext,
   };
 
 }
