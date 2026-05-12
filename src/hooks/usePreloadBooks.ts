@@ -6,17 +6,47 @@ import { shouldSkipAudibleRequest } from "../utils/audibleAPI";
 import { popCachedBook } from "../utils/cacheStorage";
 import { PLACEHOLDER_BOOK } from "../utils/placeholderBook";
 
+// Module-level caches with one entry per URL
+const audioCache = new Map<string, HTMLAudioElement>();
+const imageCache = new Map<string, HTMLImageElement>();
+
 function preloadMedia(book: AudiobookDTO) {
-  console.log(book);
-  if (book.itunesImageUrl) {
+  if (book.itunesImageUrl && !imageCache.has(book.itunesImageUrl)) {
     const img = new Image();
     img.src = book.itunesImageUrl;
+    imageCache.set(book.itunesImageUrl, img);
   }
 
-  if (book.audioPreviewUrl) {
+  if (book.audioPreviewUrl && !audioCache.has(book.audioPreviewUrl)) {
     const audio = new Audio();
     audio.preload = "auto";
     audio.src = book.audioPreviewUrl;
+    audioCache.set(book.audioPreviewUrl, audio);
+  }
+}
+
+function evictMedia(books: AudiobookDTO[], keepStart: number, keepEnd: number) {
+  const keepImages = new Set<string>();
+  const keepAudio = new Set<string>();
+
+  for (let i = keepStart; i <= keepEnd; i++) {
+    const b = books[i];
+    if (!b) continue;
+    if (b.itunesImageUrl) keepImages.add(b.itunesImageUrl);
+    if (b.audioPreviewUrl) keepAudio.add(b.audioPreviewUrl);
+  }
+
+  for (const [url, audio] of audioCache) {
+    if (!keepAudio.has(url)) {
+      audio.src = "";
+      audioCache.delete(url);
+    }
+  }
+
+  for (const [url] of imageCache) {
+    if (!keepImages.has(url)) {
+      imageCache.delete(url);
+    }
   }
 }
 
@@ -62,6 +92,12 @@ export function usePreloadBooks(
   useEffect(() => {
     indexRef.current = currentIndex;
   }, [currentIndex]);
+
+  useEffect(() => {
+    const keepStart = Math.max(0, currentIndex - 1);
+    const keepEnd = currentIndex + preloadAhead;
+    evictMedia(booksRef.current, keepStart, keepEnd);
+  }, [currentIndex, preloadAhead]);
 
   useEffect(() => {
     if (!seed) return;
