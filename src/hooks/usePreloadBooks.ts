@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { fetchRandom, enrichBookWithAudible } from "../utils/audiobookAPI";
 import { type AudiobookDTO, mergeAudiobookDTOs } from "../dto/audiobookDTO";
 import type { FetchOptions } from "../utils/itunesAPI";
@@ -63,6 +63,14 @@ export function usePreloadBooks(
     mustHaveAudible,
     ...fetchOptions
   } = options;
+
+  const genresKey = fetchOptions.genres?.join(',') ?? '';
+  const fetchOptionsMemo = useMemo(
+    () => ({ ...fetchOptions }),
+    //genres is an array so we serialize it; all other fields are primitives
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+    [fetchOptions.term, fetchOptions.authorHint, fetchOptions.allowExplicit, fetchOptions.allowFallback, genresKey]
+  );
 
   const [books, setBooks] = useState<AudiobookDTO[]>([PLACEHOLDER_BOOK]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -160,7 +168,7 @@ export function usePreloadBooks(
       const MAX_FAILURES = 3;
 
       while (newBooks.length < Math.min(count, needed)) {
-        const book = await fetchRandom(fetchOptions);
+        const book = await fetchRandom(fetchOptionsMemo);
         if (
           book &&
           book.itunesId !== null &&
@@ -231,7 +239,7 @@ export function usePreloadBooks(
       isPreloadingRef.current = false;
       setIsFetching(false);
     }
-  }, [fetchOptions, mustHaveAudible, preloadAhead, enrichInBackground]);
+  }, [fetchOptionsMemo, mustHaveAudible, preloadAhead, enrichInBackground]);
 
   const fillFromCache = useCallback(
     async ({ used = false }: { used?:boolean } = {}) => {
@@ -239,7 +247,7 @@ export function usePreloadBooks(
     
     isCacheFillingRef.current = true;
     try {
-      const lang = (fetchOptions as any)?.language ?? "unknown";
+      const lang = (fetchOptionsMemo as any)?.language ?? "unknown";
       
       //build list of IDs currently visible/loaded
       const currentIds = new Set(
@@ -266,7 +274,7 @@ export function usePreloadBooks(
     } finally {
       isCacheFillingRef.current = false;
     }
-  }, [fetchOptions]);
+  }, [fetchOptionsMemo]);
 
   //fetch a book if there's no book at the current index (initial bootstrap / safety net)
   useEffect(() => {
