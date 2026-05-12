@@ -3,12 +3,14 @@ import { useEffect, useRef, useCallback } from "react";
 export function useTsPulseCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   trigger: boolean,
-  bookWrapperRef: React.RefObject<HTMLDivElement | null>, 
+  bookWrapperRef: React.RefObject<HTMLDivElement | null>,
   imageColour: string | null,
 ) {
   const requestRef = useRef<number | null>(null);
   const pulseIntervalRef = useRef<number | null>(null);
   const pulsesRef = useRef<{ size: number; opacity: number; fadeIn: boolean; source: "once" | "auto" }[]>([]);
+  //holds the startLoop fn so pulseOnce and the trigger interval can kick off the rAF from outside the effect.
+  const startLoopRef = useRef<(() => void) | null>(null);
 
   const pulseOnce = useCallback(() => {
     const canvas = canvasRef.current;
@@ -17,7 +19,8 @@ export function useTsPulseCanvas(
 
     const rect = bookEl.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height);
-    pulsesRef.current.push({ size: size + 4 * 2, opacity: 1, fadeIn: false, source: "once",});
+    pulsesRef.current.push({ size: size + 4 * 2, opacity: 1, fadeIn: false, source: "once" });
+    startLoopRef.current?.();
   }, [canvasRef, bookWrapperRef]);
 
   useEffect(() => {
@@ -31,7 +34,9 @@ export function useTsPulseCanvas(
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const getTargetRect = () => bookEl.getBoundingClientRect();
+    //cached once updated on resize and when a new pulse is pushed & not every frame
+    let cachedRect = bookEl.getBoundingClientRect();
+
     const pulses = pulsesRef.current;
     let lastTime = performance.now();
 
@@ -64,9 +69,8 @@ export function useTsPulseCanvas(
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const rect = getTargetRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      const centerX = cachedRect.left + cachedRect.width / 2;
+      const centerY = cachedRect.top + cachedRect.height / 2;
 
       for (let i = 0; i < pulses.length; i++) {
         const pulse = pulses[i];
@@ -92,37 +96,51 @@ export function useTsPulseCanvas(
 
         ctx.save();
         drawRoundedRect(ctx, centerX - halfSize, centerY - halfSize, pulse.size, pulse.size, 16);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${pulse.opacity / 8})`;
         ctx.lineWidth = strokeWidth;
 
-        const fallback = "255, 255, 255";
-        const rgb = imageColour ?? fallback;
+        const rgb = imageColour ?? "255, 255, 255";
         ctx.strokeStyle = `rgba(${rgb}, ${pulse.opacity / 8})`;
         ctx.shadowColor = `rgba(${rgb}, ${pulse.opacity})`;
-        
+
         ctx.stroke();
         ctx.restore();
       }
 
-      requestRef.current = requestAnimationFrame(animate);
+      //stop the loop when all pulses have drained, restarts only when a new pulse is pushed
+      if (pulses.length > 0) {
+        requestRef.current = requestAnimationFrame(animate);
+      } else {
+        requestRef.current = null;
+      }
     };
 
-    requestRef.current = requestAnimationFrame(animate);
+    const startLoop = () => {
+      if (requestRef.current === null) {
+        //reset lastTime so the first delta isn't huge after an idle gap
+        lastTime = performance.now();
+        requestRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    startLoopRef.current = startLoop;
 
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      cachedRect = bookEl.getBoundingClientRect();
     };
 
     window.addEventListener("resize", handleResize);
 
     return () => {
+      startLoopRef.current = null;
       if (pulseIntervalRef.current !== null) {
         clearInterval(pulseIntervalRef.current);
         pulseIntervalRef.current = null;
       }
       if (requestRef.current !== null) {
         cancelAnimationFrame(requestRef.current);
+        requestRef.current = null;
       }
       window.removeEventListener("resize", handleResize);
     };
@@ -130,29 +148,29 @@ export function useTsPulseCanvas(
 
   useEffect(() => {
     if (trigger && pulseIntervalRef.current === null) {
-      //first
       const canvas = canvasRef.current;
       const bookEl = bookWrapperRef.current;
       if (canvas && bookEl) {
         const rect = bookEl.getBoundingClientRect();
-        let size = Math.max(rect.width, rect.height) * 0.8;
-        pulsesRef.current.push({ size: size + 4 * 2, opacity: 0, fadeIn: true, source: "auto",});
+        const size = Math.max(rect.width, rect.height) * 0.8;
+        pulsesRef.current.push({ size: size + 4 * 2, opacity: 0, fadeIn: true, source: "auto" });
+        startLoopRef.current?.();
       }
 
-      //sequential
       pulseIntervalRef.current = window.setInterval(() => {
         const canvas = canvasRef.current;
         const bookEl = bookWrapperRef.current;
         if (!canvas || !bookEl) return;
         const rect = bookEl.getBoundingClientRect();
         const size = Math.max(rect.width, rect.height) * 0.8;
-        pulsesRef.current.push({ size: size + 4 * 2, opacity: 0, fadeIn: true, source: "auto",});
+        pulsesRef.current.push({ size: size + 4 * 2, opacity: 0, fadeIn: true, source: "auto" });
+        startLoopRef.current?.();
       }, 800);
     } else if (!trigger && pulseIntervalRef.current !== null) {
       clearInterval(pulseIntervalRef.current);
       pulseIntervalRef.current = null;
     }
-  }, [trigger]);
+  }, [trigger, canvasRef, bookWrapperRef]);
 
   return { pulseOnce };
 }
