@@ -50,6 +50,14 @@ import { seedFallbackBooksIfEmpty } from "./utils/cacheStorage";
 import { animated } from '@react-spring/web';
 import { refreshCountryIfChanged } from "./utils/getGeo";
 
+const BMC_RAIN_SCALES = (() => {
+  const scales = Array(11).fill(1) as number[];
+  const varied = new Set<number>();
+  while (varied.size < 3) varied.add(Math.floor(Math.random() * 11));
+  for (const i of varied) scales[i] = 0.5 + Math.random() * 3.0;
+  return scales;
+})();
+
 function App() {
   const { options, setOptions } = useOptions();
   const { addEntry: addHistory } = useHistory();
@@ -239,6 +247,17 @@ function App() {
   //tracks which badge/title/QR variant to display and switch during the invisible window
   //so React never swaps elements at full opacity
   const [isPromoDisplay, setIsPromoDisplay] = useState(false);
+
+  //BMC promo alt image state (hover = desktop, click = mobile persistent until scroll past)
+  const [bmcHovered, setBmcHovered] = useState(false);
+  const [bmcClicked, setBmcClicked] = useState(false);
+
+  useEffect(() => {
+    if (!isPromoDisplay) {
+      setBmcHovered(false);
+      setBmcClicked(false);
+    }
+  }, [isPromoDisplay]);
 
   //supliment -webkit-user-drag: none; browser compatability
   useEffect(() => {
@@ -645,6 +664,8 @@ function App() {
               markLoaded={markLoaded}
               togglePlayPause={togglePlayPause}
               bookImageWrapperRef={isCurrent ? bookImageWrapperRef as React.RefObject<HTMLDivElement> : undefined}
+              altImageUrl={book?.__prAltImageUrl}
+              showAlt={isCurrent && (bmcHovered || bmcClicked)}
             >
               <div className="genre-title-container">
                 {book && !book.__isPr && (
@@ -701,6 +722,15 @@ function App() {
 
 
       </animated.div>
+      <div className={`bmc-rain${book?.__isPr ? ' active' : ''}`}>
+        <animated.div style={{ opacity: titleOpacity, width: '100%', height: '100%' }}>
+          {Array.from({ length: 11 }, (_, i) => (
+            <div key={i} className="bmc-raindrop">
+              <div className="bmc-svg" style={{ transform: `scale(${BMC_RAIN_SCALES[i]})` }} />
+            </div>
+          ))}
+        </animated.div>
+      </div>
       <div className="book-static-layer">
         <canvas
           ref={canvasRef}
@@ -732,7 +762,14 @@ function App() {
                 >
                   {isPromoDisplay ? (
                     <animated.div style={{ opacity: titleOpacity }}>
-                      <a href={BMC_URL} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={BMC_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onMouseEnter={() => setBmcHovered(true)}
+                        onMouseLeave={() => setBmcHovered(false)}
+                        onClick={() => setBmcClicked(true)}
+                      >
                         <img src={bmcBadge} alt="Buy me a coffee" className="redirect-badge pr-badge" />
                       </a>
                     </animated.div>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 
 type Book = {
@@ -28,6 +28,8 @@ type Props = {
   markLoaded: (bookId: string) => void;
   togglePlayPause: () => void;
   bookImageWrapperRef?: React.RefObject<HTMLDivElement>;
+  altImageUrl?: string | null;
+  showAlt?: boolean;
   children?: React.ReactNode
 };
 
@@ -46,8 +48,20 @@ export function BookImageWrapper({
   markLoaded,
   togglePlayPause,
   bookImageWrapperRef,
+  altImageUrl,
+  showAlt,
   children,
 }: Props) {
+
+  //once showAlt has been true, we own the opacity so crossfade works both ways;
+  //before any hover the flag stays false so the normal CSS load animation is untouched
+  const hadAltRef = useRef(false);
+  if (showAlt) hadAltRef.current = true;
+
+  const mainImageAltStyle: React.CSSProperties =
+    altImageUrl && hadAltRef.current
+      ? { opacity: showAlt ? 0 : 1, transition: 'opacity 0.3s ease' }
+      : {};
 
   const dragY = y.get();
   const isSwipingUp = dragY < 0;
@@ -104,10 +118,19 @@ export function BookImageWrapper({
           src={book.itunesImageUrl}
           alt={book.title}
           draggable={false}
+          style={mainImageAltStyle}
           onLoad={() => {
             if (bookId) markLoaded(bookId);
           }}
           onClick={togglePlayPause}
+        />
+      )}
+      {altImageUrl && (
+        <img
+          className={`book-image-alt${showAlt ? ' active' : ''}`}
+          src={altImageUrl}
+          alt=""
+          draggable={false}
         />
       )}
       <animated.div
