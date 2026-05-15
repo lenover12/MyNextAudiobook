@@ -426,6 +426,20 @@ h2.urbanist-bold {
   margin-top: calc(var(--redirect-badge-size) / 3);
 }
 
+@media (orientation: landscape) and (hover: none) and (pointer: coarse),
+       (orientation: landscape) and (hover: none) and (pointer: fine),
+       (min-width: 600px) and (max-width: 1199px) and (hover: none) {
+  .pr-badge {
+    margin-top: calc(var(--redirect-badge-size) / 2);
+  }
+}
+
+@media (orientation: portrait) and (hover: none) and (pointer: coarse) {
+  .pr-badge {
+    margin-top: calc(var(--redirect-badge-size) / 1);
+  }
+}
+
 .bmc-qr-image {
   width: 100%;
   height: 100%;
