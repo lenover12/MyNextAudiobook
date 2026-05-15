@@ -23,8 +23,8 @@ export function useAmbientCanvas(
       if (!imageUrl || !trigger) {
         //default render
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, "#222");
-        gradient.addColorStop(1, "#000");
+        gradient.addColorStop(0, "#444");
+        gradient.addColorStop(1, "#0a0a0a");
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         return;

@@ -52,6 +52,15 @@ export async function addHistoryEntry(
         return;
     }
 
+    //prevent duplicates when asin and itunesId have some issues
+    if (entry.asin && entry.itunesId) {
+        const itunesKey = entry.itunesId.toString();
+        if (itunesKey !== id) {
+            const existingByItunes = await db.get(STORE_NAME, itunesKey);
+            if (existingByItunes) await db.delete(STORE_NAME, itunesKey);
+        }
+    }
+
     let thumbnailData: string | null = null;
 
     try {

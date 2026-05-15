@@ -36,6 +36,7 @@ export interface AudiobookDTO {
   __fromCache?: boolean; //from chache storage
   __isPlaceholder?: boolean; //loading image on first page visit
   __isPr?: boolean; //promotional card
+  __prAltImageUrl?: string | null; //alternate image shown on badge hover/click
 }
 
 export function mergeAudiobookDTOs(a: AudiobookDTO, b: AudiobookDTO): AudiobookDTO {
