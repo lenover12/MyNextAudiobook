@@ -1861,7 +1861,7 @@ h2.urbanist-bold {
   }
 
   .book-info-column {
-    margin-top: 0.75rem !important;
+    margin-top: 2rem !important;
     max-width: 100% !important;
     width: auto !important;
     flex-direction: column !important;
@@ -1871,6 +1871,9 @@ h2.urbanist-bold {
   .book-title {
     opacity: 1 !important;
     color: black !important;
+    margin-top: 0 !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   .qr-code-container {
