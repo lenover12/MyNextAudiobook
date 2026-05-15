@@ -142,7 +142,7 @@ function App() {
   useEffect(() => {
     if (!book) return;
 
-    if (book.__isPr) {
+    if (book.__isPr || book.__isPlaceholder) {
       if (window.location.search) {
         window.history.replaceState({}, "", window.location.pathname);
       }
