@@ -1779,3 +1779,112 @@ h2.urbanist-bold {
   width: 20px;
   height: 29px;
 }
+
+/* Print Layout */
+
+.print-url {
+  display: none;
+}
+
+
+@media print {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .canvas-background,
+  .canvas-pulse,
+  .css-pulse,
+  .bmc-rain,
+  .redirect-badge-container,
+  .affiliate-disclaimer,
+  .options-menu,
+  .library-menu,
+  .cookies-modal,
+  .book-previous,
+  .book-next,
+  .share-container,
+  .favourite-container,
+  .genre-title-container,
+  .swipe-indicator-container,
+  .click-indicator-container,
+  audio {
+    display: none !important;
+  }
+
+  .app {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .book-swipe-layer {
+    position: static !important;
+    transform: none !important;
+    height: auto !important;
+    width: auto !important;
+    display: block !important;
+  }
+
+  .book-image-wrapper.book-previous,
+  .book-image-wrapper.book-next {
+    display: none !important;
+  }
+
+  .book-image-wrapper.book-current {
+    position: relative !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+    width: var(--book-size) !important;
+    height: var(--book-size) !important;
+    margin: 0.5rem auto 0 !important;
+    display: block !important;
+  }
+
+  .book-image {
+    opacity: 1 !important;
+  }
+
+  .book-static-layer {
+    position: static !important;
+    display: block !important;
+    text-align: center !important;
+  }
+
+  .book-info-column {
+    margin-top: 0.75rem !important;
+    max-width: 100% !important;
+    width: auto !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .book-title {
+    opacity: 1 !important;
+    color: black !important;
+  }
+
+  .qr-code-container {
+    opacity: 1 !important;
+    visibility: visible !important;
+    flex-basis: var(--qr-basis) !important;
+  }
+
+  .print-url {
+    display: block !important;
+    font-size: 1.25rem;
+    color: #333;
+    word-break: break-all;
+    text-align: center;
+    margin-bottom: 0.25rem;
+    font-weight: bold;
+  }
+}

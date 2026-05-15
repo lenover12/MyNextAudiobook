@@ -639,6 +639,7 @@ function App() {
         {allowClickHint && (
           <ClickIndicator visible={showClickHint && !hasClickedBookCover} />
         )}
+      <div className="print-url" aria-hidden="true">{shareUrl}</div>
       <animated.div
         className="book-swipe-layer"
         style={{
