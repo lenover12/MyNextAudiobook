@@ -446,6 +446,18 @@ function App() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [options.pauseOnHide]);
 
+  //ambient canvas to use promo image colour on portrait for mobile (black for everything else)
+  const portraitMobileQuery = "(orientation: portrait) and (hover: none) and (pointer: coarse)";
+  const [isPortraitMobile, setIsPortraitMobile] = useState(
+    () => window.matchMedia(portraitMobileQuery).matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(portraitMobileQuery);
+    const handler = (e: MediaQueryListEvent) => setIsPortraitMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   //canvas image
   const currentId = book?.__isPlaceholder
     ? "__initial_placeholder__"
@@ -466,13 +478,18 @@ function App() {
   if (rawCanvasImage) lastCanvasImageRef.current = rawCanvasImage;
   const canvasImage = rawCanvasImage || lastCanvasImageRef.current;
 
-  useAmbientCanvas(canvasRef, canvasImage, !!canvasImage);
+  //dark ambiant canvas for non-portrait-mobile for promotional "book" images
+  //becomes current before canvasImage can draw the promo colours and cause a flash
+  const useDarkCanvas = (book?.__isPr ?? false) && !isPortraitMobile;
+  useAmbientCanvas(canvasRef, useDarkCanvas ? null : canvasImage, !useDarkCanvas && !!canvasImage);
 
   useEffect(() => {
-    if (imageColour) {
-      document.documentElement.style.setProperty('--pulse-colour', `rgb(${imageColour})`);
+    if (useDarkCanvas) {
+      document.documentElement.style.setProperty("--pulse-colour", "rgb(68, 68, 68)");
+    } else if (imageColour) {
+      document.documentElement.style.setProperty("--pulse-colour", `rgb(${imageColour})`);
     }
-  }, [imageColour]);
+  }, [imageColour, useDarkCanvas]);
   
   //book title height
   useEffect(() => {
