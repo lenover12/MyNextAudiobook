@@ -23,7 +23,7 @@ const BMC_IMAGE_PAIRS: [string, string][] = [
   [img5a, img5by],
   [img6a, img6by],
 ];
-export const BMC_URL = 'https://buymeacoffee.com/echocanvas';
+export const BMC_URL = 'https://buymeacoffee.com/bmacleo';
 
 // First promo triggers at this many real books for a returning user.
 export const PROMO_INTERVAL = 50;
